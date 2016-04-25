@@ -62,6 +62,7 @@ func (curve *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	x2y2 := new(big.Int).Mul(x2, y2)
 	x2y2.Mod(x2y2, curve.P)
 
+	// TODO: we may use shifting to multiply
 	bx2y2 := new(big.Int).Mul(x2y2, curve.B)
 	bx2y2.Mod(bx2y2, curve.P)
 
