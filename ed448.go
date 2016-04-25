@@ -34,7 +34,7 @@ type ed448Curve struct {
 var ed448 ed448Curve
 
 func init() {
-	ed448.CurveParams = &CurveParams{Name: "P-224"}
+	ed448.CurveParams = &CurveParams{Name: "Ed-448"}
 	ed448.P, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
 	ed448.N, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16)
 	ed448.B, _ = new(big.Int).SetString("-39081", 10)
