@@ -1,12 +1,20 @@
 package ed448
 
-import "testing"
+import	(
+	"testing"
+	. "gopkg.in/check.v1"
+)
 
-func TestOnCurve(t *testing.T) {
+func Test(t *testing.T) { TestingT(t) }
+
+type ed448Suite struct{}
+
+var _ = Suite(&ed448Suite{})
+
+func (s *ed448Suite) Test_IsOnCurve_findsPoint(c *C) {
 	ed448 := Ed448()
-	if !ed448.IsOnCurve(ed448.Params().Gx, ed448.Params().Gy) {
-		t.Errorf("FAIL")
-	}
+	isOnCurve := ed448.IsOnCurve(ed448.Params().Gx, ed448.Params().Gy)
+	c.Assert(isOnCurve, Equals, true)
 }
 
 func TestDouble(t *testing.T) {
