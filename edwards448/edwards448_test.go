@@ -9,11 +9,21 @@ func TestOnCurve(t *testing.T) {
 	}
 }
 
+func TestAdd(t *testing.T) {
+	ed448 := Ed448()
+	x3, y3 := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, ed448.Params().Gx, ed448.Params().Gy)
+	if !ed448.IsOnCurve(x3, y3) {
+		t.Errorf("ed448 (Gx,Gy)+(Gx,Gy) is not on curve")
+		t.Errorf("(%v, %v)", x3, y3)
+	}
+}
+
 func TestDouble(t *testing.T) {
 	ed448 := Ed448()
 	x2, y2 := ed448.Double(ed448.Params().Gx, ed448.Params().Gy)
 	x3, y3 := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, ed448.Params().Gx, ed448.Params().Gy)
 	if x2.Cmp(x3) != 0 || y2.Cmp(y3) != 0 {
-		t.Errorf("x2:%v ,y2:%v!= x3:%v ,y3:%v", x2, y2, x3, y3)
+		t.Errorf("ed448 (Gx,Gy)+(Gx,Gy) is not equal to Double(Gx,Gy)")
+		t.Errorf("(%v, %v) != (%v, %v)", x2, y2, x3, y3)
 	}
 }
