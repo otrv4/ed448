@@ -3,4 +3,4 @@ This is an implementation of the Edwards elliptic curve with a field size of 448
 
 ## Disclaimer
 This code is provided as is and does not have any warranty, so use it at your own risk.
-This code is still unsable and under constant development so you might want to wait for a future release in order to use it.
+This code is still unstable and under constant development so you might want to wait for a future release in order to use it.
