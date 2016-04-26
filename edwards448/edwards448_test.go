@@ -1,4 +1,4 @@
-package ed448
+package edwards448
 
 import "testing"
 
