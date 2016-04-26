@@ -67,9 +67,9 @@ func (c *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	bx2y2.Mod(bx2y2, c.P)
 
 	left := new(big.Int).Add(x2, y2)
-	left = left.Mod(left, c.P)
+	left.Mod(left, c.P)
 	right := new(big.Int).Add(big.NewInt(1), bx2y2)
-	right = right.Mod(right, c.P)
+	right.Mod(right, c.P)
 
 	return left.Cmp(right) == 0
 }
@@ -100,14 +100,14 @@ func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
 
 	x2plusy2 := new(big.Int).Add(new(big.Int).Mul(x1, x1), new(big.Int).Mul(y1, y1))
-	x2plusy2 = x2plusy2.Mod(x2plusy2, c.P)
+	x2plusy2.Mod(x2plusy2, c.P)
 
 	x3 = new(big.Int).Mul(x1, y1)
-	x3 = x3.Lsh(x3, 1)        // x3 = 2xy
-	x3 = x3.Div(x3, x2plusy2) // x3 = 2xy / x² + y²
+	x3.Lsh(x3, 1)        // x3 = 2xy
+	x3.Div(x3, x2plusy2) // x3 = 2xy / x² + y²
 
 	y3 = new(big.Int).Sub(new(big.Int).Mul(y1, y1), new(big.Int).Mul(x1, x1)) // y3 = y² - x²
-	y3 = y3.Div(y3, new(big.Int).Sub(big.NewInt(2), x2plusy2))                // y3 = y² - x² / 2 - x² - y²
+	y3.Div(y3, new(big.Int).Sub(big.NewInt(2), x2plusy2))                     // y3 = y² - x² / 2 - x² - y²
 
 	return
 }
