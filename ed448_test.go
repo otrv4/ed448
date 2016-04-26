@@ -1,20 +1,12 @@
 package ed448
 
-import	(
-	"testing"
-	. "gopkg.in/check.v1"
-)
+import "testing"
 
-func Test(t *testing.T) { TestingT(t) }
-
-type ed448Suite struct{}
-
-var _ = Suite(&ed448Suite{})
-
-func (s *ed448Suite) Test_IsOnCurve_basePointIsMemberOfTheCurve(c *C) {
-	e448 := new(Edwards448Curve)
-	baseIsElement := e448.CheckMembershipOf(e448.GetBasePoint())
-	c.Assert(baseIsElement, Equals, true)
+func TestOnCurve(t *testing.T) {
+	ed448 := Ed448()
+	if !ed448.IsOnCurve(ed448.Params().Gx, ed448.Params().Gy) {
+		t.Errorf("FAIL")
+	}
 }
 
 func TestDouble(t *testing.T) {
