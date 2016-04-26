@@ -11,10 +11,10 @@ type ed448Suite struct{}
 
 var _ = Suite(&ed448Suite{})
 
-func (s *ed448Suite) Test_IsOnCurve_findsPoint(c *C) {
-	ed448 := Ed448()
-	isOnCurve := ed448.IsOnCurve(ed448.Params().Gx, ed448.Params().Gy)
-	c.Assert(isOnCurve, Equals, true)
+func (s *ed448Suite) Test_IsOnCurve_basePointIsMemberOfTheCurve(c *C) {
+	e448 := new(Edwards448Curve)
+	baseIsElement := e448.CheckMembershipOf(e448.GetBasePoint())
+	c.Assert(baseIsElement, Equals, true)
 }
 
 func TestDouble(t *testing.T) {
