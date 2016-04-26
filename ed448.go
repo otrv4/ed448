@@ -93,7 +93,20 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	return
 }
 
-func (curve *CurveParams) Double(x1, y1 *big.Int) (x2, y2 *big.Int) {
-	// TODO: use shift
+func (curve *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
+	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
+	x3 = new(big.Int).Mul(x1, y1)
+	x3 = x3.Lsh(x3, 1) // x3 = 2xy
+	x2plusy2 := new(big.Int).Add(new(big.Int).Mul(x1, x1), new(big.Int).Mul(y1, y1))
+	x2plusy2 = x2plusy2.Mod(x2plusy2, curve.P)
+	x3 = x3.Div(x3, x2plusy2) // x3 = 2xy / x² + y²
+	x3 = x3.Mod(x3, curve.P)
+
+	// y3 =  y² - x² / 1 + bx²y² = y² - x² / 1 - x² - y²
+	y3 = new(big.Int).Sub(new(big.Int).Mul(y1, y1), new(big.Int).Mul(x1, x1))
+	y3 = y3.Mod(y3, curve.P)
+	y3 = y3.Div(y3, new(big.Int).Sub(big.NewInt(1), x2plusy2)) // y3 = y² - x² / 1 - x² - y²
+	y3 = y3.Mod(y3, curve.P)
+
 	return curve.Add(x1, y1, x1, y1)
 }
