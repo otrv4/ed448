@@ -9,15 +9,6 @@ func TestOnCurve(t *testing.T) {
 	}
 }
 
-func TestAdd(t *testing.T) {
-	ed448 := Ed448()
-	x3, y3 := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, ed448.Params().Gx, ed448.Params().Gy)
-	if !ed448.IsOnCurve(x3, y3) {
-		t.Errorf("ed448 (Gx,Gy)+(Gx,Gy) is not on curve")
-		t.Errorf("(%v, %v)", x3, y3)
-	}
-}
-
 func TestDouble(t *testing.T) {
 	ed448 := Ed448()
 	x2, y2 := ed448.Double(ed448.Params().Gx, ed448.Params().Gy)
