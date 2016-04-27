@@ -19,13 +19,12 @@ type Curve interface {
 }
 
 type CurveParams struct {
-	P        *big.Int // the order of the underlying field
-	N        *big.Int // the order of the base point
-	B        *big.Int // the constant of the curve equation
-	Gx, Gy   *big.Int // (x,y) of the base point
-	Gxr, Gyr *big.Rat // (x,y) of the base point
-	BitSize  int      // the size of the underlying field
-	Name     string   // the canonical name of the curve
+	P       *big.Int // the order of the underlying field
+	N       *big.Int // the order of the base point
+	B       *big.Int // the constant of the curve equation
+	Gx, Gy  *big.Int // (x,y) of the base point
+	BitSize int      // the size of the underlying field
+	Name    string   // the canonical name of the curve
 }
 
 type ed448Curve struct {
@@ -40,9 +39,7 @@ func init() {
 	ed448.N, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16)
 	ed448.B, _ = new(big.Int).SetString("-39081", 10)
 	ed448.Gx, _ = new(big.Int).SetString("297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f", 16)
-	ed448.Gxr = new(big.Rat).SetInt(ed448.Gx)
 	ed448.Gy, _ = new(big.Int).SetString("13", 16)
-	ed448.Gyr = new(big.Rat).SetInt(ed448.Gy)
 	ed448.BitSize = 448
 }
 
