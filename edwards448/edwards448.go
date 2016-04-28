@@ -79,7 +79,7 @@ func (c *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	x3 = new(big.Int).Mul(x1, y2)
 	x3.Add(x3, new(big.Int).Mul(x2, y1))
 	x3.Mod(x3, c.P)
-	divisor := new(big.Int).ModInverse(new(big.Int).Add(big.NewInt(1), bx1x2y1y2), c.P)
+	divisor := new(big.Int).ModInverse(new(big.Int).Mod(new(big.Int).Add(big.NewInt(1), bx1x2y1y2), c.P), c.P)
 	x3.Mul(x3, divisor)
 
 	y3 = new(big.Int).Mul(y1, y2)
