@@ -30,6 +30,8 @@ func check_type_equality(actualType, expectedType interface{}) bool {
 
 func check_value_equality(actual, expected interface{}) bool {
 	switch actual.(type) {
+	case *big.Int:
+		return expected.(*big.Int).Cmp(actual.(*big.Int)) == 0
 	case *big.Rat:
 		return expected.(*big.Rat).Cmp(actual.(*big.Rat)) == 0
 	default:

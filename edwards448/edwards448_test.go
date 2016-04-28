@@ -7,6 +7,14 @@ func TestOnCurve(t *testing.T) {
 	assert_true(t, ed448.IsOnCurve(ed448.Params().Gx, ed448.Params().Gy))
 }
 
+func TestAdd(t *testing.T) {
+	ed448 := Ed448()
+	x3, y3 := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, ed448.Params().Gx, ed448.Params().Gy)
+	assert_true(t, ed448.IsOnCurve(x3, y3))
+	x4, y4 := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, x3, y3)
+	assert_true(t, ed448.IsOnCurve(x4, y4))
+}
+
 func TestDouble(t *testing.T) {
 	ed448 := Ed448()
 	x2, y2 := ed448.Double(ed448.Params().Gx, ed448.Params().Gy)
