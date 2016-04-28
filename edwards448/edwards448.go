@@ -8,9 +8,9 @@ type Curve interface {
 	// IsOnCurve reports whether the given (x,y) lies on the curve.
 	IsOnCurve(x, y *big.Int) bool
 	// Add returns the sum of (x1,y1) and (x2,y2)
-	Add(x1, y1, x2, y2 *big.Int) (x, y *big.Rat)
+	Add(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
 	// Double returns 2*(x,y)
-	Double(x1, y1 *big.Int) (x, y *big.Rat)
+	Double(x1, y1 *big.Int) (x, y *big.Int)
 	// // ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
 	// ScalarMult(x1, y1 *big.Int, k []byte) (x, y *big.Int)
 	// // ScalarBaseMult returns k*G, where G is the base point of the group
@@ -67,7 +67,7 @@ func (c *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	return left.Cmp(right) == 0
 }
 
-func (c *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Rat) {
+func (c *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
@@ -76,20 +76,22 @@ func (c *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Rat) {
 		c.B, new(big.Int).Mul(x1, new(big.Int).Mul(x2, new(big.Int).Mul(y1, y2))))
 	bx1x2y1y2.Mod(bx1x2y1y2, c.P)
 
-	x3t := new(big.Int).Mul(x1, y2)
-	x3t.Add(x3t, new(big.Int).Mul(x2, y1))
-	x3t.Mod(x3t, c.P)
-	x3 = new(big.Rat).SetFrac(x3t, new(big.Int).Add(big.NewInt(1), bx1x2y1y2))
+	x3 = new(big.Int).Mul(x1, y2)
+	x3.Add(x3, new(big.Int).Mul(x2, y1))
+	x3.Mod(x3, c.P)
+	divisor := new(big.Int).ModInverse(new(big.Int).Add(big.NewInt(1), bx1x2y1y2), c.P)
+	x3.Mul(x3, divisor)
 
-	y3t := new(big.Int).Mul(y1, y2)
-	y3t.Sub(y3t, new(big.Int).Mul(x1, x2))
-	y3t.Mod(y3t, c.P)
-	y3 = new(big.Rat).SetFrac(y3t, new(big.Int).Sub(big.NewInt(1), bx1x2y1y2))
+	y3 = new(big.Int).Mul(y1, y2)
+	y3.Sub(y3, new(big.Int).Mul(x1, x2))
+	y3.Mod(y3, c.P)
+	divisor = new(big.Int).ModInverse(new(big.Int).Mod(new(big.Int).Sub(big.NewInt(1), bx1x2y1y2), c.P), c.P)
+	y3.Mul(y3, divisor)
 
 	return
 }
 
-func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Rat) {
+func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
@@ -97,14 +99,16 @@ func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Rat) {
 	x2plusy2 := new(big.Int).Add(new(big.Int).Mul(x1, x1), new(big.Int).Mul(y1, y1))
 	x2plusy2.Mod(x2plusy2, c.P)
 
-	x3t := new(big.Int).Mul(x1, y1)
-	x3t.Lsh(x3t, 1) // x3 = 2xy
-	x3t.Mod(x3t, c.P)
-	x3 = new(big.Rat).SetFrac(x3t, x2plusy2) // x3 = 2xy / x² + y²
+	x3 = new(big.Int).Mul(x1, y1)
+	x3.Lsh(x3, 1) // x3 = 2xy
+	x3.Mod(x3, c.P)
+	divisor := new(big.Int).ModInverse(x2plusy2, c.P)
+	x3.Mul(x3, divisor) // x3 = 2xy / x² + y²
 
-	y3t := new(big.Int).Sub(new(big.Int).Mul(y1, y1), new(big.Int).Mul(x1, x1)) // y3 = y² - x²
-	y3t.Mod(y3t, c.P)
-	y3 = new(big.Rat).SetFrac(y3t, new(big.Int).Sub(big.NewInt(2), x2plusy2)) // y3 = y² - x² / 2 - x² - y²
+	y3 = new(big.Int).Sub(new(big.Int).Mul(y1, y1), new(big.Int).Mul(x1, x1)) // y3 = y² - x²
+	y3.Mod(y3, c.P)
+	divisor = new(big.Int).ModInverse(new(big.Int).Mod(new(big.Int).Sub(big.NewInt(2), x2plusy2), c.P), c.P)
+	y3.Mul(y3, divisor) // y3 = y² - x² / 2 - x² - y²
 
 	return
 }
