@@ -1,9 +1,9 @@
 package edwards448
 
 import (
-	"testing"
-	"reflect"
 	"math/big"
+	"reflect"
+	"testing"
 )
 
 func assert_true(t *testing.T, actual bool) {
@@ -36,4 +36,3 @@ func check_value_equality(actual, expected interface{}) bool {
 		return actual == expected
 	}
 }
-
