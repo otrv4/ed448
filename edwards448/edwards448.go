@@ -12,10 +12,10 @@ type Curve interface {
 	// Double returns 2*(x,y)
 	Double(x1, y1 *big.Int) (x, y *big.Int)
 	// Multiply performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
-	Multiply(x1, y1 *big.Int, k int) (x, y *big.Int)
+	Multiply(x1, y1 *big.Int, k []byte) (x, y *big.Int)
 	// MuliplyByBase returns k*G, where G is the base point of the group
 	// and k is an integer in big-endian form.
-	MultiplyByBase(k int) (x, y *big.Int)
+	MultiplyByBase(k []byte) (x, y *big.Int)
 }
 
 type CurveParams struct {
@@ -113,21 +113,22 @@ func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	return
 }
 
-func (c *CurveParams) Multiply(x, y *big.Int, k int) (kx, ky *big.Int) {
+func (c *CurveParams) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 	kx, ky = x, y
-	for k > 0 {
-		if k % 2 == 0 {
+	n := new(big.Int).SetBytes(k)
+	for n.Cmp(big.NewInt(0)) > 0 {
+		if new(big.Int).Mod(n, big.NewInt(2)).Cmp(big.NewInt(0)) == 0 {
 			kx, ky = c.Double(kx, ky)
-			k = k - 2
+			n.Sub(n, big.NewInt(2))
 		} else {
-			kx, ky = c.Add(kx, ky, kx, ky)
-			k = k - 1
+			kx, ky = c.Add(kx, ky, x, y)
+			n.Sub(n, big.NewInt(1))
 		}
 	}
 	return
 }
 
-func (c *CurveParams) MultiplyByBase(k int) (kx, ky *big.Int) {
+func (c *CurveParams) MultiplyByBase(k []byte) (kx, ky *big.Int) {
 	kx, ky = c.Multiply(c.Params().Gx, c.Params().Gy, k)
 	return
 }

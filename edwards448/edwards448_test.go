@@ -30,7 +30,7 @@ func TestDouble(t *testing.T) {
 func TestMultiplication(t *testing.T) {
 	ed448 := Ed448()
 
-	x2, y2 := ed448.Multiply(ed448.Params().Gx, ed448.Params().Gy, 5)
+	x2, y2 := ed448.Multiply(ed448.Params().Gx, ed448.Params().Gy, []byte{0x05})
 
 	assert_true(t, ed448.IsOnCurve(x2, y2))
 }
@@ -40,20 +40,20 @@ func TestOperationsAreEquivalent(t *testing.T) {
 
 	addX, addY := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, ed448.Params().Gx, ed448.Params().Gy)
 	doubleX, doubleY := ed448.Double(ed448.Params().Gx, ed448.Params().Gy)
-	xBy2, yBy2 := ed448.Multiply(ed448.Params().Gx, ed448.Params().Gy, 2)
+	xBy2, yBy2 := ed448.Multiply(ed448.Params().Gx, ed448.Params().Gy, []byte{2})
 
 	assert_equals(t, addX, doubleX)
 	assert_equals(t, addY, doubleY)
 	assert_equals(t, addX, xBy2)
-	assert_equals(t, doubleX, xBy2)
-	assert_equals(t, addY, yBy2)
+	// assert_equals(t, doubleX, xBy2)
+	// assert_equals(t, addY, yBy2)
 	assert_equals(t, addY, yBy2)
 }
 
 func TestBaseMultiplication(t *testing.T) {
 	ed448 := Ed448()
 
-	x, y := ed448.MultiplyByBase(5)
+	x, y := ed448.MultiplyByBase([]byte{0x05})
 
 	assert_true(t, ed448.IsOnCurve(x, y))
 }
@@ -81,6 +81,6 @@ func BenchmarkMultiplication(b *testing.B) {
 	b.ResetTimer()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
 	for i := 0; i < b.N; i++ {
-		x, y = ed448.Multiply(x, y, 3)
+		x, y = ed448.Multiply(x, y, []byte{0x03})
 	}
 }
