@@ -13,9 +13,9 @@ type Curve interface {
 	Double(x1, y1 *big.Int) (x, y *big.Int)
 	// Multiply performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
 	Multiply(x1, y1 *big.Int, k int) (x, y *big.Int)
-	// // ScalarBaseMult returns k*G, where G is the base point of the group
-	// // and k is an integer in big-endian form.
-	// ScalarBaseMult(k []byte) (x, y *big.Int)
+	// MuliplyByBase returns k*G, where G is the base point of the group
+	// and k is an integer in big-endian form.
+	MultiplyByBase(k int) (x, y *big.Int)
 }
 
 type CurveParams struct {
@@ -124,5 +124,10 @@ func (c *CurveParams) Multiply(x, y *big.Int, k int) (kx, ky *big.Int) {
 			k = k - 1
 		}
 	}
+	return
+}
+
+func (c *CurveParams) MultiplyByBase(k int) (kx, ky *big.Int) {
+	kx, ky = c.Multiply(c.Params().Gx, c.Params().Gy, k)
 	return
 }

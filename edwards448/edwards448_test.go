@@ -50,6 +50,14 @@ func TestOperationsAreEquivalent(t *testing.T) {
 	assert_equals(t, addY, yBy2)
 }
 
+func TestBaseMultiplication(t *testing.T) {
+	ed448 := Ed448()
+
+	x, y := ed448.MultiplyByBase(5)
+
+	assert_true(t, ed448.IsOnCurve(x, y))
+}
+
 func BenchmarkAddition(b *testing.B) {
 	ed448 := Ed448()
 	b.ResetTimer()
