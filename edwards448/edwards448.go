@@ -11,8 +11,8 @@ type Curve interface {
 	Add(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
 	// Double returns 2*(x,y)
 	Double(x1, y1 *big.Int) (x, y *big.Int)
-	// // ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
-	// ScalarMult(x1, y1 *big.Int, k []byte) (x, y *big.Int)
+	// Multiply performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
+	Multiply(x1, y1 *big.Int, k int) (x, y *big.Int)
 	// // ScalarBaseMult returns k*G, where G is the base point of the group
 	// // and k is an integer in big-endian form.
 	// ScalarBaseMult(k []byte) (x, y *big.Int)
@@ -110,5 +110,19 @@ func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	divisor = new(big.Int).ModInverse(new(big.Int).Mod(new(big.Int).Sub(big.NewInt(2), x2plusy2), c.P), c.P)
 	y3.Mul(y3, divisor) // y3 = y² - x² / 2 - x² - y²
 
+	return
+}
+
+func (c *CurveParams) Multiply(x, y *big.Int, k int) (kx, ky *big.Int) {
+	kx, ky = x, y
+	for k > 0 {
+		if k % 2 == 0 {
+			kx, ky = c.Double(kx, ky)
+			k = k - 2
+		} else {
+			kx, ky = c.Add(kx, ky, kx, ky)
+			k = k - 1
+		}
+	}
 	return
 }
