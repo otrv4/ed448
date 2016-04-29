@@ -45,8 +45,8 @@ func TestOperationsAreEquivalent(t *testing.T) {
 	assert_equals(t, addX, doubleX)
 	assert_equals(t, addY, doubleY)
 	assert_equals(t, addX, xBy2)
-	// assert_equals(t, doubleX, xBy2)
-	// assert_equals(t, addY, yBy2)
+	assert_equals(t, doubleX, xBy2)
+	assert_equals(t, addY, yBy2)
 	assert_equals(t, addY, yBy2)
 }
 
