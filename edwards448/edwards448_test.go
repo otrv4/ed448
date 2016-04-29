@@ -49,3 +49,30 @@ func TestOperationsAreEquivalent(t *testing.T) {
 	assert_equals(t, addY, yBy2)
 	assert_equals(t, addY, yBy2)
 }
+
+func BenchmarkAddition(b *testing.B) {
+	ed448 := Ed448()
+	b.ResetTimer()
+	x, y := ed448.Params().Gx, ed448.Params().Gy
+	for i := 0; i < b.N; i++ {
+		x, y = ed448.Add(x, y, x, y)
+	}
+}
+
+func BenchmarkDoubling(b *testing.B) {
+	ed448 := Ed448()
+	b.ResetTimer()
+	x, y := ed448.Params().Gx, ed448.Params().Gy
+	for i := 0; i < b.N; i++ {
+		x, y = ed448.Double(x, y)
+	}
+}
+
+func BenchmarkMultiplication(b *testing.B) {
+	ed448 := Ed448()
+	b.ResetTimer()
+	x, y := ed448.Params().Gx, ed448.Params().Gy
+	for i := 0; i < b.N; i++ {
+		x, y = ed448.Multiply(x, y, 3)
+	}
+}
