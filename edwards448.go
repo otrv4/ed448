@@ -1,4 +1,4 @@
-package edwards448
+package ed448
 
 import "math/big"
 
