@@ -1,10 +1,6 @@
 package ed448
 
-import (
-	"testing"
-
-	. "gopkg.in/check.v1"
-)
+import . "gopkg.in/check.v1"
 
 func (s *Ed448Suite) TestBasePointIsOnCurve(c *C) {
 	ed448 := Ed448()
@@ -62,29 +58,29 @@ func (s *Ed448Suite) TestBaseMultiplication(c *C) {
 	c.Assert(ed448.IsOnCurve(x, y), Equals, true)
 }
 
-func BenchmarkAddition(b *testing.B) {
+func (s *Ed448Suite) BenchmarkAddition(c *C) {
 	ed448 := Ed448()
-	b.ResetTimer()
+	c.ResetTimer()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
-	for i := 0; i < b.N; i++ {
+	for i := 0; i < c.N; i++ {
 		x, y = ed448.Add(x, y, x, y)
 	}
 }
 
-func BenchmarkDoubling(b *testing.B) {
+func (s *Ed448Suite) BenchmarkDoubling(c *C) {
 	ed448 := Ed448()
-	b.ResetTimer()
+	c.ResetTimer()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
-	for i := 0; i < b.N; i++ {
+	for i := 0; i < c.N; i++ {
 		x, y = ed448.Double(x, y)
 	}
 }
 
-func BenchmarkMultiplication(b *testing.B) {
+func (s *Ed448Suite) BenchmarkMultiplication(c *C) {
 	ed448 := Ed448()
-	b.ResetTimer()
+	c.ResetTimer()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
-	for i := 0; i < b.N; i++ {
+	for i := 0; i < c.N; i++ {
 		x, y = ed448.Multiply(x, y, []byte{0x03})
 	}
 }

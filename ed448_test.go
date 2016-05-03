@@ -30,7 +30,7 @@ func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 }
 
 func (s *Ed448Suite) TestKeyGeneration(c *C) {
-	c.Skip("This is way to slow to run with this implementation.")
+	c.Skip("This is way to slow to run with big.Int arithmetic.")
 
 	ed448 := Ed448()
 	random := getReader()
