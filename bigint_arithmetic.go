@@ -2,7 +2,15 @@ package ed448
 
 import "math/big"
 
-type curve struct {
+type curve interface {
+	isOnCurve(x, y interface{}) bool
+	add(x1, y1, x2, y2 interface{}) (x3, y3 interface{})
+	double(x1, y1 interface{}) (x3, y3 interface{})
+	multiply(x, y interface{}, k []byte) (kx, ky interface{})
+	multiplyByBase(k []byte) (kx, ky interface{})
+}
+
+type bigintsCurve struct {
 	p      *big.Int // the order of the underlying field
 	n      *big.Int // the order of the base point
 	b      *big.Int // the constant of the curve equation
@@ -10,7 +18,7 @@ type curve struct {
 	size   int      // the size of the underlying field
 }
 
-var ed448 curve
+var ed448 bigintsCurve
 var zero, one, two *big.Int
 
 func init() {
@@ -28,40 +36,48 @@ func init() {
 	two = big.NewInt(2)
 }
 
-func newEd448() curve {
-	return ed448
+func newBigintsCurve() curve {
+	return &ed448
 }
 
-// Reports whether the given (x,y) lies on the curve.
-func (c *curve) isOnCurve(x, y *big.Int) bool {
+func (c *bigintsCurve) isOnCurve(x, y interface{}) bool {
+	return isOnCurve(x.(*big.Int), y.(*big.Int))
+}
+
+// Reports whether the given (x,y) lies on the bigintsCurve.
+func isOnCurve(x, y *big.Int) bool {
 	// x² + y² = 1 + bx²y²
 	x2 := square(x)
 	y2 := square(y)
 
 	x2y2 := mul(x2, y2)
-	bx2y2 := mul(c.b, x2y2)
+	bx2y2 := mul(ed448.b, x2y2)
 
-	left := add(x2, y2)
+	left := sum(x2, y2)
 	left = mod(left)
-	right := add(one, bx2y2)
+	right := sum(one, bx2y2)
 	right = mod(right)
 
 	return left.Cmp(right) == 0
 }
 
+func (c *bigintsCurve) add(x1, y1, x2, y2 interface{}) (x3, y3 interface{}) {
+	return add(x1.(*big.Int), y1.(*big.Int), x2.(*big.Int), y2.(*big.Int))
+}
+
 // Returns the sum of (x1,y1) and (x2,y2)
-func (c *curve) add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
+func add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
 
-	bx1x2y1y2 := mul(c.b, mul(x1, mul(x2, mul(y1, y2))))
+	bx1x2y1y2 := mul(ed448.b, mul(x1, mul(x2, mul(y1, y2))))
 	bx1x2y1y2 = mod(bx1x2y1y2)
 
 	x3 = mul(x1, y2)
-	x3 = add(x3, mul(x2, y1))
+	x3 = sum(x3, mul(x2, y1))
 	x3 = mod(x3)
-	divisor := modInv(mod(add(one, bx1x2y1y2)))
+	divisor := modInv(mod(sum(one, bx1x2y1y2)))
 	x3 = mul(x3, divisor)
 
 	y3 = mul(y1, y2)
@@ -73,13 +89,17 @@ func (c *curve) add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	return
 }
 
+func (c *bigintsCurve) double(x1, y1 interface{}) (x3, y3 interface{}) {
+	return double(x1.(*big.Int), y1.(*big.Int))
+}
+
 //Returns 2*(x,y)
-func (c *curve) double(x1, y1 *big.Int) (x3, y3 *big.Int) {
+func double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
 
-	x2plusy2 := add(mul(x1, x1), mul(y1, y1))
+	x2plusy2 := sum(mul(x1, x1), mul(y1, y1))
 	x2plusy2 = mod(x2plusy2)
 
 	x3 = mul(x1, y1)
@@ -96,30 +116,37 @@ func (c *curve) double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	return
 }
 
+func (c *bigintsCurve) multiply(x, y interface{}, k []byte) (kx, ky interface{}) {
+	return multiply(x.(*big.Int), y.(*big.Int), k)
+}
+
 //Performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
-func (c *curve) multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
+func multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 	kx, ky = x, y
 	n := new(big.Int).SetBytes(k)
 
 	for n.Cmp(zero) > 0 {
 		if new(big.Int).Mod(n, two).Cmp(zero) == 0 {
-			kx, ky = c.double(kx, ky)
+			kx, ky = double(kx, ky)
 			n = sub(n, two)
 		} else {
-			kx, ky = c.add(kx, ky, x, y)
+			kx, ky = add(kx, ky, x, y)
 			n = sub(n, one)
 		}
 	}
 	return
 }
 
-//Returns k*G, where G is the base point of the group and k is an integer in big-endian form.
-func (c *curve) multiplyByBase(k []byte) (kx, ky *big.Int) {
-	kx, ky = c.multiply(c.gx, c.gy, k)
-	return
+func (c *bigintsCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
+	return multiplyByBase(k)
 }
 
-func add(x, y *big.Int) *big.Int {
+//Returns k*G, where G is the base point of the group and k is an integer in big-endian form.
+func multiplyByBase(k []byte) (kx, ky *big.Int) {
+	return multiply(ed448.gx, ed448.gy, k)
+}
+
+func sum(x, y *big.Int) *big.Int {
 	return new(big.Int).Add(x, y)
 }
 
@@ -136,9 +163,9 @@ func square(v *big.Int) *big.Int {
 }
 
 func mod(x *big.Int) *big.Int {
-	return new(big.Int).Mod(x, newEd448().p)
+	return new(big.Int).Mod(x, ed448.p)
 }
 
 func modInv(x *big.Int) *big.Int {
-	return new(big.Int).ModInverse(x, newEd448().p)
+	return new(big.Int).ModInverse(x, ed448.p)
 }

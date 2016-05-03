@@ -10,19 +10,24 @@ type Goldilocks interface {
 }
 
 type goldilocks struct {
+	curve curve
 }
 
 var mask = []byte{0xff, 0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f, 0x7f}
 
-func NewGoldilocks() Goldilocks {
-	return &goldilocks{}
+func NewBigintsGoldilocks() Goldilocks {
+	return &goldilocks{curve: newBigintsCurve()}
 }
 
+/*
+func NewGoldilocks() Goldilocks {
+	return &goldilocks{curve: newField()}
+}
+*/
 // GenerateKey returns a public/private key pair. The private key is
 // generated using the given reader, which must return random data.
 func (g goldilocks) GenerateKey(rand io.Reader) (priv []byte, pub []byte, err error) {
-	curve := newEd448()
-	n := curve.n
+	n := ed448.n
 	bitSize := n.BitLen()
 	byteLen := (bitSize + 7) >> 3
 	priv = make([]byte, byteLen)
@@ -46,16 +51,17 @@ func (g goldilocks) GenerateKey(rand io.Reader) (priv []byte, pub []byte, err er
 			continue
 		}
 
-		x, y = curve.multiplyByBase(priv)
+		bx, by := g.curve.multiplyByBase(priv)
+		x, y = bx.(*big.Int), by.(*big.Int)
 	}
 
-	pub = marshal(curve, x, y)
+	pub = marshal(g.curve, x, y)
 	return
 }
 
 // Marshal converts a point into the form specified in section 4.3.6 of ANSI X9.62.
 func marshal(curve curve, x, y *big.Int) []byte {
-	byteLen := (curve.size + 7) >> 3
+	byteLen := (ed448.size + 7) >> 3
 
 	ret := make([]byte, 1+2*byteLen)
 	ret[0] = 4 // uncompressed point
@@ -70,7 +76,7 @@ func marshal(curve curve, x, y *big.Int) []byte {
 // Unmarshal converts a point, serialized by Marshal, into an x, y pair.
 // It is an error if the point is not on the curve. On error, x = nil.
 func unmarshal(curve curve, data []byte) (x, y *big.Int) {
-	byteLen := (curve.size + 7) >> 3
+	byteLen := (ed448.size + 7) >> 3
 	if len(data) != 1+2*byteLen {
 		return
 	}
