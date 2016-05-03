@@ -41,7 +41,7 @@ func (s *Ed448Suite) TestKeyGeneration(c *C) {
 
 	px, py := Unmarshal(ed448, pub)
 	c.Assert(priv[1] > 0, Equals, true)
-	c.Assert(ed448.IsOnCurve(px, py), Equals, true)
+	c.Assert(ed448.isOnCurve(px, py), Equals, true)
 }
 
 func getReader() io.Reader {

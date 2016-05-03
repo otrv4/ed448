@@ -33,7 +33,7 @@ func newEd448() curve {
 }
 
 // Reports whether the given (x,y) lies on the curve.
-func (c *curve) IsOnCurve(x, y *big.Int) bool {
+func (c *curve) isOnCurve(x, y *big.Int) bool {
 	// x² + y² = 1 + bx²y²
 	x2 := square(x)
 	y2 := square(y)
@@ -50,7 +50,7 @@ func (c *curve) IsOnCurve(x, y *big.Int) bool {
 }
 
 // Returns the sum of (x1,y1) and (x2,y2)
-func (c *curve) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
+func (c *curve) add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
@@ -74,7 +74,7 @@ func (c *curve) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 }
 
 //Returns 2*(x,y)
-func (c *curve) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
+func (c *curve) double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
@@ -97,16 +97,16 @@ func (c *curve) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 }
 
 //Performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
-func (c *curve) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
+func (c *curve) multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 	kx, ky = x, y
 	n := new(big.Int).SetBytes(k)
 
 	for n.Cmp(zero) > 0 {
 		if new(big.Int).Mod(n, two).Cmp(zero) == 0 {
-			kx, ky = c.Double(kx, ky)
+			kx, ky = c.double(kx, ky)
 			n = sub(n, two)
 		} else {
-			kx, ky = c.Add(kx, ky, x, y)
+			kx, ky = c.add(kx, ky, x, y)
 			n = sub(n, one)
 		}
 	}
@@ -114,8 +114,8 @@ func (c *curve) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 }
 
 //Returns k*G, where G is the base point of the group and k is an integer in big-endian form.
-func (c *curve) MultiplyByBase(k []byte) (kx, ky *big.Int) {
-	kx, ky = c.Multiply(c.gx, c.gy, k)
+func (c *curve) multiplyByBase(k []byte) (kx, ky *big.Int) {
+	kx, ky = c.multiply(c.gx, c.gy, k)
 	return
 }
 

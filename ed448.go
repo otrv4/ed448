@@ -33,7 +33,7 @@ func GenerateKey(curve curve, rand io.Reader) (priv []byte, pub []byte, err erro
 			continue
 		}
 
-		x, y = curve.MultiplyByBase(priv)
+		x, y = curve.multiplyByBase(priv)
 	}
 
 	pub = Marshal(curve, x, y)
@@ -66,7 +66,7 @@ func Unmarshal(curve curve, data []byte) (x, y *big.Int) {
 	}
 	x = new(big.Int).SetBytes(data[1 : 1+byteLen])
 	y = new(big.Int).SetBytes(data[1+byteLen:])
-	if !curve.IsOnCurve(x, y) {
+	if !curve.isOnCurve(x, y) {
 		x, y = nil, nil
 	}
 	return
