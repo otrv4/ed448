@@ -16,7 +16,7 @@ var _ = Suite(&Ed448Suite{})
 
 func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 	curve := newBigintsCurve()
-	x, y := ed448.gx, ed448.gy
+	x, y := gx, gy
 
 	marshaled := marshal(curve, x, y)
 
@@ -43,7 +43,7 @@ func (s *Ed448Suite) TestKeyGeneration(c *C) {
 }
 
 func getReader() io.Reader {
-	len := (ed448.n.BitLen() + 7)
+	len := (rho.BitLen() + 7)
 	zeroes := make([]byte, len)
 	return bytes.NewReader(zeroes)
 }
