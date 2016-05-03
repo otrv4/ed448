@@ -2,7 +2,7 @@ package ed448
 
 import "math/big"
 
-type Curve interface {
+type curve interface {
 	// Params returns the parameters for the curve.
 	Params() *CurveParams
 	// IsOnCurve reports whether the given (x,y) lies on the curve.
@@ -43,7 +43,7 @@ func init() {
 	ed448.BitSize = 448
 }
 
-func Ed448() Curve {
+func newEd448() curve {
 	return ed448
 }
 
