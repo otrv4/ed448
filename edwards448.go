@@ -2,39 +2,17 @@ package ed448
 
 import "math/big"
 
-type curve interface {
-	// Params returns the parameters for the curve.
-	Params() *CurveParams
-	// IsOnCurve reports whether the given (x,y) lies on the curve.
-	IsOnCurve(x, y *big.Int) bool
-	// Add returns the sum of (x1,y1) and (x2,y2)
-	Add(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
-	// Double returns 2*(x,y)
-	Double(x1, y1 *big.Int) (x, y *big.Int)
-	// Multiply performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
-	Multiply(x1, y1 *big.Int, k []byte) (x, y *big.Int)
-	// MuliplyByBase returns k*G, where G is the base point of the group
-	// and k is an integer in big-endian form.
-	MultiplyByBase(k []byte) (x, y *big.Int)
-}
-
-type CurveParams struct {
+type curve struct {
 	P       *big.Int // the order of the underlying field
 	N       *big.Int // the order of the base point
 	B       *big.Int // the constant of the curve equation
 	Gx, Gy  *big.Int // (x,y) of the base point
 	BitSize int      // the size of the underlying field
-	Name    string   // the canonical name of the curve
 }
 
-type ed448Curve struct {
-	*CurveParams
-}
-
-var ed448 ed448Curve
+var ed448 curve
 
 func init() {
-	ed448.CurveParams = &CurveParams{Name: "Ed-448"}
 	ed448.P, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
 	ed448.N, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16)
 	ed448.B, _ = new(big.Int).SetString("-39081", 10)
@@ -47,7 +25,8 @@ func newEd448() curve {
 	return ed448
 }
 
-func (c *CurveParams) IsOnCurve(x, y *big.Int) bool {
+// Reports whether the given (x,y) lies on the curve.
+func (c *curve) IsOnCurve(x, y *big.Int) bool {
 	// x² + y² = 1 + bx²y²
 	x2 := square(x)
 	y2 := square(y)
@@ -63,7 +42,8 @@ func (c *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	return left.Cmp(right) == 0
 }
 
-func (c *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
+// Returns the sum of (x1,y1) and (x2,y2)
+func (c *curve) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
@@ -86,7 +66,8 @@ func (c *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	return
 }
 
-func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
+//Returns 2*(x,y)
+func (c *curve) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
@@ -108,7 +89,8 @@ func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	return
 }
 
-func (c *CurveParams) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
+//Performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
+func (c *curve) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 	kx, ky = x, y
 	n := new(big.Int).SetBytes(k)
 
@@ -124,13 +106,10 @@ func (c *CurveParams) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 	return
 }
 
-func (c *CurveParams) MultiplyByBase(k []byte) (kx, ky *big.Int) {
-	kx, ky = c.Multiply(c.Params().Gx, c.Params().Gy, k)
+//Returns k*G, where G is the base point of the group and k is an integer in big-endian form.
+func (c *curve) MultiplyByBase(k []byte) (kx, ky *big.Int) {
+	kx, ky = c.Multiply(c.Gx, c.Gy, k)
 	return
-}
-
-func (c *CurveParams) Params() *CurveParams {
-	return c
 }
 
 func add(x, y *big.Int) *big.Int {
