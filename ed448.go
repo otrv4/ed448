@@ -27,8 +27,7 @@ func NewGoldilocks() Goldilocks {
 // GenerateKey returns a public/private key pair. The private key is
 // generated using the given reader, which must return random data.
 func (g goldilocks) GenerateKey(rand io.Reader) (priv []byte, pub []byte, err error) {
-	n := ed448.n
-	bitSize := n.BitLen()
+	bitSize := rho.BitLen()
 	byteLen := (bitSize + 7) >> 3
 	priv = make([]byte, byteLen)
 
@@ -47,7 +46,7 @@ func (g goldilocks) GenerateKey(rand io.Reader) (priv []byte, pub []byte, err er
 		priv[1] ^= 0x42
 
 		// If the scalar is out of range, sample another random number.
-		if new(big.Int).SetBytes(priv).Cmp(n) >= 0 {
+		if new(big.Int).SetBytes(priv).Cmp(rho) >= 0 {
 			continue
 		}
 
@@ -61,7 +60,7 @@ func (g goldilocks) GenerateKey(rand io.Reader) (priv []byte, pub []byte, err er
 
 // Marshal converts a point into the form specified in section 4.3.6 of ANSI X9.62.
 func marshal(curve curve, x, y *big.Int) []byte {
-	byteLen := (ed448.size + 7) >> 3
+	byteLen := (fieldSize + 7) >> 3
 
 	ret := make([]byte, 1+2*byteLen)
 	ret[0] = 4 // uncompressed point
@@ -76,7 +75,7 @@ func marshal(curve curve, x, y *big.Int) []byte {
 // Unmarshal converts a point, serialized by Marshal, into an x, y pair.
 // It is an error if the point is not on the curve. On error, x = nil.
 func unmarshal(curve curve, data []byte) (x, y *big.Int) {
-	byteLen := (ed448.size + 7) >> 3
+	byteLen := (fieldSize + 7) >> 3
 	if len(data) != 1+2*byteLen {
 		return
 	}

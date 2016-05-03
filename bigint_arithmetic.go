@@ -2,6 +2,15 @@ package ed448
 
 import "math/big"
 
+// Edwards curve domain parameters. See https://safecurves.cr.yp.to
+var (
+	prime     *big.Int // the order of the underlying field
+	rho       *big.Int // the order of the base point
+	edCons    *big.Int // the constant of the curve equation
+	gx, gy    *big.Int // (x,y) of the base point
+	fieldSize int      // the size of the underlying field
+)
+
 type curve interface {
 	isOnCurve(x, y interface{}) bool
 	add(x1, y1, x2, y2 interface{}) (x3, y3 interface{})
@@ -11,23 +20,18 @@ type curve interface {
 }
 
 type bigintsCurve struct {
-	p      *big.Int // the order of the underlying field
-	n      *big.Int // the order of the base point
-	b      *big.Int // the constant of the curve equation
-	gx, gy *big.Int // (x,y) of the base point
-	size   int      // the size of the underlying field
 }
 
 var ed448 bigintsCurve
 var zero, one, two *big.Int
 
 func init() {
-	ed448.p, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
-	ed448.n, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16)
-	ed448.b, _ = new(big.Int).SetString("-39081", 10)
-	ed448.gx, _ = new(big.Int).SetString("297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f", 16)
-	ed448.gy, _ = new(big.Int).SetString("13", 16)
-	ed448.size = 448
+	prime, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
+	rho, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16)
+	edCons, _ = new(big.Int).SetString("-39081", 10)
+	gx, _ = new(big.Int).SetString("297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f", 16)
+	gy, _ = new(big.Int).SetString("13", 16)
+	fieldSize = 448
 }
 
 func init() {
@@ -51,7 +55,7 @@ func isOnCurve(x, y *big.Int) bool {
 	y2 := square(y)
 
 	x2y2 := mul(x2, y2)
-	bx2y2 := mul(ed448.b, x2y2)
+	bx2y2 := mul(edCons, x2y2)
 
 	left := sum(x2, y2)
 	left = mod(left)
@@ -71,7 +75,7 @@ func add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
 
-	bx1x2y1y2 := mul(ed448.b, mul(x1, mul(x2, mul(y1, y2))))
+	bx1x2y1y2 := mul(edCons, mul(x1, mul(x2, mul(y1, y2))))
 	bx1x2y1y2 = mod(bx1x2y1y2)
 
 	x3 = mul(x1, y2)
@@ -143,7 +147,7 @@ func (c *bigintsCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
 
 //Returns k*G, where G is the base point of the group and k is an integer in big-endian form.
 func multiplyByBase(k []byte) (kx, ky *big.Int) {
-	return multiply(ed448.gx, ed448.gy, k)
+	return multiply(gx, gy, k)
 }
 
 func sum(x, y *big.Int) *big.Int {
@@ -163,9 +167,9 @@ func square(v *big.Int) *big.Int {
 }
 
 func mod(x *big.Int) *big.Int {
-	return new(big.Int).Mod(x, ed448.p)
+	return new(big.Int).Mod(x, prime)
 }
 
 func modInv(x *big.Int) *big.Int {
-	return new(big.Int).ModInverse(x, ed448.p)
+	return new(big.Int).ModInverse(x, prime)
 }

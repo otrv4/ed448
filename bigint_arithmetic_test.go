@@ -8,14 +8,14 @@ import (
 
 func (s *Ed448Suite) TestBasePointIsOnCurve(c *C) {
 	curve := newBigintsCurve()
-	c.Assert(curve.isOnCurve(ed448.gx, ed448.gy), Equals, true)
+	c.Assert(curve.isOnCurve(gx, gy), Equals, true)
 }
 
 func (s *Ed448Suite) TestAdd(c *C) {
 	curve := newBigintsCurve()
 
-	x2, y2 := curve.add(ed448.gx, ed448.gy, ed448.gx, ed448.gy)
-	x4, y4 := curve.add(ed448.gx, ed448.gy, x2, y2)
+	x2, y2 := curve.add(gx, gy, gx, gy)
+	x4, y4 := curve.add(gx, gy, x2, y2)
 
 	c.Assert(curve.isOnCurve(x2, y2), Equals, true)
 	c.Assert(curve.isOnCurve(x4, y4), Equals, true)
@@ -24,7 +24,7 @@ func (s *Ed448Suite) TestAdd(c *C) {
 func (s *Ed448Suite) TestDouble(c *C) {
 	curve := newBigintsCurve()
 
-	xd2, yd2 := curve.double(ed448.gx, ed448.gy)
+	xd2, yd2 := curve.double(gx, gy)
 	xd4, yd4 := curve.double(xd2, yd2)
 
 	c.Assert(curve.isOnCurve(xd2, yd2), Equals, true)
@@ -34,7 +34,7 @@ func (s *Ed448Suite) TestDouble(c *C) {
 func (s *Ed448Suite) TestMultiplication(c *C) {
 	curve := newBigintsCurve()
 
-	x2, y2 := curve.multiply(ed448.gx, ed448.gy, []byte{0x05})
+	x2, y2 := curve.multiply(gx, gy, []byte{0x05})
 
 	c.Assert(curve.isOnCurve(x2, y2), Equals, true)
 }
@@ -42,9 +42,9 @@ func (s *Ed448Suite) TestMultiplication(c *C) {
 func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
 	curve := newBigintsCurve()
 
-	addX, addY := curve.add(ed448.gx, ed448.gy, ed448.gx, ed448.gy)
-	doubleX, doubleY := curve.double(ed448.gx, ed448.gy)
-	xBy2, yBy2 := curve.multiply(ed448.gx, ed448.gy, []byte{2})
+	addX, addY := curve.add(gx, gy, gx, gy)
+	doubleX, doubleY := curve.double(gx, gy)
+	xBy2, yBy2 := curve.multiply(gx, gy, []byte{2})
 
 	c.Assert(addX, DeepEquals, doubleX)
 	c.Assert(addY, DeepEquals, doubleY)
@@ -65,7 +65,7 @@ func (s *Ed448Suite) TestBaseMultiplication(c *C) {
 func (s *Ed448Suite) BenchmarkAddition(c *C) {
 	curve := newBigintsCurve()
 	c.ResetTimer()
-	x, y := ed448.gx, ed448.gy
+	x, y := gx, gy
 	for i := 0; i < c.N; i++ {
 		rx, ry := curve.add(x, y, x, y)
 		x, y = rx.(*big.Int), ry.(*big.Int)
@@ -75,7 +75,7 @@ func (s *Ed448Suite) BenchmarkAddition(c *C) {
 func (s *Ed448Suite) BenchmarkDoubling(c *C) {
 	curve := newBigintsCurve()
 	c.ResetTimer()
-	x, y := ed448.gx, ed448.gy
+	x, y := gx, gy
 	for i := 0; i < c.N; i++ {
 		rx, ry := curve.double(x, y)
 		x, y = rx.(*big.Int), ry.(*big.Int)
@@ -85,7 +85,7 @@ func (s *Ed448Suite) BenchmarkDoubling(c *C) {
 func (s *Ed448Suite) BenchmarkMultiplication(c *C) {
 	curve := newBigintsCurve()
 	c.ResetTimer()
-	x, y := ed448.gx, ed448.gy
+	x, y := gx, gy
 	for i := 0; i < c.N; i++ {
 		rx, ry := curve.multiply(x, y, []byte{0x03})
 		x, y = rx.(*big.Int), ry.(*big.Int)
