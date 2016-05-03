@@ -3,12 +3,12 @@ package ed448
 import . "gopkg.in/check.v1"
 
 func (s *Ed448Suite) TestBasePointIsOnCurve(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 	c.Assert(ed448.IsOnCurve(ed448.Params().Gx, ed448.Params().Gy), Equals, true)
 }
 
 func (s *Ed448Suite) TestAdd(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 
 	x2, y2 := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, ed448.Params().Gx, ed448.Params().Gy)
 	x4, y4 := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, x2, y2)
@@ -18,7 +18,7 @@ func (s *Ed448Suite) TestAdd(c *C) {
 }
 
 func (s *Ed448Suite) TestDouble(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 
 	xd2, yd2 := ed448.Double(ed448.Params().Gx, ed448.Params().Gy)
 	xd4, yd4 := ed448.Double(xd2, yd2)
@@ -28,7 +28,7 @@ func (s *Ed448Suite) TestDouble(c *C) {
 }
 
 func (s *Ed448Suite) TestMultiplication(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 
 	x2, y2 := ed448.Multiply(ed448.Params().Gx, ed448.Params().Gy, []byte{0x05})
 
@@ -36,7 +36,7 @@ func (s *Ed448Suite) TestMultiplication(c *C) {
 }
 
 func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 
 	addX, addY := ed448.Add(ed448.Params().Gx, ed448.Params().Gy, ed448.Params().Gx, ed448.Params().Gy)
 	doubleX, doubleY := ed448.Double(ed448.Params().Gx, ed448.Params().Gy)
@@ -51,7 +51,7 @@ func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
 }
 
 func (s *Ed448Suite) TestBaseMultiplication(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 
 	x, y := ed448.MultiplyByBase([]byte{0x05})
 
@@ -59,7 +59,7 @@ func (s *Ed448Suite) TestBaseMultiplication(c *C) {
 }
 
 func (s *Ed448Suite) BenchmarkAddition(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 	c.ResetTimer()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
 	for i := 0; i < c.N; i++ {
@@ -68,7 +68,7 @@ func (s *Ed448Suite) BenchmarkAddition(c *C) {
 }
 
 func (s *Ed448Suite) BenchmarkDoubling(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 	c.ResetTimer()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
 	for i := 0; i < c.N; i++ {
@@ -77,7 +77,7 @@ func (s *Ed448Suite) BenchmarkDoubling(c *C) {
 }
 
 func (s *Ed448Suite) BenchmarkMultiplication(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 	c.ResetTimer()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
 	for i := 0; i < c.N; i++ {

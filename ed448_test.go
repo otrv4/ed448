@@ -15,7 +15,7 @@ type Ed448Suite struct{}
 var _ = Suite(&Ed448Suite{})
 
 func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
-	ed448 := Ed448()
+	ed448 := newEd448()
 	x, y := ed448.Params().Gx, ed448.Params().Gy
 
 	marshaled := Marshal(ed448, x, y)
@@ -32,7 +32,7 @@ func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 func (s *Ed448Suite) TestKeyGeneration(c *C) {
 	c.Skip("This is way to slow to run with big.Int arithmetic.")
 
-	ed448 := Ed448()
+	ed448 := newEd448()
 	random := getReader()
 
 	priv, pub, err := GenerateKey(ed448, random)
@@ -45,7 +45,7 @@ func (s *Ed448Suite) TestKeyGeneration(c *C) {
 }
 
 func getReader() io.Reader {
-	len := (Ed448().Params().N.BitLen() + 7)
+	len := (newEd448().Params().N.BitLen() + 7)
 	zeroes := make([]byte, len)
 	return bytes.NewReader(zeroes)
 }
