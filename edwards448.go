@@ -47,22 +47,18 @@ func Ed448() Curve {
 	return ed448
 }
 
-func (c *CurveParams) Params() *CurveParams {
-	return c
-}
-
 func (c *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	// x² + y² = 1 + bx²y²
-	x2 := new(big.Int).Mul(x, x)
-	y2 := new(big.Int).Mul(y, y)
+	x2 := square(x)
+	y2 := square(y)
 
-	x2y2 := new(big.Int).Mul(x2, y2)
-	bx2y2 := new(big.Int).Mul(c.B, x2y2)
+	x2y2 := mul(x2, y2)
+	bx2y2 := mul(c.B, x2y2)
 
-	left := new(big.Int).Add(x2, y2)
-	left.Mod(left, c.P)
-	right := new(big.Int).Add(big.NewInt(1), bx2y2)
-	right.Mod(right, c.P)
+	left := add(x2, y2)
+	left = mod(left, c.P)
+	right := add(one(), bx2y2)
+	right = mod(right, c.P)
 
 	return left.Cmp(right) == 0
 }
@@ -72,21 +68,20 @@ func (c *CurveParams) Add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
 
-	bx1x2y1y2 := new(big.Int).Mul(
-		c.B, new(big.Int).Mul(x1, new(big.Int).Mul(x2, new(big.Int).Mul(y1, y2))))
-	bx1x2y1y2.Mod(bx1x2y1y2, c.P)
+	bx1x2y1y2 := mul(c.B, mul(x1, mul(x2, mul(y1, y2))))
+	bx1x2y1y2 = mod(bx1x2y1y2, c.P)
 
-	x3 = new(big.Int).Mul(x1, y2)
-	x3.Add(x3, new(big.Int).Mul(x2, y1))
-	x3.Mod(x3, c.P)
-	divisor := new(big.Int).ModInverse(new(big.Int).Mod(new(big.Int).Add(big.NewInt(1), bx1x2y1y2), c.P), c.P)
-	x3.Mul(x3, divisor)
+	x3 = mul(x1, y2)
+	x3 = add(x3, mul(x2, y1))
+	x3 = mod(x3, c.P)
+	divisor := modInv(mod(add(one(), bx1x2y1y2), c.P), c.P)
+	x3 = mul(x3, divisor)
 
-	y3 = new(big.Int).Mul(y1, y2)
-	y3.Sub(y3, new(big.Int).Mul(x1, x2))
-	y3.Mod(y3, c.P)
-	divisor = new(big.Int).ModInverse(new(big.Int).Mod(new(big.Int).Sub(big.NewInt(1), bx1x2y1y2), c.P), c.P)
-	y3.Mul(y3, divisor)
+	y3 = mul(y1, y2)
+	y3 = sub(y3, mul(x1, x2))
+	y3 = mod(y3, c.P)
+	divisor = modInv(mod(sub(one(), bx1x2y1y2), c.P), c.P)
+	y3 = mul(y3, divisor)
 
 	return
 }
@@ -96,19 +91,19 @@ func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
 
-	x2plusy2 := new(big.Int).Add(new(big.Int).Mul(x1, x1), new(big.Int).Mul(y1, y1))
-	x2plusy2.Mod(x2plusy2, c.P)
+	x2plusy2 := add(mul(x1, x1), mul(y1, y1))
+	x2plusy2 = mod(x2plusy2, c.P)
 
-	x3 = new(big.Int).Mul(x1, y1)
+	x3 = mul(x1, y1)
 	x3.Lsh(x3, 1) // x3 = 2xy
-	x3.Mod(x3, c.P)
-	divisor := new(big.Int).ModInverse(x2plusy2, c.P)
-	x3.Mul(x3, divisor) // x3 = 2xy / x² + y²
+	x3 = mod(x3, c.P)
+	divisor := modInv(x2plusy2, c.P)
+	x3 = mul(x3, divisor) // x3 = 2xy / x² + y²
 
-	y3 = new(big.Int).Sub(new(big.Int).Mul(y1, y1), new(big.Int).Mul(x1, x1)) // y3 = y² - x²
-	y3.Mod(y3, c.P)
-	divisor = new(big.Int).ModInverse(new(big.Int).Mod(new(big.Int).Sub(big.NewInt(2), x2plusy2), c.P), c.P)
-	y3.Mul(y3, divisor) // y3 = y² - x² / 2 - x² - y²
+	y3 = sub(mul(y1, y1), mul(x1, x1)) // y3 = y² - x²
+	y3 = mod(y3, c.P)
+	divisor = modInv(mod(sub(two(), x2plusy2), c.P), c.P)
+	y3 = mul(y3, divisor) // y3 = y² - x² / 2 - x² - y²
 
 	return
 }
@@ -116,13 +111,14 @@ func (c *CurveParams) Double(x1, y1 *big.Int) (x3, y3 *big.Int) {
 func (c *CurveParams) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 	kx, ky = x, y
 	n := new(big.Int).SetBytes(k)
-	for n.Cmp(big.NewInt(0)) > 0 {
-		if new(big.Int).Mod(n, big.NewInt(2)).Cmp(big.NewInt(0)) == 0 {
+
+	for n.Cmp(zero()) > 0 {
+		if mod(n, two()).Cmp(zero()) == 0 {
 			kx, ky = c.Double(kx, ky)
-			n.Sub(n, big.NewInt(2))
+			n = sub(n, two())
 		} else {
 			kx, ky = c.Add(kx, ky, x, y)
-			n.Sub(n, big.NewInt(1))
+			n = sub(n, one())
 		}
 	}
 	return
@@ -131,4 +127,44 @@ func (c *CurveParams) Multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
 func (c *CurveParams) MultiplyByBase(k []byte) (kx, ky *big.Int) {
 	kx, ky = c.Multiply(c.Params().Gx, c.Params().Gy, k)
 	return
+}
+
+func (c *CurveParams) Params() *CurveParams {
+	return c
+}
+
+func add(x, y *big.Int) *big.Int {
+	return new(big.Int).Add(x, y)
+}
+
+func sub(x, y *big.Int) *big.Int {
+	return new(big.Int).Sub(x, y)
+}
+
+func mul(x, y *big.Int) *big.Int {
+	return new(big.Int).Mul(x, y)
+}
+
+func square(v *big.Int) *big.Int {
+	return new(big.Int).Mul(v, v)
+}
+
+func mod(x, y *big.Int) *big.Int {
+	return new(big.Int).Mod(x, y)
+}
+
+func modInv(x, y *big.Int) *big.Int {
+	return new(big.Int).ModInverse(x, y)
+}
+
+func zero() *big.Int {
+	return big.NewInt(0)
+}
+
+func one() *big.Int {
+	return big.NewInt(1)
+}
+
+func two() *big.Int {
+	return big.NewInt(2)
 }
