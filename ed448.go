@@ -15,7 +15,7 @@ func GenerateKey(curve Curve, rand io.Reader) (priv []byte, pub []byte, err erro
 	byteLen := (bitSize + 7) >> 3
 	priv = make([]byte, byteLen)
 
-	x, y := new(big.Int), new(big.Int)
+	var x, y *big.Int
 
 	for x == nil {
 		_, err = io.ReadFull(rand, priv)
@@ -38,7 +38,6 @@ func GenerateKey(curve Curve, rand io.Reader) (priv []byte, pub []byte, err erro
 	}
 
 	pub = Marshal(curve, x, y)
-
 	return
 }
 
