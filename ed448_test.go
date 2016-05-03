@@ -18,12 +18,12 @@ func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 	ed448 := newEd448()
 	x, y := ed448.gx, ed448.gy
 
-	marshaled := Marshal(ed448, x, y)
+	marshaled := marshal(ed448, x, y)
 
 	uncompressedForm := uint8(4)
 	c.Assert(marshaled[0], Equals, uncompressedForm)
 
-	ux, uy := Unmarshal(ed448, marshaled)
+	ux, uy := unmarshal(ed448, marshaled)
 
 	c.Assert(x, DeepEquals, ux)
 	c.Assert(y, DeepEquals, uy)
@@ -32,14 +32,12 @@ func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 func (s *Ed448Suite) TestKeyGeneration(c *C) {
 	c.Skip("This is way to slow to run with big.Int arithmetic.")
 
-	ed448 := newEd448()
-	random := getReader()
+	goldilocks := NewGoldilocks()
 
-	priv, pub, err := GenerateKey(ed448, random)
+	priv, pub, err := goldilocks.GenerateKey(getReader())
 
 	c.Assert(err, Equals, nil)
-
-	px, py := Unmarshal(ed448, pub)
+	px, py := unmarshal(ed448, pub)
 	c.Assert(priv[1] > 0, Equals, true)
 	c.Assert(ed448.isOnCurve(px, py), Equals, true)
 }
