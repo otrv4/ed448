@@ -1,46 +1,50 @@
 package ed448
 
-import . "gopkg.in/check.v1"
+import (
+	"math/big"
+
+	. "gopkg.in/check.v1"
+)
 
 func (s *Ed448Suite) TestBasePointIsOnCurve(c *C) {
-	ed448 := newEd448()
-	c.Assert(ed448.isOnCurve(ed448.gx, ed448.gy), Equals, true)
+	curve := newBigintsCurve()
+	c.Assert(curve.isOnCurve(ed448.gx, ed448.gy), Equals, true)
 }
 
 func (s *Ed448Suite) TestAdd(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 
-	x2, y2 := ed448.add(ed448.gx, ed448.gy, ed448.gx, ed448.gy)
-	x4, y4 := ed448.add(ed448.gx, ed448.gy, x2, y2)
+	x2, y2 := curve.add(ed448.gx, ed448.gy, ed448.gx, ed448.gy)
+	x4, y4 := curve.add(ed448.gx, ed448.gy, x2, y2)
 
-	c.Assert(ed448.isOnCurve(x2, y2), Equals, true)
-	c.Assert(ed448.isOnCurve(x4, y4), Equals, true)
+	c.Assert(curve.isOnCurve(x2, y2), Equals, true)
+	c.Assert(curve.isOnCurve(x4, y4), Equals, true)
 }
 
 func (s *Ed448Suite) TestDouble(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 
-	xd2, yd2 := ed448.double(ed448.gx, ed448.gy)
-	xd4, yd4 := ed448.double(xd2, yd2)
+	xd2, yd2 := curve.double(ed448.gx, ed448.gy)
+	xd4, yd4 := curve.double(xd2, yd2)
 
-	c.Assert(ed448.isOnCurve(xd2, yd2), Equals, true)
-	c.Assert(ed448.isOnCurve(xd4, yd4), Equals, true)
+	c.Assert(curve.isOnCurve(xd2, yd2), Equals, true)
+	c.Assert(curve.isOnCurve(xd4, yd4), Equals, true)
 }
 
 func (s *Ed448Suite) TestMultiplication(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 
-	x2, y2 := ed448.multiply(ed448.gx, ed448.gy, []byte{0x05})
+	x2, y2 := curve.multiply(ed448.gx, ed448.gy, []byte{0x05})
 
-	c.Assert(ed448.isOnCurve(x2, y2), Equals, true)
+	c.Assert(curve.isOnCurve(x2, y2), Equals, true)
 }
 
 func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 
-	addX, addY := ed448.add(ed448.gx, ed448.gy, ed448.gx, ed448.gy)
-	doubleX, doubleY := ed448.double(ed448.gx, ed448.gy)
-	xBy2, yBy2 := ed448.multiply(ed448.gx, ed448.gy, []byte{2})
+	addX, addY := curve.add(ed448.gx, ed448.gy, ed448.gx, ed448.gy)
+	doubleX, doubleY := curve.double(ed448.gx, ed448.gy)
+	xBy2, yBy2 := curve.multiply(ed448.gx, ed448.gy, []byte{2})
 
 	c.Assert(addX, DeepEquals, doubleX)
 	c.Assert(addY, DeepEquals, doubleY)
@@ -51,36 +55,39 @@ func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
 }
 
 func (s *Ed448Suite) TestBaseMultiplication(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 
-	x, y := ed448.multiplyByBase([]byte{0x05})
+	x, y := curve.multiplyByBase([]byte{0x05})
 
-	c.Assert(ed448.isOnCurve(x, y), Equals, true)
+	c.Assert(curve.isOnCurve(x, y), Equals, true)
 }
 
 func (s *Ed448Suite) BenchmarkAddition(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 	c.ResetTimer()
 	x, y := ed448.gx, ed448.gy
 	for i := 0; i < c.N; i++ {
-		x, y = ed448.add(x, y, x, y)
+		rx, ry := curve.add(x, y, x, y)
+		x, y = rx.(*big.Int), ry.(*big.Int)
 	}
 }
 
 func (s *Ed448Suite) BenchmarkDoubling(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 	c.ResetTimer()
 	x, y := ed448.gx, ed448.gy
 	for i := 0; i < c.N; i++ {
-		x, y = ed448.double(x, y)
+		rx, ry := curve.double(x, y)
+		x, y = rx.(*big.Int), ry.(*big.Int)
 	}
 }
 
 func (s *Ed448Suite) BenchmarkMultiplication(c *C) {
-	ed448 := newEd448()
+	curve := newBigintsCurve()
 	c.ResetTimer()
 	x, y := ed448.gx, ed448.gy
 	for i := 0; i < c.N; i++ {
-		x, y = ed448.multiply(x, y, []byte{0x03})
+		rx, ry := curve.multiply(x, y, []byte{0x03})
+		x, y = rx.(*big.Int), ry.(*big.Int)
 	}
 }
