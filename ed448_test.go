@@ -29,7 +29,7 @@ func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 	c.Assert(y, DeepEquals, uy)
 }
 
-func (s *Ed448Suite) TestKeyGeneration(c *C) {
+func (s *Ed448Suite) TestKeyGenerationWithBigintsArithmetic(c *C) {
 	c.Skip("This is way to slow to run with big.Int arithmetic.")
 
 	goldilocks := NewBigintsGoldilocks()
@@ -39,7 +39,7 @@ func (s *Ed448Suite) TestKeyGeneration(c *C) {
 	c.Assert(err, Equals, nil)
 	px, py := unmarshal(newBigintsCurve(), pub)
 	c.Assert(priv[1] > 0, Equals, true)
-	c.Assert(ed448.isOnCurve(px, py), Equals, true)
+	c.Assert(bisCurve.isOnCurve(px, py), Equals, true)
 }
 
 func getReader() io.Reader {
