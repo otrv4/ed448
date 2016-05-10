@@ -37,17 +37,7 @@ func (c *bytesCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
 }
 
 func sum(a, b []byte) []byte {
-	var a16, b16, s uint32
-	r := bytes.NewReader(a)
-	binary.Read(r, binary.LittleEndian, &a16)
-	r = bytes.NewReader(b)
-	binary.Read(r, binary.LittleEndian, &b16)
-
-	s = a16 + b16
-
-	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, s)
-	return buf.Bytes()
+	return writeBytes(readUint32(a) + readUint32(b))
 }
 
 func mul(a, b []byte) []byte {
@@ -63,4 +53,17 @@ func mul(a, b []byte) []byte {
 		return c
 	*/
 	return make([]byte, 1)
+}
+
+func readUint32(a []byte) uint32 {
+	var a32 uint32
+	b := bytes.NewReader(a)
+	binary.Read(b, binary.LittleEndian, &a32)
+	return a32
+}
+
+func writeBytes(a uint32) []byte {
+	b := new(bytes.Buffer)
+	binary.Write(b, binary.LittleEndian, a)
+	return b.Bytes()
 }
