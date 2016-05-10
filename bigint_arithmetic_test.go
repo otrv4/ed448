@@ -6,7 +6,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) TestBasePointIsOnCurve(c *C) {
+func (s *Ed448Suite) TestBigintsBasePointIsOnCurve(c *C) {
 	curve := newBigintsCurve()
 	c.Assert(curve.isOnCurve(gx, gy), Equals, true)
 }

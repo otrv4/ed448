@@ -2,16 +2,8 @@ package ed448
 
 import "math/big"
 
-// Edwards curve domain parameters. See https://safecurves.cr.yp.to
-var (
-	prime     *big.Int // the order of the underlying field
-	rho       *big.Int // the order of the base point
-	edCons    *big.Int // the constant of the curve equation
-	gx, gy    *big.Int // (x,y) of the base point
-	fieldSize int      // the size of the underlying field
-)
-
 type curve interface {
+	// Reports whether the given (x,y) lies on the bigintsCurve.
 	isOnCurve(x, y interface{}) bool
 	add(x1, y1, x2, y2 interface{}) (x3, y3 interface{})
 	double(x1, y1 interface{}) (x3, y3 interface{})
@@ -22,8 +14,18 @@ type curve interface {
 type bigintsCurve struct {
 }
 
-var ed448 bigintsCurve
+var bisCurve bigintsCurve
+
 var zero, one, two *big.Int
+
+// Edwards curve domain parameters. See https://safecurves.cr.yp.to
+var (
+	prime     *big.Int // the order of the underlying field
+	rho       *big.Int // the order of the base point
+	edCons    *big.Int // the constant of the curve equation
+	gx, gy    *big.Int // (x,y) of the base point
+	fieldSize int      // the size of the underlying field
+)
 
 func init() {
 	prime, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
@@ -41,135 +43,118 @@ func init() {
 }
 
 func newBigintsCurve() curve {
-	return &ed448
+	return &bisCurve
 }
 
 func (c *bigintsCurve) isOnCurve(x, y interface{}) bool {
-	return isOnCurve(x.(*big.Int), y.(*big.Int))
-}
-
-// Reports whether the given (x,y) lies on the bigintsCurve.
-func isOnCurve(x, y *big.Int) bool {
 	// x² + y² = 1 + bx²y²
-	x2 := square(x)
-	y2 := square(y)
+	x2 := squareBigints(x.(*big.Int))
+	y2 := squareBigints(y.(*big.Int))
 
-	x2y2 := mul(x2, y2)
-	bx2y2 := mul(edCons, x2y2)
+	x2y2 := mulBigints(x2, y2)
+	bx2y2 := mulBigints(edCons, x2y2)
 
-	left := sum(x2, y2)
-	left = mod(left)
-	right := sum(one, bx2y2)
-	right = mod(right)
+	left := sumBigints(x2, y2)
+	left = modBigints(left)
+	right := sumBigints(one, bx2y2)
+	right = modBigints(right)
 
 	return left.Cmp(right) == 0
 }
 
-func (c *bigintsCurve) add(x1, y1, x2, y2 interface{}) (x3, y3 interface{}) {
-	return add(x1.(*big.Int), y1.(*big.Int), x2.(*big.Int), y2.(*big.Int))
-}
-
 // Returns the sum of (x1,y1) and (x2,y2)
-func add(x1, y1, x2, y2 *big.Int) (x3, y3 *big.Int) {
+func (c *bigintsCurve) add(x1, y1, x2, y2 interface{}) (x3, y3 interface{}) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
 
-	bx1x2y1y2 := mul(edCons, mul(x1, mul(x2, mul(y1, y2))))
-	bx1x2y1y2 = mod(bx1x2y1y2)
+	x1x2 := mulBigints(x1.(*big.Int), x2.(*big.Int))
+	y1y2 := mulBigints(y1.(*big.Int), y2.(*big.Int))
+	bx1x2y1y2 := mulBigints(edCons, mulBigints(x1x2, y1y2))
+	bx1x2y1y2 = modBigints(bx1x2y1y2)
 
-	x3 = mul(x1, y2)
-	x3 = sum(x3, mul(x2, y1))
-	x3 = mod(x3)
-	divisor := modInv(mod(sum(one, bx1x2y1y2)))
-	x3 = mul(x3, divisor)
+	x1y2 := mulBigints(x1.(*big.Int), y2.(*big.Int))
+	x2y1 := mulBigints(x2.(*big.Int), y1.(*big.Int))
+	x3 = sumBigints(x1y2, x2y1)
+	x3 = modBigints(x3.(*big.Int))
+	divisor := modInvBigints(modBigints(sumBigints(one, bx1x2y1y2)))
+	x3 = mulBigints(x3.(*big.Int), divisor)
 
-	y3 = mul(y1, y2)
-	y3 = sub(y3, mul(x1, x2))
-	y3 = mod(y3)
-	divisor = modInv(mod(sub(one, bx1x2y1y2)))
-	y3 = mul(y3, divisor)
+	y3 = subBigints(y1y2, x1x2)
+	y3 = modBigints(y3.(*big.Int))
+	divisor = modInvBigints(modBigints(subBigints(one, bx1x2y1y2)))
+	y3 = mulBigints(y3.(*big.Int), divisor)
 
-	return
-}
-
-func (c *bigintsCurve) double(x1, y1 interface{}) (x3, y3 interface{}) {
-	return double(x1.(*big.Int), y1.(*big.Int))
+	return x3.(*big.Int), y3.(*big.Int)
 }
 
 //Returns 2*(x,y)
-func double(x1, y1 *big.Int) (x3, y3 *big.Int) {
+func (c *bigintsCurve) double(x, y interface{}) (x2, y2 interface{}) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
 
-	x2plusy2 := sum(mul(x1, x1), mul(y1, y1))
-	x2plusy2 = mod(x2plusy2)
+	x1, y1 := x.(*big.Int), y.(*big.Int)
+	x2plusy2 := sumBigints(mulBigints(x1, x1), mulBigints(y1, y1))
+	x2plusy2 = modBigints(x2plusy2)
 
-	x3 = mul(x1, y1)
+	x3 := mulBigints(x1, y1)
 	x3.Lsh(x3, 1) // x3 = 2xy
-	x3 = mod(x3)
-	divisor := modInv(x2plusy2)
-	x3 = mul(x3, divisor) // x3 = 2xy / x² + y²
+	x3 = modBigints(x3)
+	divisor := modInvBigints(x2plusy2)
+	x3 = mulBigints(x3, divisor) // x3 = 2xy / x² + y²
 
-	y3 = sub(mul(y1, y1), mul(x1, x1)) // y3 = y² - x²
-	y3 = mod(y3)
-	divisor = modInv(mod(sub(two, x2plusy2)))
-	y3 = mul(y3, divisor) // y3 = y² - x² / 2 - x² - y²
+	y3 := subBigints(mulBigints(y1, y1), mulBigints(x1, x1)) // y3 = y² - x²
+	y3 = modBigints(y3)
+	divisor = modInvBigints(modBigints(subBigints(two, x2plusy2)))
+	y3 = mulBigints(y3, divisor) // y3 = y² - x² / 2 - x² - y²
 
+	x2, y2 = x3, y3
 	return
 }
 
-func (c *bigintsCurve) multiply(x, y interface{}, k []byte) (kx, ky interface{}) {
-	return multiply(x.(*big.Int), y.(*big.Int), k)
-}
-
 //Performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
-func multiply(x, y *big.Int, k []byte) (kx, ky *big.Int) {
-	kx, ky = x, y
+func (c *bigintsCurve) multiply(x, y interface{}, k []byte) (kx, ky interface{}) {
+	kx, ky = x.(*big.Int), y.(*big.Int)
 	n := new(big.Int).SetBytes(k)
 
 	for n.Cmp(zero) > 0 {
 		if new(big.Int).Mod(n, two).Cmp(zero) == 0 {
-			kx, ky = double(kx, ky)
-			n = sub(n, two)
+			kx, ky = c.double(kx, ky)
+			n = subBigints(n, two)
 		} else {
-			kx, ky = add(kx, ky, x, y)
-			n = sub(n, one)
+			kx, ky = c.add(kx, ky, kx, ky)
+			n = subBigints(n, one)
 		}
 	}
 	return
 }
 
-func (c *bigintsCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
-	return multiplyByBase(k)
-}
-
 //Returns k*G, where G is the base point of the group and k is an integer in big-endian form.
-func multiplyByBase(k []byte) (kx, ky *big.Int) {
-	return multiply(gx, gy, k)
+func (c *bigintsCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
+	return c.multiply(gx, gy, k)
 }
 
-func sum(x, y *big.Int) *big.Int {
+func sumBigints(x, y *big.Int) *big.Int {
 	return new(big.Int).Add(x, y)
 }
 
-func sub(x, y *big.Int) *big.Int {
+func subBigints(x, y *big.Int) *big.Int {
 	return new(big.Int).Sub(x, y)
 }
 
-func mul(x, y *big.Int) *big.Int {
+func mulBigints(x, y *big.Int) *big.Int {
 	return new(big.Int).Mul(x, y)
 }
 
-func square(v *big.Int) *big.Int {
+func squareBigints(v *big.Int) *big.Int {
 	return new(big.Int).Mul(v, v)
 }
 
-func mod(x *big.Int) *big.Int {
+func modBigints(x *big.Int) *big.Int {
 	return new(big.Int).Mod(x, prime)
 }
 
-func modInv(x *big.Int) *big.Int {
+func modInvBigints(x *big.Int) *big.Int {
 	return new(big.Int).ModInverse(x, prime)
 }
