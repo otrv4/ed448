@@ -15,9 +15,17 @@ func newBytesCurve() curve {
 }
 
 func (c *bytesCurve) isOnCurve(x, y interface{}) bool {
-	//x2 := x.([]byte) << 1
-	//y2 := y.([]byte) << 1
-	return false
+	// x² + y² = 1 + bx²y²
+	//hex representation for 39081
+	edsCons := []byte{0x98, 0xA9, 0x0, 0x0}
+	x32, y32 := x.([]byte), y.([]byte)
+	x2 := mul(x32, x32)
+	y2 := mul(y32, y32)
+	x2y2 := mul(x2, y2)
+	bx2y2 := mul(edsCons, x2y2)
+	left := sum(x2, y2)
+	right := sub([]byte{0x1, 0x0, 0x0, 0x0}, bx2y2)
+	return bytes.Compare(left, right) == 0
 }
 
 func (c *bytesCurve) add(x1, y1, x2, y2 interface{}) (x3, y3 interface{}) {
@@ -38,6 +46,10 @@ func (c *bytesCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
 
 func sum(a, b []byte) []byte {
 	return writeBytes(readUint32(a) + readUint32(b))
+}
+
+func sub(a, b []byte) []byte {
+	return writeBytes(readUint32(a) - readUint32(b))
 }
 
 func mul(a, b []byte) []byte {
