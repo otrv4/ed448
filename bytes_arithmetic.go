@@ -41,18 +41,15 @@ func sum(a, b []byte) []byte {
 }
 
 func mul(a, b []byte) []byte {
-	/*
-		c := 0
-		for bytes.Compare(a, 1) > 0 {
-			if a[len(a)-1] == 1 {
-				c = sum(a, c)
-			}
-			a = a >> 1
-			b = b << 1
+	a32, b32, accum := readUint32(a), readUint32(b), uint32(0)
+	for a32 > 0 {
+		if a32%2 != 0 {
+			accum += b32
 		}
-		return c
-	*/
-	return make([]byte, 1)
+		a32 = a32 >> 1
+		b32 = b32 << 1
+	}
+	return writeBytes(accum)
 }
 
 func readUint32(a []byte) uint32 {
