@@ -4,9 +4,17 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+func (s *Ed448Suite) TestDeserialize(c *C) {
+	b := serialized{0x1}
+	n, ok := deserialize(b)
+
+	c.Assert(n, DeepEquals, bigNumber{1})
+	c.Assert(ok, Equals, true)
+}
+
 func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 	//p (little-endian)
-	p := [8]word{
+	p := bigNumber{
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -17,7 +25,8 @@ func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 		0xffffffffffffff,
 	}
 
-	greaterThanP := [8]word{
+	greaterThanP := bigNumber{
+
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -28,7 +37,7 @@ func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 		0xffffffffffffff,
 	}
 
-	lesserThanP := [8]word{
+	lesserThanP := bigNumber{
 		0xfffffffffffffe,
 		0xffffffffffffff,
 		0xffffffffffffff,

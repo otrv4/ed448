@@ -1,32 +1,51 @@
 package ed448
 
 const (
-	radix = 56
-	limbs = 8
+	Limbs = 8
+	Radix = 56
 )
 
 type word uint64
-type bigNumber [limbs]word
+type limb word
+type bigNumber [Limbs]limb
+type serialized [Radix]byte
+
+func deserialize(in serialized) (n bigNumber, ok bool) {
+	const (
+		columns = Limbs
+		rows    = Limbs - 1
+	)
+
+	for i := uint(0); i < columns; i++ {
+		for j := uint(0); j < rows; j++ {
+			n[i] |= limb(in[rows*i+j]) << (columns * j)
+		}
+	}
+
+	ok = !constantTimeGreaterOrEqualP(n)
+
+	return
+}
 
 //TODO: Make this work with a word parameter
 func isZero(n int64) int64 {
 	return ^n
 }
 
-func constantTimeGreaterOrEqualP(n [limbs]word) bool {
+func constantTimeGreaterOrEqualP(n bigNumber) bool {
 	var (
-		ge   = word(0xffffffffffffffff)
-		mask = word(0xffffffffffffff)
+		ge   = int64(-1)
+		mask = int64(1)<<Radix - 1
 	)
 
 	for i := 0; i < 4; i++ {
-		ge &= n[i]
+		ge &= int64(n[i])
 	}
 
-	ge = (ge & (n[4] + 1)) | word(isZero(int64(n[4]^mask)))
+	ge = (ge & (int64(n[4]) + 1)) | isZero(int64(n[4])^mask)
 
 	for i := 5; i < 8; i++ {
-		ge &= n[i]
+		ge &= int64(n[i])
 	}
 
 	return ge == mask
@@ -34,8 +53,8 @@ func constantTimeGreaterOrEqualP(n [limbs]word) bool {
 
 func serialize(dst []byte, src bigNumber) {
 	const (
-		rows    = limbs
-		columns = radix / limbs
+		rows    = Limbs
+		columns = Radix / Limbs
 	)
 
 	var n bigNumber
