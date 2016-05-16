@@ -6,7 +6,7 @@ import (
 
 func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 	//p (little-endian)
-	p := [8]int64{
+	p := [8]word{
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -17,7 +17,7 @@ func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 		0xffffffffffffff,
 	}
 
-	greaterThanP := [8]int64{
+	greaterThanP := [8]word{
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -28,7 +28,7 @@ func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 		0xffffffffffffff,
 	}
 
-	lesserThanP := [8]int64{
+	lesserThanP := [8]word{
 		0xfffffffffffffe,
 		0xffffffffffffff,
 		0xffffffffffffff,
