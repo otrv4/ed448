@@ -8,21 +8,22 @@ const (
 type word uint64
 type bigNumber [limbs]word
 
+//TODO: Make this work with a word parameter
 func isZero(n int64) int64 {
 	return ^n
 }
 
-func constantTimeGreaterOrEqualP(n [limbs]int64) bool {
+func constantTimeGreaterOrEqualP(n [limbs]word) bool {
 	var (
-		ge   = int64(-1)
-		mask = int64(1)<<radix - 1
+		ge   = word(0xffffffffffffffff)
+		mask = word(0xffffffffffffff)
 	)
 
 	for i := 0; i < 4; i++ {
 		ge &= n[i]
 	}
 
-	ge = (ge & (n[4] + 1)) | isZero(n[4]^mask)
+	ge = (ge & (n[4] + 1)) | word(isZero(int64(n[4]^mask)))
 
 	for i := 5; i < 8; i++ {
 		ge &= n[i]
