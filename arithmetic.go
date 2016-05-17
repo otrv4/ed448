@@ -93,6 +93,15 @@ type limb Word
 type bigNumber [Limbs]limb
 type serialized [Radix]byte
 
+func mustDeserialize(in serialized) bigNumber {
+	n, ok := deserialize(in)
+	if !ok {
+		panic("Failed to deserialize")
+	}
+
+	return n
+}
+
 func deserialize(in serialized) (n bigNumber, ok bool) {
 	const (
 		columns = Limbs
