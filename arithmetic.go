@@ -143,23 +143,12 @@ func Mac(x, y Word, acc DWord) DWord {
 	return DWord{h: z11, l: z0}
 }
 
-//z = a - b
-func SubDWord(a, b DWord) (z DWord, c Word) {
-	xi := a.l
-	yi := b.l
-	zi := xi - yi
-
-	z.l = zi
+//z = x - y
+func SubDWord(x, y DWord) (z DWord) {
+	z.l = x.l - y.l
 	// see "Hacker's Delight", section 2-12 (overflow detection)
-	c = (yi&^xi | (yi|^xi)&zi) >> (_W - 1)
-
-	xi = a.h
-	yi = b.h
-	zi = xi - yi - c
-
-	z.h = zi
-	// see "Hacker's Delight", section 2-12 (overflow detection)
-	c = (yi&^xi | (yi|^xi)&zi) >> (_W - 1)
+	c := (y.l&^x.l | (y.l|^x.l)&z.l) >> (_W - 1)
+	z.h = x.h - y.h - c
 
 	return
 }
@@ -181,9 +170,9 @@ func AddDWord(a, b DWord) (z DWord) {
 	return
 }
 
-func Msb(a, b Word, acc DWord) (DWord, Word) {
+func Msb(a, b Word, acc DWord) DWord {
 	d := WideMul(a, b)
-	return SubDWord(d, acc)
+	return SubDWord(acc, d)
 }
 
 func wideMul(x, y limb) DWord {
@@ -194,7 +183,7 @@ func mac(x, y limb, acc DWord) DWord {
 	return Mac(Word(x), Word(y), acc)
 }
 
-func msb(x, y limb, acc DWord) (DWord, Word) {
+func msb(x, y limb, acc DWord) DWord {
 	return Msb(Word(x), Word(y), acc)
 }
 
@@ -226,7 +215,7 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1 = mac(a[7], b[4], accum1)
 
 	//If borrow != 0, we should panic?
-	accum0, _ = SubDWord(accum0, accum2)
+	accum0 = SubDWord(accum0, accum2)
 	accum1 = AddDWord(accum1, accum2)
 
 	c[3] = limb(accum1.l & mask)
@@ -247,20 +236,19 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum0 = mac(aa[3], bb[1], accum0)
 
 	accum1 = AddDWord(accum1, accum0)
-
 	accum2 = wideMul(a[0], b[0])
-	accum1, _ = SubDWord(accum1, accum2)
+	accum1 = SubDWord(accum1, accum2)
 	accum0 = AddDWord(accum0, accum2)
 
-	accum0, _ = msb(a[1], b[3], accum0)
-	accum0, _ = msb(a[2], b[2], accum0)
+	accum0 = msb(a[1], b[3], accum0)
+	accum0 = msb(a[2], b[2], accum0)
 	accum1 = mac(a[7], b[5], accum1)
-	accum0, _ = msb(a[3], b[1], accum0)
+	accum0 = msb(a[3], b[1], accum0)
 	accum1 = mac(aa[0], bb[0], accum1)
 	accum0 = mac(a[4], b[4], accum0)
 
 	//c[3+i], c[3+i mod 7]
-	c[0] = limb(accum0.l & mask) // THIS IS WRONG
+	c[0] = limb(accum0.l & mask)
 	c[4] = limb(accum1.l & mask)
 
 	accum0.l >>= 56
@@ -287,10 +275,10 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1 = mac(aa[1], bb[0], accum1)
 	accum0 = mac(a[5], b[4], accum0)
 
-	accum1, _ = SubDWord(accum1, accum2)
+	accum1 = SubDWord(accum1, accum2)
 	accum0 = AddDWord(accum0, accum2)
 
-	c[1] = limb(accum0.l & mask) // THIS IS WRONG
+	c[1] = limb(accum0.l & mask)
 	c[5] = limb(accum1.l & mask)
 
 	accum0.l >>= 56
@@ -317,10 +305,10 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1 = mac(aa[2], bb[0], accum1)
 	accum0 = mac(a[6], b[4], accum0)
 
-	accum1, _ = SubDWord(accum1, accum2)
+	accum1 = SubDWord(accum1, accum2)
 	accum0 = AddDWord(accum0, accum2)
 
-	c[2] = limb(accum0.l & mask) // THIS IS WRONG
+	c[2] = limb(accum0.l & mask)
 	c[6] = limb(accum1.l & mask)
 
 	accum0.l >>= 56
