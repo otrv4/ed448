@@ -2,55 +2,69 @@ package ed448
 
 import "math/big"
 
-const (
-	// the size of the underlying field
-	fieldSize = 448 // I dont think this is specific to bigInt representation
-)
-
-//XXX Why having an unexported interface?
-type curve interface {
-	// Reports whether the given (x,y) lies on the bigintsCurve.
-	isOnCurve(x, y interface{}) bool
-	add(x1, y1, x2, y2 interface{}) (x3, y3 interface{})
-	double(x1, y1 interface{}) (x3, y3 interface{})
-	multiply(x, y interface{}, k []byte) (kx, ky interface{})
-	multiplyByBase(k []byte) (kx, ky interface{})
+//XXX Why having a class at all and not just exported methods?
+type radixCurve struct {
+	zero, one, two             bigNumber
+	prime, rho, edCons, gx, gy bigNumber
 }
 
-type bigintsCurve struct {
-}
-
-var bisCurve bigintsCurve
-
-var zero, one, two *big.Int
-
-// Edwards curve domain parameters. See https://safecurves.cr.yp.to
-var (
-	prime  *big.Int // the order of the underlying field
-	rho    *big.Int // the order of the base point
-	edCons *big.Int // the constant of the curve equation
-	gx, gy *big.Int // (x,y) of the base point
-)
+var rCurve radixCurve
 
 func init() {
-	prime, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
-	rho, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16)
-	edCons, _ = new(big.Int).SetString("-39081", 10)
-	gx, _ = new(big.Int).SetString("297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f", 16)
-	gy, _ = new(big.Int).SetString("13", 16)
+	rCurve = radixCurve{
+		//???
+		zero: bigNumber{},
+		one:  bigNumber{},
+		two:  bigNumber{},
+
+		//XXX This is in 64-bits, need to use serialize
+		prime: bigNumber{
+			0xffffffffffffff,
+			0xffffffffffffff,
+			0xffffffffffffff,
+			0xffffffffffffff,
+			0xfffffffffffffe,
+			0xffffffffffffff,
+			0xffffffffffffff,
+			0xffffffffffffff,
+		},
+
+		//XXX This is in 64-bits, need to use serialize
+		rho: bigNumber{
+			0x78c292ab5844f3,
+			0xc2728dc58f5523,
+			0x49aed63690216c,
+			0x7cca23e9c44edb,
+			0xffffffffffffff,
+			0xffffffffffffff,
+			0xffffffffffffff,
+			0x3fffffffffffff,
+		},
+
+		edCons: bigNumber{},
+		gx:     bigNumber{},
+		gy:     bigNumber{},
+	}
+
+	//prime, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
+	//rho, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16)
+	//edCons, _ = new(big.Int).SetString("-39081", 10)
+	//gx, _ = new(big.Int).SetString("297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f", 16)
+	//gy, _ = new(big.Int).SetString("13", 16)
+	//fieldSize = 448
 }
 
-func init() {
-	zero = big.NewInt(0)
-	one = big.NewInt(1)
-	two = big.NewInt(2)
+//func init() {
+//	zero = big.NewInt(0)
+//	one = big.NewInt(1)
+//	two = big.NewInt(2)
+//}
+
+func newRadixCurve() curve {
+	return &rCurve
 }
 
-func newBigintsCurve() curve {
-	return &bisCurve
-}
-
-func (c *bigintsCurve) isOnCurve(x, y interface{}) bool {
+func (c *radixCurve) isOnCurve(x, y interface{}) bool {
 	// x² + y² = 1 + bx²y²
 	x2 := squareBigints(x.(*big.Int))
 	y2 := squareBigints(y.(*big.Int))
@@ -67,7 +81,7 @@ func (c *bigintsCurve) isOnCurve(x, y interface{}) bool {
 }
 
 // Returns the sum of (x1,y1) and (x2,y2)
-func (c *bigintsCurve) add(x1, y1, x2, y2 interface{}) (x3, y3 interface{}) {
+func (c *radixCurve) add(x1, y1, x2, y2 interface{}) (x3, y3 interface{}) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  x1y2 + y1x2 / 1 + bx1x2y1y2
 	// y3 =  y1y2 - x1x2 / 1 - bx1x2y1y2
@@ -93,7 +107,7 @@ func (c *bigintsCurve) add(x1, y1, x2, y2 interface{}) (x3, y3 interface{}) {
 }
 
 //Returns 2*(x,y)
-func (c *bigintsCurve) double(x, y interface{}) (x2, y2 interface{}) {
+func (c *radixCurve) double(x, y interface{}) (x2, y2 interface{}) {
 	// x² + y² = 1 + bx²y²
 	// x3 =  2xy / 1 + bx²y² = 2xy / x² + y²
 	// y3 =  y² - x² / 1 - bx²y² = y² - x² / 2 - x² - y²
@@ -118,7 +132,7 @@ func (c *bigintsCurve) double(x, y interface{}) (x2, y2 interface{}) {
 }
 
 //Performs a scalar multiplication and returns k*(Bx,By) where k is a number in big-endian form.
-func (c *bigintsCurve) multiply(x, y interface{}, k []byte) (kx, ky interface{}) {
+func (c *radixCurve) multiply(x, y interface{}, k []byte) (kx, ky interface{}) {
 	kx, ky = x.(*big.Int), y.(*big.Int)
 	n := new(big.Int).SetBytes(k)
 
@@ -135,30 +149,6 @@ func (c *bigintsCurve) multiply(x, y interface{}, k []byte) (kx, ky interface{})
 }
 
 //Returns k*G, where G is the base point of the group and k is an integer in big-endian form.
-func (c *bigintsCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
+func (c *radixCurve) multiplyByBase(k []byte) (kx, ky interface{}) {
 	return c.multiply(gx, gy, k)
-}
-
-func sumBigints(x, y *big.Int) *big.Int {
-	return new(big.Int).Add(x, y)
-}
-
-func subBigints(x, y *big.Int) *big.Int {
-	return new(big.Int).Sub(x, y)
-}
-
-func mulBigints(x, y *big.Int) *big.Int {
-	return new(big.Int).Mul(x, y)
-}
-
-func squareBigints(v *big.Int) *big.Int {
-	return new(big.Int).Mul(v, v)
-}
-
-func modBigints(x *big.Int) *big.Int {
-	return new(big.Int).Mod(x, prime)
-}
-
-func modInvBigints(x *big.Int) *big.Int {
-	return new(big.Int).ModInverse(x, prime)
 }

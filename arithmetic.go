@@ -89,13 +89,7 @@ func addDWord(a, b DWord) (z DWord) {
 //XXX Everything from here is specific to amd64 architecture
 //Should be moved to an architecture-specific file
 
-const (
-	Limbs = 8
-	Radix = 56
-)
-
-type word uint64
-type limb word
+type limb Word
 type bigNumber [Limbs]limb
 type serialized [Radix]byte
 
