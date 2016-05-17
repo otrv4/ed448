@@ -4,6 +4,16 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+func (s *Ed448Suite) TestWideMul(c *C) {
+	//No carry on multiplication
+	result := WideMul(Word(0x01), Word(0x02))
+	c.Assert(result, Equals, DWord{0, 0x02})
+
+	//With carry on multiplication
+	result = WideMul(Word(0xffffffffffffffff), Word(0x02))
+	c.Assert(result, Equals, DWord{0x01, 0xfffffffffffffffe})
+}
+
 func (s *Ed448Suite) TestGroupedOperations(c *C) {
 	//No carry on addition
 	result := multiplyAndAdd(DWord{0, 0x01}, Word(0xffffffffffffffff), Word(0x02))

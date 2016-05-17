@@ -109,13 +109,3 @@ func (s *Ed448Suite) TestSerialize(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	})
 }
-
-func (s *Ed448Suite) TestWideMul(c *C) {
-	//No carry on multiplication
-	result := WideMul(Word(0x01), Word(0x02))
-	c.Assert(result, Equals, DWord{0, 0x02})
-
-	//With carry on multiplication
-	result = WideMul(Word(0xffffffffffffffff), Word(0x02))
-	c.Assert(result, Equals, DWord{0x01, 0xfffffffffffffffe})
-}
