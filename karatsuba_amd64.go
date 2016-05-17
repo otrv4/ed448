@@ -1,15 +1,36 @@
 package ed448
 
+func WideMul(x, y Word) DWord {
+	z1, z0 := mulWW_g(x, y)
+	return DWord{h: z1, l: z0}
+}
+
+func multiplyAndAdd(to DWord, x, y Word) (z DWord) {
+	var z1 Word
+	z1, z.l = mulAddWWW_g(x, y, to.l)
+	z.h = z1 + to.h
+
+	//XXX Should we panic on overflow?
+	//if z11 < z1 { panic() }
+
+	return
+}
+
+func multiplyAndSubtract(from DWord, a, b Word) DWord {
+	d := WideMul(a, b)
+	return subDWord(from, d)
+}
+
 func wideMul(x, y limb) DWord {
 	return WideMul(Word(x), Word(y))
 }
 
 func mac(x, y limb, acc DWord) DWord {
-	return Mac(Word(x), Word(y), acc)
+	return multiplyAndAdd(acc, Word(x), Word(y))
 }
 
 func msb(x, y limb, acc DWord) DWord {
-	return Msb(Word(x), Word(y), acc)
+	return multiplyAndSubtract(acc, Word(x), Word(y))
 }
 
 func karatsubaMul(a, b bigNumber) (c bigNumber) {
@@ -40,8 +61,8 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1 = mac(a[7], b[4], accum1)
 
 	//If borrow != 0, we should panic?
-	accum0 = SubDWord(accum0, accum2)
-	accum1 = AddDWord(accum1, accum2)
+	accum0 = subDWord(accum0, accum2)
+	accum1 = addDWord(accum1, accum2)
 
 	c[3] = limb(accum1.l & mask)
 	c[7] = limb(accum0.l & mask)
@@ -60,10 +81,10 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1 = mac(a[6], b[6], accum1)
 	accum0 = mac(aa[3], bb[1], accum0)
 
-	accum1 = AddDWord(accum1, accum0)
+	accum1 = addDWord(accum1, accum0)
 	accum2 = wideMul(a[0], b[0])
-	accum1 = SubDWord(accum1, accum2)
-	accum0 = AddDWord(accum0, accum2)
+	accum1 = subDWord(accum1, accum2)
+	accum0 = addDWord(accum0, accum2)
 
 	accum0 = msb(a[1], b[3], accum0)
 	accum0 = msb(a[2], b[2], accum0)
@@ -100,8 +121,8 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1 = mac(aa[1], bb[0], accum1)
 	accum0 = mac(a[5], b[4], accum0)
 
-	accum1 = SubDWord(accum1, accum2)
-	accum0 = AddDWord(accum0, accum2)
+	accum1 = subDWord(accum1, accum2)
+	accum0 = addDWord(accum0, accum2)
 
 	c[1] = limb(accum0.l & mask)
 	c[5] = limb(accum1.l & mask)
@@ -130,8 +151,8 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1 = mac(aa[2], bb[0], accum1)
 	accum0 = mac(a[6], b[4], accum0)
 
-	accum1 = SubDWord(accum1, accum2)
-	accum0 = AddDWord(accum0, accum2)
+	accum1 = subDWord(accum1, accum2)
+	accum0 = addDWord(accum0, accum2)
 
 	c[2] = limb(accum0.l & mask)
 	c[6] = limb(accum1.l & mask)
@@ -144,8 +165,8 @@ func karatsubaMul(a, b bigNumber) (c bigNumber) {
 	accum1.l |= (accum1.h << 8)
 	accum1.h >>= 56
 
-	accum0 = AddDWord(accum0, DWord{0, Word(c[3])})
-	accum1 = AddDWord(accum1, DWord{0, Word(c[7])})
+	accum0 = addDWord(accum0, DWord{0, Word(c[3])})
+	accum1 = addDWord(accum1, DWord{0, Word(c[7])})
 
 	c[3] = limb(accum0.l & mask)
 	c[7] = limb(accum1.l & mask)
