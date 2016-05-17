@@ -1,10 +1,6 @@
 package ed448
 
-import (
-	"math/big"
-
-	. "gopkg.in/check.v1"
-)
+import . "gopkg.in/check.v1"
 
 func (s *Ed448Suite) TestBigintsBasePointIsOnCurve(c *C) {
 	curve := newBigintsCurve()
@@ -60,34 +56,4 @@ func (s *Ed448Suite) TestBaseMultiplication(c *C) {
 	x, y := curve.multiplyByBase([]byte{0x05})
 
 	c.Assert(curve.isOnCurve(x, y), Equals, true)
-}
-
-func (s *Ed448Suite) BenchmarkAddition(c *C) {
-	curve := newBigintsCurve()
-	c.ResetTimer()
-	x, y := gx, gy
-	for i := 0; i < c.N; i++ {
-		rx, ry := curve.add(x, y, x, y)
-		x, y = rx.(*big.Int), ry.(*big.Int)
-	}
-}
-
-func (s *Ed448Suite) BenchmarkDoubling(c *C) {
-	curve := newBigintsCurve()
-	c.ResetTimer()
-	x, y := gx, gy
-	for i := 0; i < c.N; i++ {
-		rx, ry := curve.double(x, y)
-		x, y = rx.(*big.Int), ry.(*big.Int)
-	}
-}
-
-func (s *Ed448Suite) BenchmarkMultiplication(c *C) {
-	curve := newBigintsCurve()
-	c.ResetTimer()
-	x, y := gx, gy
-	for i := 0; i < c.N; i++ {
-		rx, ry := curve.multiply(x, y, []byte{0x03})
-		x, y = rx.(*big.Int), ry.(*big.Int)
-	}
 }
