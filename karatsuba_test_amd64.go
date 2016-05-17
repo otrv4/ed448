@@ -4,7 +4,11 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) TestWideMul(c *C) {
+type Ed448Amd64Suite struct{}
+
+var _ = Suite(&Ed448Amd64Suite{})
+
+func (s *Ed448Amd64Suite) TestWideMul(c *C) {
 	//No carry on multiplication
 	result := WideMul(Word(0x01), Word(0x02))
 	c.Assert(result, Equals, DWord{0, 0x02})
@@ -14,7 +18,7 @@ func (s *Ed448Suite) TestWideMul(c *C) {
 	c.Assert(result, Equals, DWord{0x01, 0xfffffffffffffffe})
 }
 
-func (s *Ed448Suite) TestGroupedOperations(c *C) {
+func (s *Ed448Amd64Suite) TestGroupedOperations(c *C) {
 	//No carry on addition
 	result := multiplyAndAdd(DWord{0, 0x01}, Word(0xffffffffffffffff), Word(0x02))
 	c.Assert(result, Equals, DWord{0x01, 0xffffffffffffffff})
@@ -34,7 +38,7 @@ func (s *Ed448Suite) TestGroupedOperations(c *C) {
 	//c.Assert(result, Equals, DWord{0x00, 0xffffffffffffffff})
 }
 
-func (s *Ed448Suite) TestKaratsuba(c *C) {
+func (s *Ed448Amd64Suite) TestKaratsuba(c *C) {
 	// X * 0 = 0
 	result := karatsubaMul(bigNumber{1}, bigNumber{})
 	c.Assert(result, Equals, bigNumber{})
