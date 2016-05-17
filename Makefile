@@ -1,6 +1,6 @@
 default: test
 
-ci: get test
+ci: get test test-32
 
 get:
 	go get -t -v ./...
