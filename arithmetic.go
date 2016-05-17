@@ -101,3 +101,27 @@ func mustDeserialize(in serialized) bigNumber {
 
 	return n
 }
+
+//TODO: Make this work with a word parameter
+func isZero(n int64) int64 {
+	return ^n
+}
+
+func constantTimeGreaterOrEqualP(n bigNumber) bool {
+	var (
+		ge   = int64(-1)
+		mask = int64(1)<<Radix - 1
+	)
+
+	for i := 0; i < 4; i++ {
+		ge &= int64(n[i])
+	}
+
+	ge = (ge & (int64(n[4]) + 1)) | isZero(int64(n[4])^mask)
+
+	for i := 5; i < 8; i++ {
+		ge &= int64(n[i])
+	}
+
+	return ge == mask
+}
