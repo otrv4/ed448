@@ -5,7 +5,9 @@ const (
 	Radix = 56
 )
 
-func deserialize(in serialized) (n bigNumber, ok bool) {
+func deserialize(in serialized) (n *bigNumber, ok bool) {
+	n = &bigNumber{}
+
 	const (
 		columns = Limbs
 		rows    = Limbs - 1
@@ -22,13 +24,13 @@ func deserialize(in serialized) (n bigNumber, ok bool) {
 	return
 }
 
-func serialize(dst []byte, src bigNumber) {
+func serialize(dst []byte, src *bigNumber) {
 	const (
 		rows    = Limbs
 		columns = Radix / Limbs
 	)
 
-	var n bigNumber
+	n := bigNumber{}
 	copy(n[:], src[:])
 
 	for i := uint(0); i < rows; i++ {

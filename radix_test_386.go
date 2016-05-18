@@ -8,7 +8,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 	ser := serialized{0x1}
 	n, ok := deserialize(ser)
 
-	c.Assert(n, DeepEquals, bigNumber{1})
+	c.Assert(n, DeepEquals, &bigNumber{1})
 	c.Assert(ok, Equals, true)
 
 	ser = serialized{
@@ -24,7 +24,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 
 	n, ok = deserialize(ser)
 
-	c.Assert(n, DeepEquals, bigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0x57481f5, 0x72337ad,
 		0xf0d3c36, 0x3daacf9,
 		0xf1e8bc1, 0xbf897ef,
@@ -48,7 +48,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 	}
 
 	n, ok = deserialize(ser)
-	c.Assert(n, DeepEquals, bigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
@@ -64,11 +64,11 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 func (s *Ed448Suite) TestSerialize(c *C) {
 	dst := [56]byte{}
 
-	one := bigNumber{0x01}
+	one := &bigNumber{0x01}
 	serialize(dst[:], one)
 	c.Assert(dst, DeepEquals, [56]byte{1})
 
-	p := bigNumber{
+	p := &bigNumber{
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
@@ -86,7 +86,7 @@ func (s *Ed448Suite) TestSerialize(c *C) {
 }
 
 func (s *Ed448Suite) TestStrongReduce(c *C) {
-	p := bigNumber{
+	p := &bigNumber{
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
@@ -100,7 +100,7 @@ func (s *Ed448Suite) TestStrongReduce(c *C) {
 	//p = p mod p = 0
 	p.strongReduce()
 
-	c.Assert(p, DeepEquals, bigNumber{})
+	c.Assert(p, DeepEquals, &bigNumber{})
 
 	n, _ := deserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
@@ -113,7 +113,7 @@ func (s *Ed448Suite) TestStrongReduce(c *C) {
 		0xd2, 0x75, 0x4b, 0x39, 0xbc, 0xa8, 0x74,
 	})
 
-	c.Assert(n, DeepEquals, bigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0x57481f5, 0x72337ad,
 		0xf0d3c36, 0x3daacf9,
 		0xf1e8bc1, 0xbf897ef,
@@ -126,7 +126,7 @@ func (s *Ed448Suite) TestStrongReduce(c *C) {
 
 	n.strongReduce()
 
-	c.Assert(n, DeepEquals, bigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0x57481f5, 0x72337ad,
 		0xf0d3c36, 0x3daacf9,
 		0xf1e8bc1, 0xbf897ef,
