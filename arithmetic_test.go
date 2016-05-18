@@ -10,7 +10,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 	ser := serialized{0x1}
 	n, ok := deserialize(ser)
 
-	c.Assert(n, DeepEquals, bigNumber{1})
+	c.Assert(n, DeepEquals, &bigNumber{1})
 	c.Assert(ok, Equals, true)
 
 	ser = serialized{
@@ -26,7 +26,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 
 	n, ok = deserialize(ser)
 
-	c.Assert(n, DeepEquals, bigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0x72337ad57481f5,
 		0x3daacf9f0d3c36,
 		0xbf897eff1e8bc1,
@@ -50,7 +50,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 	}
 
 	n, ok = deserialize(ser)
-	c.Assert(n, DeepEquals, bigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -65,7 +65,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 
 func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 	//p (little-endian)
-	p := bigNumber{
+	p := &bigNumber{
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -76,8 +76,7 @@ func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 		0xffffffffffffff,
 	}
 
-	greaterThanP := bigNumber{
-
+	greaterThanP := &bigNumber{
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -88,7 +87,7 @@ func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 		0xffffffffffffff,
 	}
 
-	lesserThanP := bigNumber{
+	lesserThanP := &bigNumber{
 		0xfffffffffffffe,
 		0xffffffffffffff,
 		0xffffffffffffff,
@@ -107,11 +106,11 @@ func (s *Ed448Suite) TestConstantTimeGreaterOrEqualP(c *C) {
 func (s *Ed448Suite) TestSerialize(c *C) {
 	dst := [56]byte{}
 
-	one := bigNumber{0x01}
+	one := &bigNumber{0x01}
 	serialize(dst[:], one)
 	c.Assert(dst, DeepEquals, [56]byte{1})
 
-	p := bigNumber{
+	p := &bigNumber{
 		0xffffffffffffff,
 		0xffffffffffffff,
 		0xffffffffffffff,

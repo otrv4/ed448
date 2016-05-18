@@ -6,7 +6,9 @@ const (
 	radixMask = limb(0xfffffff)
 )
 
-func deserialize(in serialized) (n bigNumber, ok bool) {
+func deserialize(in serialized) (n *bigNumber, ok bool) {
+	n = &bigNumber{}
+
 	for i := uint(0); i < 8; i++ {
 		out := uint64(0)
 		for j := uint(0); j < 7; j++ {
@@ -21,7 +23,7 @@ func deserialize(in serialized) (n bigNumber, ok bool) {
 	return
 }
 
-func serialize(dst []byte, n bigNumber) {
+func serialize(dst []byte, n *bigNumber) {
 	src := n.copy()
 	src.strongReduce()
 

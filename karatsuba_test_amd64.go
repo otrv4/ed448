@@ -76,6 +76,6 @@ func (s *Ed448Amd64Suite) TestKaratsuba(c *C) {
 		0xb3, 0x9f, 0x17, 0x7a, 0x85, 0x16, 0x6c,
 	})
 
-	result = karatsubaMul(x, y)
-	c.Assert(result, Equals, z)
+	result = karatsubaMul(*x, *y)
+	c.Assert(result, Equals, *z)
 }

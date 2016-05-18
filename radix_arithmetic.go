@@ -4,8 +4,8 @@ import "math/big"
 
 //XXX Why having a class at all and not just exported methods?
 type radixCurve struct {
-	zero, one, two             bigNumber
-	prime, rho, edCons, gx, gy bigNumber
+	zero, one, two             *bigNumber
+	prime, rho, edCons, gx, gy *bigNumber
 }
 
 var rCurve radixCurve
@@ -26,9 +26,9 @@ func init() {
 	p, _ := deserialize(primeSerialized)
 	rCurve = radixCurve{
 		//???
-		zero: bigNumber{},
-		one:  bigNumber{},
-		two:  bigNumber{},
+		zero: &bigNumber{},
+		one:  &bigNumber{},
+		two:  &bigNumber{},
 
 		prime: p,
 
@@ -46,7 +46,7 @@ func init() {
 
 		//XXX not sure if we should represent this as radix-base because it is negative
 		//edCons: -39081
-		edCons: bigNumber{},
+		edCons: &bigNumber{},
 
 		//gx: 0x297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f
 		gx: mustDeserialize(serialized{
@@ -61,7 +61,7 @@ func init() {
 		}),
 
 		//gy: 0x13
-		gy: bigNumber{0x13},
+		gy: &bigNumber{0x13},
 	}
 }
 

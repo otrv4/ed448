@@ -93,7 +93,7 @@ type limb Word
 type bigNumber [Limbs]limb
 type serialized [56]byte
 
-func mustDeserialize(in serialized) bigNumber {
+func mustDeserialize(in serialized) *bigNumber {
 	n, ok := deserialize(in)
 	if !ok {
 		panic("Failed to deserialize")
@@ -107,7 +107,7 @@ func isZero(n int64) int64 {
 	return ^n
 }
 
-func constantTimeGreaterOrEqualP(n bigNumber) bool {
+func constantTimeGreaterOrEqualP(n *bigNumber) bool {
 	var (
 		ge   = int64(-1)
 		mask = int64(1)<<Radix - 1
