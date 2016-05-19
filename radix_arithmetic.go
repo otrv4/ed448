@@ -26,9 +26,9 @@ func init() {
 	p, _ := deserialize(primeSerialized)
 	rCurve = radixCurve{
 		//???
-		zero: &bigNumber{},
-		one:  &bigNumber{},
-		two:  &bigNumber{},
+		zero: mustDeserialize(serialized{0x0}),
+		one:  mustDeserialize(serialized{0x1}),
+		two:  &bigNumber{0x2},
 
 		prime: p,
 
@@ -46,7 +46,8 @@ func init() {
 
 		//XXX not sure if we should represent this as radix-base because it is negative
 		//edCons: -39081
-		edCons: &bigNumber{},
+		//XXX 0x98a9 is the representation for the constant withouth sign
+		edCons: mustDeserialize(serialized{0xa9, 0x98}),
 
 		//gx: 0x297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f
 		gx: mustDeserialize(serialized{
