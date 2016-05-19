@@ -137,3 +137,15 @@ func (s *Ed448Suite) TestStrongReduce(c *C) {
 		0x94b75d2, 0x74a8bc3,
 	})
 }
+
+func (s *Ed448Suite) TestSumRadix(c *C) {
+	c.Assert(
+		sumRadix(&bigNumber{0x57, 0x0, 0x0, 0x0}, &bigNumber{0x83, 0x0, 0x0, 0x0}),
+		DeepEquals,
+		&bigNumber{0xda, 0x0, 0x0, 0x0})
+
+	c.Assert(
+		sumRadix(&bigNumber{0xfffffff}, &bigNumber{0x1}),
+		DeepEquals,
+		&bigNumber{0x10000000})
+}
