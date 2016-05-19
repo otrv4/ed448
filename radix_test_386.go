@@ -149,3 +149,32 @@ func (s *Ed448Suite) TestSumRadix(c *C) {
 		DeepEquals,
 		&bigNumber{0x10000000})
 }
+
+func (s *Ed448Suite) TestSubRadix(c *C) {
+	c.Assert(
+		subRadix(&bigNumber{0xda, 0x0, 0x0, 0x0}, &bigNumber{0x83, 0x0, 0x0, 0x0}),
+		DeepEquals,
+		&bigNumber{0x57, 0x0, 0x0, 0x0})
+
+	c.Assert(
+		subRadix(&bigNumber{0x10000000}, &bigNumber{0x1}),
+		DeepEquals,
+		&bigNumber{0xfffffff})
+}
+
+func (s *Ed448Suite) TestEquals(c *C) {
+	p := &bigNumber{
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xffffffe, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+	}
+	c.Assert(p.equals(p), Equals, true)
+
+	a := &bigNumber{0x01, 0x01}
+	c.Assert(a.equals(&bigNumber{0x01, 0x02}), Equals, false)
+}

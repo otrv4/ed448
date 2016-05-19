@@ -83,3 +83,22 @@ func sumRadix(a, b *bigNumber) (c *bigNumber) {
 
 	return
 }
+
+func subRadix(a, b *bigNumber) (c *bigNumber) {
+	c = &bigNumber{}
+	for i := 0; i < len(c); i++ {
+		c[i] = a[i] - b[i]
+	}
+
+	return
+}
+
+func (n *bigNumber) equals(o *bigNumber) (eq bool) {
+	r := limb(0)
+
+	for i, oi := range o {
+		r |= n[i] ^ oi // 0 iff equal
+	}
+
+	return r == 0 // iff they are equal
+}
