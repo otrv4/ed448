@@ -77,19 +77,21 @@ func newRadixCurve() curve {
 }
 
 func (c *radixCurve) isOnCurve(x, y interface{}) bool {
-	// x² + y² = 1 + bx²y²
-	x2 := squareBigints(x.(*big.Int))
-	y2 := squareBigints(y.(*big.Int))
+	// x² + y² - 1 - bx²y² = 0
+	a := x.(*bigNumber)
+	b := y.(*bigNumber)
+	x2 := karatsubaMul(a, a)
+	y2 := karatsubaMul(b, b)
 
-	x2y2 := mulBigints(x2, y2)
-	bx2y2 := mulBigints(edCons, x2y2)
+	x2y2 := karatsubaMul(x2, y2)
+	bx2y2 := karatsubaMul(c.edCons, x2y2)
 
-	left := sumBigints(x2, y2)
-	left = modBigints(left)
-	right := sumBigints(one, bx2y2)
-	right = modBigints(right)
+	r := sumRadix(x2, y2)
+	r = subRadix(r, c.one)
+	r = sumRadix(r, bx2y2)
 
-	return left.Cmp(right) == 0
+	r.strongReduce()
+	return r.equals(c.zero)
 }
 
 // Returns the sum of (x1,y1) and (x2,y2)
