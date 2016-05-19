@@ -74,3 +74,12 @@ func (n *bigNumber) strongReduce() {
 		carry >>= 28
 	}
 }
+
+func sumRadix(a, b *bigNumber) (c *bigNumber) {
+	c = &bigNumber{}
+	for i := 0; i < len(c); i++ {
+		c[i] = a[i] + b[i]
+	}
+
+	return
+}
