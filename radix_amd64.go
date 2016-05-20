@@ -40,3 +40,7 @@ func serialize(dst []byte, src *bigNumber) {
 		}
 	}
 }
+
+func (n *bigNumber) strongReduce() {
+	//TODO
+}
