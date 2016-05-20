@@ -88,3 +88,11 @@ func (s *Ed448Suite) TestEquals(c *C) {
 	y := mustDeserialize(serialized{0x01, 0x02})
 	c.Assert(x.equals(y), Equals, false)
 }
+
+func (s *Ed448Suite) TestZero(c *C) {
+	notZero := mustDeserialize(serialized{0x01})
+	c.Assert(notZero.zero(), Equals, false)
+
+	zero := mustDeserialize(serialized{0x00})
+	c.Assert(zero.zero(), Equals, true)
+}
