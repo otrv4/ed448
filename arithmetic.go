@@ -153,3 +153,13 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 
 	return r == 0
 }
+
+func (n *bigNumber) zero() (eq bool) {
+	r := limb(0)
+
+	for _, ni := range n {
+		r |= ni ^ 0
+	}
+
+	return r == 0
+}

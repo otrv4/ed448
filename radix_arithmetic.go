@@ -91,7 +91,7 @@ func (c *radixCurve) isOnCurve(x, y interface{}) bool {
 	r = sumRadix(r, bx2y2)
 
 	r.strongReduce()
-	return r.equals(c.zero)
+	return r.zero()
 }
 
 // Returns the sum of (x1,y1) and (x2,y2)
