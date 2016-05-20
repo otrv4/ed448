@@ -8,6 +8,7 @@ const (
 )
 
 //XXX Why having an unexported interface?
+//XXX Why using interface{} on all the things?
 type curve interface {
 	// Reports whether the given (x,y) lies on the bigintsCurve.
 	isOnCurve(x, y interface{}) bool

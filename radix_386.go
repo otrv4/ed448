@@ -42,6 +42,8 @@ func (n *bigNumber) copy() *bigNumber {
 	return c
 }
 
+//TODO: double check if this can be used for both 32 and 64 bits
+//(at least before unrolling)
 func (n *bigNumber) strongReduce() {
 	// clear high
 	n[8] += n[15] >> 28
@@ -73,32 +75,4 @@ func (n *bigNumber) strongReduce() {
 		n[i] = limb(carry) & radixMask
 		carry >>= 28
 	}
-}
-
-func sumRadix(a, b *bigNumber) (c *bigNumber) {
-	c = &bigNumber{}
-	for i := 0; i < len(c); i++ {
-		c[i] = a[i] + b[i]
-	}
-
-	return
-}
-
-func subRadix(a, b *bigNumber) (c *bigNumber) {
-	c = &bigNumber{}
-	for i := 0; i < len(c); i++ {
-		c[i] = a[i] - b[i]
-	}
-
-	return
-}
-
-func (n *bigNumber) equals(o *bigNumber) (eq bool) {
-	r := limb(0)
-
-	for i, oi := range o {
-		r |= n[i] ^ oi // 0 iff equal
-	}
-
-	return r == 0 // iff they are equal
 }
