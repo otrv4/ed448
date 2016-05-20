@@ -2,6 +2,7 @@ package ed448
 
 import (
 	"bytes"
+	"flag"
 	"io"
 	"testing"
 
@@ -13,6 +14,7 @@ func Test(t *testing.T) { TestingT(t) }
 type Ed448Suite struct{}
 
 var _ = Suite(&Ed448Suite{})
+var slow = flag.Bool("slow", false, "Include slow tests.")
 
 func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 	curve := newBigintsCurve()
@@ -30,7 +32,9 @@ func (s *Ed448Suite) TestMarshalAndUnmarshal(c *C) {
 }
 
 func (s *Ed448Suite) TestKeyGenerationWithBigintsArithmetic(c *C) {
-	c.Skip("This is way to slow to run with big.Int arithmetic.")
+	if !*slow {
+		c.Skip("Slow test. Add -slow flag to run it.")
+	}
 
 	goldilocks := NewBigintsGoldilocks()
 
