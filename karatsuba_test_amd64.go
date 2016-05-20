@@ -41,7 +41,7 @@ func (s *Ed448Amd64Suite) TestGroupedOperations(c *C) {
 func (s *Ed448Amd64Suite) TestKaratsuba(c *C) {
 	// X * 0 = 0
 	result := karatsubaMul(&bigNumber{1}, &bigNumber{})
-	c.Assert(result, Equals, &bigNumber{})
+	c.Assert(result, DeepEquals, &bigNumber{})
 
 	x, _ := deserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
@@ -77,5 +77,5 @@ func (s *Ed448Amd64Suite) TestKaratsuba(c *C) {
 	})
 
 	result = karatsubaMul(x, y)
-	c.Assert(result, Equals, z)
+	c.Assert(result, DeepEquals, z)
 }

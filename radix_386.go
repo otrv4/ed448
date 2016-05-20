@@ -52,9 +52,9 @@ func (n *bigNumber) strongReduce() {
 
 	scarry := int64(0)
 	for i := 0; i < 16; i++ {
-		m := uint32(radixMask)
+		m := limb(radixMask)
 		if i == 8 {
-			m = uint32(0xffffffe)
+			m = limb(0xffffffe)
 		}
 
 		scarry += int64(n[i]) - int64(m)
