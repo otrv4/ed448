@@ -80,9 +80,63 @@ func addDWord(a, b DWord) (z DWord) {
 
 	z.h = a.h + b.h + c
 
-	//XXX Should we panic on underflow?
+	//XXX Should we panic on overflow?
 	//if z.h < a.h { panic() }
 
+	return
+}
+
+// The resulting carry c is either 0 or 1.
+func addVV_g(z, x, y []Word) (c Word) {
+	for i, xi := range x[:len(z)] {
+		yi := y[i]
+		zi := xi + yi + c
+		z[i] = zi
+		// see "Hacker's Delight", section 2-12 (overflow detection)
+		c = (xi&yi | (xi|yi)&^zi) >> (_W - 1)
+	}
+	return
+}
+
+// The resulting carry c is either 0 or 1.
+func subVV_g(z, x, y []Word) (c Word) {
+	for i, xi := range x[:len(z)] {
+		yi := y[i]
+		zi := xi - yi - c
+		z[i] = zi
+		// see "Hacker's Delight", section 2-12 (overflow detection)
+		c = (yi&^xi | (yi|^xi)&zi) >> (_W - 1)
+	}
+	return
+}
+
+func shlVU_g(z, x []Word, s uint) (c Word) {
+	if n := len(z); n > 0 {
+		ŝ := _W - s
+		w1 := x[n-1]
+		c = w1 >> ŝ
+		for i := n - 1; i > 0; i-- {
+			w := w1
+			w1 = x[i-1]
+			z[i] = w<<s | w1>>ŝ
+		}
+		z[0] = w1 << s
+	}
+	return
+}
+
+func shrVU_g(z, x []Word, s uint) (c Word) {
+	if n := len(z); n > 0 {
+		ŝ := _W - s
+		w1 := x[0]
+		c = w1 << ŝ
+		for i := 0; i < n-1; i++ {
+			w := w1
+			w1 = x[i+1]
+			z[i] = w>>s | w1<<ŝ
+		}
+		z[n-1] = w1 >> s
+	}
 	return
 }
 
