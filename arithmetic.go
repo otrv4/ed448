@@ -180,13 +180,14 @@ func constantTimeGreaterOrEqualP(n *bigNumber) bool {
 	return ge == mask
 }
 
+//TODO: should not create a new bigNumber to save memory
 func sumRadix(a, b *bigNumber) (c *bigNumber) {
-	c = &bigNumber{}
-	for i := 0; i < len(c); i++ {
-		c[i] = a[i] + b[i]
-	}
+	return a.copy().add(b)
+}
 
-	return
+//XXX Is there an optimum way of squaring with karatsuba?
+func squareRadix(a *bigNumber) (c *bigNumber) {
+	return karatsubaMul(a, a)
 }
 
 func subRadix(a, b *bigNumber) (c *bigNumber) {
@@ -196,6 +197,12 @@ func subRadix(a, b *bigNumber) (c *bigNumber) {
 	}
 
 	return
+}
+
+func (n *bigNumber) copy() *bigNumber {
+	c := &bigNumber{}
+	copy(c[:], n[:])
+	return c
 }
 
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
@@ -216,4 +223,25 @@ func (n *bigNumber) zero() (eq bool) {
 	}
 
 	return r == 0
+}
+
+func (n *bigNumber) add(x *bigNumber) *bigNumber {
+	for i, xi := range x {
+		n[i] += xi
+	}
+
+	return n
+}
+
+func (n *bigNumber) mul(x *bigNumber) *bigNumber {
+	for i, mi := range karatsubaMul(n, x) {
+		n[i] = mi
+	}
+
+	return n
+}
+
+//XXX Is there any optimum way of squaring
+func (n *bigNumber) square() *bigNumber {
+	return n.mul(n)
 }

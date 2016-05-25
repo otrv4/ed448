@@ -36,12 +36,6 @@ func serialize(dst []byte, n *bigNumber) {
 	}
 }
 
-func (n *bigNumber) copy() *bigNumber {
-	c := &bigNumber{}
-	copy(c[:], n[:])
-	return c
-}
-
 //TODO: double check if this can be used for both 32 and 64 bits
 //(at least before unrolling)
 func (n *bigNumber) strongReduce() {
