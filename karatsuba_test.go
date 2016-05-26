@@ -5,9 +5,6 @@ import (
 )
 
 func (s *Ed448Suite) TestKaratsuba(c *C) {
-	result := karatsubaMul(&bigNumber{1}, &bigNumber{})
-	c.Assert(result, DeepEquals, &bigNumber{})
-
 	x, _ := deserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
 		0x36, 0x3c, 0x0d, 0x9f, 0xcf, 0xaa, 0x3d,
@@ -41,6 +38,6 @@ func (s *Ed448Suite) TestKaratsuba(c *C) {
 		0xb3, 0x9f, 0x17, 0x7a, 0x85, 0x16, 0x6c,
 	})
 
-	result = karatsubaMul(x, y)
+	result := karatsubaMul(x, y)
 	c.Assert(result, DeepEquals, z)
 }
