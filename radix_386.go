@@ -99,3 +99,44 @@ func (n *bigNumber) strongReduce() *bigNumber {
 
 	return n
 }
+
+func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
+	whi := uint32(w >> Radix)
+	wlo := uint32(w & uint64(radixMask))
+
+	var accum0, accum8 uint64
+
+	accum0 = uint64(wlo) * uint64(x[0])
+	accum8 = uint64(wlo) * uint64(x[8])
+	accum0 += uint64(whi) * uint64(x[15])
+	accum8 += uint64(whi) * uint64(x[15]+x[7])
+
+	n[0] = limb(accum0 & uint64(radixMask))
+	accum0 >>= Radix
+
+	n[8] = limb(accum8 & uint64(radixMask))
+	accum8 >>= Radix
+
+	for i := 1; i < Limbs/2; i++ {
+		accum0 += uint64(wlo) * uint64(x[i])
+		accum8 += uint64(wlo) * uint64(x[i+8])
+		accum0 += uint64(whi) * uint64(x[i-1])
+		accum8 += uint64(whi) * uint64(x[i+7])
+
+		n[i] = limb(accum0 & uint64(radixMask))
+		accum0 >>= Radix
+
+		n[i+8] = limb(accum8 & uint64(radixMask))
+		accum8 >>= Radix
+	}
+
+	accum0 += accum8 + uint64(n[8])
+	n[8] = limb(accum0 & uint64(radixMask))
+	n[9] += limb(accum0 >> Radix)
+
+	accum8 += uint64(n[0])
+	n[0] = limb(accum8 & uint64(radixMask))
+	n[1] += limb(accum8 >> Radix)
+
+	return n
+}

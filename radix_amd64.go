@@ -1,5 +1,7 @@
 package ed448
 
+import "fmt"
+
 const (
 	Limbs     = 8
 	Radix     = 56
@@ -54,19 +56,22 @@ func (n *bigNumber) strongReduce() *bigNumber {
 	n[0] += n[7] >> 56
 	n[7] &= radixMask
 
-	acc := []Word{0, 0}
-	scarry := []Word{0, 0}
+	acc := []Word{0, 0, 0}
+	scarry := []Word{0, 0, 0}
 	for i := 0; i < 8; i++ {
 		m := radixMask
 		if i == 4 {
 			m = mask
 		}
 
-		c1 := subVV_g(acc, []Word{Word(n[i]), 0}, []Word{Word(m), 0})
+		c1 := subVV_g(acc, []Word{Word(n[i]), 0, 0}, []Word{Word(m), 0, 0})
 		c2 := addVV_g(scarry, scarry, acc)
+
+		fmt.Println(c1, c2)
 
 		//overflows
 		if c1 == 1 && c2 == 1 {
+			fmt.Printf("%#v\n", scarry)
 			scarry[1] = 0xffffffffffffffff
 		}
 
@@ -77,14 +82,14 @@ func (n *bigNumber) strongReduce() *bigNumber {
 
 	scarryMask := scarry[0] & Word(radixMask)
 
-	carry := []Word{0, 0}
+	carry := []Word{0, 0, 0}
 	for i := 0; i < 8; i++ {
-		m := []Word{scarryMask, 0}
+		m := []Word{scarryMask, 0, 0}
 		if i == 4 {
 			m[0] &= 0xfffffffffffffffe
 		}
 
-		addVV_g(acc, []Word{Word(n[i]), 0}, m)
+		addVV_g(acc, []Word{Word(n[i]), 0, 0}, m)
 		addVV_g(carry, carry, acc)
 
 		n[i] = limb(carry[0]) & radixMask
@@ -92,5 +97,10 @@ func (n *bigNumber) strongReduce() *bigNumber {
 		shrVU_g(carry, carry, 56)
 	}
 
+	return n
+}
+
+func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
+	//TODO
 	return n
 }

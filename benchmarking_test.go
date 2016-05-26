@@ -63,6 +63,6 @@ func (s *Ed448Suite) BenchmarkRadixPointIsOnCurve(c *C) {
 
 	c.ResetTimer()
 	for i := 0; i < c.N; i++ {
-		curve.isOnCurve(gx, gy)
+		curve.isOnCurve(&Affine{gx, gy})
 	}
 }

@@ -27,7 +27,8 @@ var zero, one, two *big.Int
 
 // Edwards curve domain parameters. See https://safecurves.cr.yp.to
 var (
-	prime  *big.Int // the order of the underlying field
+	prime *big.Int // the order of the underlying field
+	//XXX should be named order
 	rho    *big.Int // the order of the base point
 	edCons *big.Int // the constant of the curve equation
 	gx, gy *big.Int // (x,y) of the base point

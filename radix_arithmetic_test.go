@@ -15,7 +15,7 @@ func (s *Ed448Suite) TestRadixBasePointIsOnCurve(c *C) {
 	})
 	gy, _ := deserialize(serialized{0x13})
 	curve := newRadixCurve()
-	c.Assert(curve.isOnCurve(gx, gy), Equals, true)
+	c.Assert(curve.isOnCurve(&Affine{gx, gy}), Equals, true)
 }
 
 /*
