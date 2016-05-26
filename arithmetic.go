@@ -139,3 +139,11 @@ func shrVU_g(z, x []Word, s uint) (c Word) {
 	}
 	return
 }
+
+func mulAddVWW_g(z, x []Word, y, r Word) (c Word) {
+	c = r
+	for i := range z {
+		c, z[i] = mulAddWWW_g(x[i], y, c)
+	}
+	return
+}
