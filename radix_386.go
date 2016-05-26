@@ -36,9 +36,36 @@ func serialize(dst []byte, n *bigNumber) {
 	}
 }
 
+func (n *bigNumber) bias(b uint32) {
+	var co1 limb = radixMask * limb(b)
+	var co2 limb = co1 - limb(b)
+	lo := [4]limb{co1, co1, co1, co1}
+	hi := [4]limb{co2, co1, co1, co1}
+
+	n[0] += lo[0]
+	n[1] += lo[1]
+	n[2] += lo[2]
+	n[3] += lo[3]
+
+	n[4] += lo[0]
+	n[5] += lo[1]
+	n[6] += lo[2]
+	n[7] += lo[3]
+
+	n[8] += hi[0]
+	n[9] += hi[1]
+	n[10] += hi[2]
+	n[11] += hi[3]
+
+	n[12] += lo[0]
+	n[13] += lo[1]
+	n[14] += lo[2]
+	n[15] += lo[3]
+}
+
 //TODO: double check if this can be used for both 32 and 64 bits
 //(at least before unrolling)
-func (n *bigNumber) strongReduce() {
+func (n *bigNumber) strongReduce() *bigNumber {
 	// clear high
 	n[8] += n[15] >> 28
 	n[0] += n[15] >> 28
@@ -69,4 +96,6 @@ func (n *bigNumber) strongReduce() {
 		n[i] = limb(carry) & radixMask
 		carry >>= 28
 	}
+
+	return n
 }
