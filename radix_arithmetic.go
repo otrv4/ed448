@@ -72,26 +72,21 @@ func init() {
 //	two = big.NewInt(2)
 //}
 
-func newRadixCurve() curve {
+type pointCurve interface {
+	isOnCurve(p Point) bool
+	add(p1, p2 Point) (p3 Point)
+	double(p1 Point) (p2 Point)
+	multiply(p Point, n *bigNumber) (p2 Point)
+	multiplyByBase(n *bigNumber) (p Point)
+}
+
+//XXX return pointCurve interface?
+func newRadixCurve() *radixCurve {
 	return &rCurve
 }
 
-func (c *radixCurve) isOnCurve(x, y interface{}) bool {
-	// x² + y² - 1 - bx²y² = 0
-	a := x.(*bigNumber)
-	b := y.(*bigNumber)
-	x2 := karatsubaMul(a, a)
-	y2 := karatsubaMul(b, b)
-
-	x2y2 := karatsubaMul(x2, y2)
-	bx2y2 := karatsubaMul(c.edCons, x2y2)
-
-	r := sumRadix(x2, y2)
-	r = subRadix(r, c.one)
-	r = sumRadix(r, bx2y2)
-
-	r.strongReduce()
-	return r.zero()
+func (c *radixCurve) isOnCurve(p Point) bool {
+	return p.OnCurve()
 }
 
 // Returns the sum of (x1,y1) and (x2,y2)
