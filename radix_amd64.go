@@ -42,7 +42,11 @@ func serialize(dst []byte, src *bigNumber) {
 	}
 }
 
-func (n *bigNumber) strongReduce() {
+func (n *bigNumber) bias(b uint) {
+	//noop
+}
+
+func (n *bigNumber) strongReduce() *bigNumber {
 	mask := radixMask - 1
 
 	//TODO
@@ -87,4 +91,6 @@ func (n *bigNumber) strongReduce() {
 
 		shrVU_g(carry, carry, 56)
 	}
+
+	return n
 }

@@ -190,7 +190,28 @@ func squareRadix(a *bigNumber) (c *bigNumber) {
 	return karatsubaMul(a, a)
 }
 
+func (n *bigNumber) weakReduce() *bigNumber {
+	tmp := limb(uint64(n[Limbs-1]) >> Radix)
+
+	n[Limbs/2] += tmp
+
+	for i := Limbs - 1; i > 0; i-- {
+		n[i] = (n[i] & radixMask) + (n[i-1] >> Radix)
+	}
+
+	n[0] = (n[0] & radixMask) + tmp
+
+	return n
+}
+
 func subRadix(a, b *bigNumber) (c *bigNumber) {
+	c = subRadixRaw(a, b)
+	c.bias(2)      //???
+	c.weakReduce() //???
+	return c
+}
+
+func subRadixRaw(a, b *bigNumber) (c *bigNumber) {
 	c = &bigNumber{}
 	for i := 0; i < len(c); i++ {
 		c[i] = a[i] - b[i]
