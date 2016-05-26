@@ -1,7 +1,5 @@
 package ed448
 
-import "fmt"
-
 const (
 	Limbs     = 8
 	Radix     = 56
@@ -67,11 +65,8 @@ func (n *bigNumber) strongReduce() *bigNumber {
 		c1 := subVV_g(acc, []Word{Word(n[i]), 0, 0}, []Word{Word(m), 0, 0})
 		c2 := addVV_g(scarry, scarry, acc)
 
-		fmt.Println(c1, c2)
-
 		//overflows
 		if c1 == 1 && c2 == 1 {
-			fmt.Printf("%#v\n", scarry)
 			scarry[1] = 0xffffffffffffffff
 		}
 
