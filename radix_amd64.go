@@ -101,6 +101,35 @@ func (n *bigNumber) strongReduce() *bigNumber {
 }
 
 func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
-	//TODO
+	acc0 := []Word{0, 0}
+	acc4 := []Word{0, 0}
+
+	tmp := []Word{0, 0}
+	for i := 0; i < 4; i++ {
+		mulAddVWW_g(tmp, []Word{Word(x[i]), 0}, Word(w), 0)
+		addVV_g(acc0, acc0, tmp) //XXX should we check carry?
+
+		mulAddVWW_g(tmp, []Word{Word(x[i+4]), 0}, Word(w), 0)
+		addVV_g(acc4, acc4, tmp) //XXX should we check carry?
+
+		n[i] = limb(acc0[0]) & radixMask
+		shrVU_g(acc0, acc0, Radix)
+
+		n[i+4] = limb(acc4[0]) & radixMask
+		shrVU_g(acc4, acc4, Radix)
+	}
+
+	addVV_g(acc0, acc0, acc4) //XXX should we check carry?
+	addVV_g(acc0, acc0, []Word{Word(n[4]), 0, 0})
+
+	n[4] = limb(acc0[0]) & radixMask
+	shrVU_g(tmp, acc0, Radix)
+	n[5] += limb(tmp[0])
+
+	addVV_g(acc4, acc4, []Word{Word(n[0]), 0, 0})
+	n[0] = limb(acc4[0]) & radixMask
+	shrVU_g(tmp, acc4, Radix)
+	n[1] += limb(tmp[0])
+
 	return n
 }
