@@ -52,7 +52,7 @@ func (aP *Affine) OnCurve() bool {
 	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
 	dx2y2.weakReduce()
 
-	r := sumRadix(x2, y2)
+	r := new(bigNumber).add(x2, y2)
 	r = subRadix(r, bigNumOne)
 	r = subRadix(r, dx2y2)
 
@@ -99,7 +99,7 @@ func (hP *homogeneousProjective) OnCurve() bool {
 	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
 	dx2y2.weakReduce()
 
-	r := sumRadix(x2, y2)
+	r := new(bigNumber).add(x2, y2)
 	r = r.mul(r, z2)
 	r = subRadix(r, z4)
 	r = subRadix(r, dx2y2)
@@ -140,14 +140,14 @@ func (hP *homogeneousProjective) Double() Point {
 	y1 := hP[1]
 	z1 := hP[2]
 
-	b := sumRadix(x1, y1)
+	b := new(bigNumber).add(x1, y1)
 	b = b.square(b).strongReduce()
 	c := new(bigNumber).square(x1).strongReduce()
 	d := new(bigNumber).square(y1).strongReduce()
 
-	e := sumRadix(c, d).strongReduce()
+	e := new(bigNumber).add(c, d).strongReduce()
 	h := new(bigNumber).square(z1).strongReduce()
-	j := subRadix(e, sumRadix(h, h)).strongReduce() //XXX Is there an optimum double?
+	j := subRadix(e, new(bigNumber).add(h, h)).strongReduce() //XXX Is there an optimum double?
 
 	xx := subRadix(b, e)
 	xx = xx.mul(xx, j) // a = 1 => F = E + D = C + D
@@ -194,9 +194,9 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 
 	e := new(bigNumber).mul(tmp, d)
 	f := subRadix(b, e).strongReduce()
-	g := sumRadix(b, e).strongReduce()
+	g := new(bigNumber).add(b, e).strongReduce()
 
-	x3 := new(bigNumber).mul(sumRadix(x1, y1), sumRadix(x2, y2))
+	x3 := new(bigNumber).mul(new(bigNumber).add(x1, y1), new(bigNumber).add(x2, y2))
 	x3 = subRadix(x3, c)
 	x3 = subRadix(x3, d)
 	x3 = x3.mul(a, x3.mul(x3, f))
