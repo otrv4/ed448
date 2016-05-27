@@ -53,8 +53,8 @@ func (aP *Affine) OnCurve() bool {
 	dx2y2.weakReduce()
 
 	r := new(bigNumber).add(x2, y2)
-	r = subRadix(r, bigNumOne)
-	r = subRadix(r, dx2y2)
+	r.sub(r, bigNumOne)
+	r.sub(r, dx2y2)
 
 	r.strongReduce()
 	return r.zero()
@@ -100,9 +100,9 @@ func (hP *homogeneousProjective) OnCurve() bool {
 	dx2y2.weakReduce()
 
 	r := new(bigNumber).add(x2, y2)
-	r = r.mul(r, z2)
-	r = subRadix(r, z4)
-	r = subRadix(r, dx2y2)
+	r.mul(r, z2)
+	r.sub(r, z4)
+	r.sub(r, dx2y2)
 
 	r.strongReduce()
 	return r.zero()
@@ -147,12 +147,13 @@ func (hP *homogeneousProjective) Double() Point {
 
 	e := new(bigNumber).add(c, d).strongReduce()
 	h := new(bigNumber).square(z1).strongReduce()
-	j := subRadix(e, new(bigNumber).add(h, h)).strongReduce() //XXX Is there an optimum double?
+	j := new(bigNumber).add(h, h) //XXX Is there an optimum double?
+	j.sub(e, j).strongReduce()
 
-	xx := subRadix(b, e)
-	xx = xx.mul(xx, j) // a = 1 => F = E + D = C + D
-	yy := subRadix(c, d)
-	yy = yy.mul(yy, e)
+	xx := new(bigNumber).sub(b, e)
+	xx.mul(xx, j) // a = 1 => F = E + D = C + D
+	yy := new(bigNumber).sub(c, d)
+	yy.mul(yy, e)
 	zz := new(bigNumber).mul(e, j).strongReduce()
 
 	//XXX Should it change the same instance instead?
@@ -193,15 +194,15 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	tmp.weakReduce()
 
 	e := new(bigNumber).mul(tmp, d)
-	f := subRadix(b, e).strongReduce()
+	f := new(bigNumber).sub(b, e).strongReduce()
 	g := new(bigNumber).add(b, e).strongReduce()
 
 	x3 := new(bigNumber).mul(new(bigNumber).add(x1, y1), new(bigNumber).add(x2, y2))
-	x3 = subRadix(x3, c)
-	x3 = subRadix(x3, d)
-	x3 = x3.mul(a, x3.mul(x3, f))
+	x3.sub(x3, c)
+	x3.sub(x3, d)
+	x3.mul(a, x3.mul(x3, f))
 
-	y3 := new(bigNumber).mul(a, new(bigNumber).mul(g, subRadix(d, c)))
+	y3 := new(bigNumber).mul(a, new(bigNumber).mul(g, new(bigNumber).sub(d, c)))
 
 	z3 := new(bigNumber).mul(f, g)
 
