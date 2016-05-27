@@ -36,7 +36,7 @@ func serialize(dst []byte, n *bigNumber) {
 	}
 }
 
-func (n *bigNumber) bias(b uint32) {
+func (n *bigNumber) bias(b uint32) *bigNumber {
 	var co1 limb = radixMask * limb(b)
 	var co2 limb = co1 - limb(b)
 	lo := [4]limb{co1, co1, co1, co1}
@@ -61,6 +61,8 @@ func (n *bigNumber) bias(b uint32) {
 	n[13] += lo[1]
 	n[14] += lo[2]
 	n[15] += lo[3]
+
+	return n
 }
 
 //TODO: double check if this can be used for both 32 and 64 bits

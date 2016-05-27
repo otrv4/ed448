@@ -42,12 +42,13 @@ type Affine [2]*bigNumber
 
 func (aP *Affine) OnCurve() bool {
 	// x² + y² - 1 - bx²y² = 0
-	a := aP[0]
-	b := aP[1]
-	x2 := karatsubaMul(a, a)
-	y2 := karatsubaMul(b, b)
+	x := aP[0]
+	y := aP[1]
 
-	x2y2 := karatsubaMul(x2, y2)
+	x2 := new(bigNumber).mul(x, x)
+	y2 := new(bigNumber).mul(y, y)
+
+	x2y2 := new(bigNumber).mul(x2, y2)
 	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
 	dx2y2.weakReduce()
 
@@ -89,17 +90,17 @@ func (hP *homogeneousProjective) OnCurve() bool {
 	y := hP[1]
 	z := hP[2]
 
-	x2 := karatsubaMul(x, x)
-	y2 := karatsubaMul(y, y)
-	z2 := karatsubaMul(z, z)
-	z4 := karatsubaMul(z2, z2)
+	x2 := new(bigNumber).mul(x, x)
+	y2 := new(bigNumber).mul(y, y)
+	z2 := new(bigNumber).mul(z, z)
+	z4 := new(bigNumber).mul(z2, z2)
 
-	x2y2 := karatsubaMul(x2, y2)
+	x2y2 := new(bigNumber).mul(x2, y2)
 	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
 	dx2y2.weakReduce()
 
 	r := sumRadix(x2, y2)
-	r = karatsubaMul(r, z2)
+	r = r.mul(r, z2)
 	r = subRadix(r, z4)
 	r = subRadix(r, dx2y2)
 
@@ -139,18 +140,20 @@ func (hP *homogeneousProjective) Double() Point {
 	y1 := hP[1]
 	z1 := hP[2]
 
-	b := sumRadix(x1, y1).square().strongReduce()
-	c := squareRadix(x1).strongReduce()
-	d := squareRadix(y1).strongReduce()
+	b := sumRadix(x1, y1)
+	b = b.square(b).strongReduce()
+	c := new(bigNumber).square(x1).strongReduce()
+	d := new(bigNumber).square(y1).strongReduce()
 
 	e := sumRadix(c, d).strongReduce()
-	h := squareRadix(z1).strongReduce()
+	h := new(bigNumber).square(z1).strongReduce()
 	j := subRadix(e, sumRadix(h, h)).strongReduce() //XXX Is there an optimum double?
 
-	bMe := subRadix(b, e)
-	xx := karatsubaMul(bMe, j) // a = 1 => F = E + D = C + D
-	yy := karatsubaMul(e, subRadix(c, d))
-	zz := karatsubaMul(e, j).strongReduce()
+	xx := subRadix(b, e)
+	xx = xx.mul(xx, j) // a = 1 => F = E + D = C + D
+	yy := subRadix(c, d)
+	yy = yy.mul(yy, e)
+	zz := new(bigNumber).mul(e, j).strongReduce()
 
 	//XXX Should it change the same instance instead?
 	return &homogeneousProjective{
@@ -180,27 +183,27 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	y2 := hP2[1]
 	z2 := hP2[2]
 
-	a := karatsubaMul(z1, z2)
-	b := karatsubaMul(a, a)
-	c := karatsubaMul(x1, x2)
-	d := karatsubaMul(y1, y2)
+	a := new(bigNumber).mul(z1, z2)
+	b := new(bigNumber).mul(a, a)
+	c := new(bigNumber).mul(x1, x2)
+	d := new(bigNumber).mul(y1, y2)
 
 	tmp := &bigNumber{}
 	tmp.mulWSignedCurveConstant(c, curveDSigned)
 	tmp.weakReduce()
 
-	e := karatsubaMul(tmp, d)
+	e := new(bigNumber).mul(tmp, d)
 	f := subRadix(b, e).strongReduce()
 	g := sumRadix(b, e).strongReduce()
 
-	x3 := karatsubaMul(sumRadix(x1, y1), sumRadix(x2, y2))
+	x3 := new(bigNumber).mul(sumRadix(x1, y1), sumRadix(x2, y2))
 	x3 = subRadix(x3, c)
 	x3 = subRadix(x3, d)
-	x3 = karatsubaMul(a, karatsubaMul(f, x3))
+	x3 = x3.mul(a, x3.mul(x3, f))
 
-	y3 := karatsubaMul(a, karatsubaMul(g, subRadix(d, c)))
+	y3 := new(bigNumber).mul(a, new(bigNumber).mul(g, subRadix(d, c)))
 
-	z3 := karatsubaMul(f, g)
+	z3 := new(bigNumber).mul(f, g)
 
 	return &homogeneousProjective{
 		x3, y3, z3,

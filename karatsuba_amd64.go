@@ -33,8 +33,8 @@ func msb(x, y limb, acc DWord) DWord {
 	return multiplyAndSubtract(acc, Word(x), Word(y))
 }
 
-func karatsubaMul(a, b *bigNumber) (c *bigNumber) {
-	c = &bigNumber{}
+//c = a * b
+func karatsubaMul(c, a, b *bigNumber) *bigNumber {
 	var aa, bb, bbb [4]limb
 
 	mask := Word(0xffffffffffffff)
@@ -183,5 +183,5 @@ func karatsubaMul(a, b *bigNumber) (c *bigNumber) {
 	c[0] += limb(accum1.l)
 	c[4] += limb(accum0.l + accum1.l)
 
-	return
+	return c
 }
