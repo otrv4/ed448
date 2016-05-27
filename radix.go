@@ -15,7 +15,6 @@ func mustDeserialize(in serialized) *bigNumber {
 	return n
 }
 
-//TODO: Make this work with a word parameter
 func isZero(n int64) int64 {
 	return ^n
 }
@@ -76,11 +75,6 @@ func (n *bigNumber) square(x *bigNumber) *bigNumber {
 	return n.mul(x, x)
 }
 
-//XXX Is there an optimum way of squaring with karatsuba?
-//func squareRadix(a *bigNumber) (c *bigNumber) {
-//	return new(bigNumber).square
-//}
-
 //XXX It may not work on 64-bit
 func (n *bigNumber) weakReduce() *bigNumber {
 	tmp := limb(uint64(n[Limbs-1]) >> Radix)
@@ -96,10 +90,24 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	return n
 }
 
-func (n *bigNumber) String() string {
-	dst := [56]byte{}
-	serialize(dst[:], n)
-	return fmt.Sprintf("%#v", dst)
+func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {
+	if c >= 0 {
+		return n.mulW(x, uint64(c))
+	}
+
+	r := n.mulW(x, uint64(-c))
+	r.negRaw(r)
+	r.bias(2)
+
+	return r
+}
+
+func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
+	for i, xi := range x {
+		n[i] = limb(-xi)
+	}
+
+	return n
 }
 
 func (n *bigNumber) copy() *bigNumber {
@@ -128,22 +136,8 @@ func (n *bigNumber) zero() (eq bool) {
 	return r == 0
 }
 
-func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {
-	if c >= 0 {
-		return n.mulW(x, uint64(c))
-	}
-
-	r := n.mulW(x, uint64(-c))
-	r.negRaw(r)
-	r.bias(2)
-
-	return r
-}
-
-func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
-	for i, xi := range x {
-		n[i] = limb(-xi)
-	}
-
-	return n
+func (n *bigNumber) String() string {
+	dst := [56]byte{}
+	serialize(dst[:], n)
+	return fmt.Sprintf("%#v", dst)
 }
