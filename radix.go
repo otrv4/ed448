@@ -39,15 +39,52 @@ func constantTimeGreaterOrEqualP(n *bigNumber) bool {
 	return ge == mask
 }
 
+//n = x + y
+func (n *bigNumber) add(x *bigNumber, y *bigNumber) *bigNumber {
+	for i := 0; i < len(n); i++ {
+		n[i] = x[i] + y[i]
+	}
+
+	return n
+}
+
+//n = x - y
+func (n *bigNumber) sub(x *bigNumber, y *bigNumber) *bigNumber {
+	return n.subRaw(x, y).bias(2).weakReduce()
+}
+
+func (n *bigNumber) subRaw(x *bigNumber, y *bigNumber) *bigNumber {
+	for i := 0; i < len(n); i++ {
+		n[i] = x[i] - y[i]
+	}
+
+	return n
+}
+
+//n = x * y
+func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
+	//it does not work in place, that why the temporary bigNumber is necessary
+	for i, ni := range karatsubaMul(new(bigNumber), x, y) {
+		n[i] = ni
+	}
+
+	return n
+}
+
+//XXX Is there any optimum way of squaring?
+func (n *bigNumber) square(x *bigNumber) *bigNumber {
+	return n.mul(x, x)
+}
+
 //TODO: should not create a new bigNumber to save memory
-func sumRadix(a, b *bigNumber) (c *bigNumber) {
-	return a.copy().add(b)
+func sumRadix(a, b *bigNumber) *bigNumber {
+	return new(bigNumber).add(a, b)
 }
 
 //XXX Is there an optimum way of squaring with karatsuba?
-func squareRadix(a *bigNumber) (c *bigNumber) {
-	return karatsubaMul(a, a)
-}
+//func squareRadix(a *bigNumber) (c *bigNumber) {
+//	return new(bigNumber).square
+//}
 
 //XXX It may not work on 64-bit
 func (n *bigNumber) weakReduce() *bigNumber {
@@ -64,20 +101,8 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	return n
 }
 
-func subRadix(a, b *bigNumber) (c *bigNumber) {
-	c = subRadixRaw(a, b)
-	c.bias(2)      //???
-	c.weakReduce() //???
-	return c
-}
-
-func subRadixRaw(a, b *bigNumber) (c *bigNumber) {
-	c = &bigNumber{}
-	for i := 0; i < len(c); i++ {
-		c[i] = a[i] - b[i]
-	}
-
-	return
+func subRadix(a, b *bigNumber) *bigNumber {
+	return new(bigNumber).sub(a, b)
 }
 
 func (n *bigNumber) String() string {
@@ -110,27 +135,6 @@ func (n *bigNumber) zero() (eq bool) {
 	}
 
 	return r == 0
-}
-
-func (n *bigNumber) add(x *bigNumber) *bigNumber {
-	for i, xi := range x {
-		n[i] += xi
-	}
-
-	return n
-}
-
-func (n *bigNumber) mul(x *bigNumber) *bigNumber {
-	for i, mi := range karatsubaMul(n, x) {
-		n[i] = mi
-	}
-
-	return n
-}
-
-//XXX Is there any optimum way of squaring?
-func (n *bigNumber) square() *bigNumber {
-	return n.mul(n)
 }
 
 func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {

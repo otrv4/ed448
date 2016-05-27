@@ -43,7 +43,7 @@ func serialize(dst []byte, src *bigNumber) {
 }
 
 //XXX unroll
-func (n *bigNumber) bias(b uint) {
+func (n *bigNumber) bias(b uint) *bigNumber {
 	var co1 limb = radixMask * limb(b)
 	var co2 limb = co1 - limb(b)
 
@@ -54,6 +54,8 @@ func (n *bigNumber) bias(b uint) {
 			n[i] += co1
 		}
 	}
+
+	return n
 }
 
 func (n *bigNumber) strongReduce() *bigNumber {

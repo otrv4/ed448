@@ -1,8 +1,7 @@
 package ed448
 
-func karatsubaMul(a, b *bigNumber) (c *bigNumber) {
-	c = &bigNumber{}
-
+//c = a * b
+func karatsubaMul(c, a, b *bigNumber) *bigNumber {
 	var aa, bb [8]limb
 	for i := 0; i < 8; i++ {
 		aa[i] = a[i] + a[i+8]
@@ -52,5 +51,5 @@ func karatsubaMul(a, b *bigNumber) (c *bigNumber) {
 	c[9] += limb(z0)
 	c[1] += limb(z1)
 
-	return
+	return c
 }
