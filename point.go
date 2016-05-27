@@ -141,20 +141,20 @@ func (hP *homogeneousProjective) Double() Point {
 	z1 := hP[2]
 
 	b := new(bigNumber).add(x1, y1)
-	b = b.square(b)
+	b.square(b)
 	c := new(bigNumber).square(x1)
 	d := new(bigNumber).square(y1)
-
 	e := new(bigNumber).add(c, d)
 	h := new(bigNumber).square(z1)
-	j := new(bigNumber).add(h, h) //XXX Is there an optimum double?
+	//j := h.mulW(h, 2) // This is slower than adding
+	j := h.add(h, h)
 	j.sub(e, j)
 
-	xx := new(bigNumber).sub(b, e)
-	xx.mul(xx, j) // a = 1 => F = E + D = C + D
-	yy := new(bigNumber).sub(c, d)
+	xx := b.sub(b, e)
+	xx.mul(xx, j)
+	yy := c.sub(c, d)
 	yy.mul(yy, e)
-	zz := new(bigNumber).mul(e, j)
+	zz := e.mul(e, j)
 
 	//XXX Should it change the same instance instead?
 	return &homogeneousProjective{
@@ -189,22 +189,20 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	c := new(bigNumber).mul(x1, x2)
 	d := new(bigNumber).mul(y1, y2)
 
-	tmp := &bigNumber{}
-	tmp.mulWSignedCurveConstant(c, curveDSigned)
-	tmp.weakReduce()
-
-	e := new(bigNumber).mul(tmp, d)
+	e := new(bigNumber).mulWSignedCurveConstant(c, curveDSigned)
+	e.mul(e, d)
 	f := new(bigNumber).sub(b, e)
 	g := new(bigNumber).add(b, e)
 
-	x3 := new(bigNumber).mul(new(bigNumber).add(x1, y1), new(bigNumber).add(x2, y2))
-	x3.sub(x3, c)
-	x3.sub(x3, d)
-	x3.mul(a, x3.mul(x3, f))
+	//Just reusing e and b (unused) memory
+	x3 := e.mul(b.add(x1, y1), e.add(x2, y2))
+	x3.sub(x3, c).sub(x3, d)
+	x3.mul(x3, a).mul(x3, f)
 
-	y3 := new(bigNumber).mul(a, new(bigNumber).mul(g, new(bigNumber).sub(d, c)))
+	y3 := d.sub(d, c)
+	y3 = y3.mul(y3, a).mul(y3, g)
 
-	z3 := new(bigNumber).mul(f, g)
+	z3 := f.mul(f, g)
 
 	return &homogeneousProjective{
 		x3, y3, z3,
