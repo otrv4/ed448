@@ -96,10 +96,6 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	return n
 }
 
-func subRadix(a, b *bigNumber) *bigNumber {
-	return new(bigNumber).sub(a, b)
-}
-
 func (n *bigNumber) String() string {
 	dst := [56]byte{}
 	serialize(dst[:], n)
