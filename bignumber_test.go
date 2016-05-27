@@ -50,12 +50,12 @@ func (s *Ed448Suite) TestSumRadix(c *C) {
 	x := mustDeserialize(serialized{0x57})
 	y := mustDeserialize(serialized{0x83})
 	z := mustDeserialize(serialized{0xda})
-	c.Assert(sumRadix(x, y), DeepEquals, z)
+	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
 
 	x = mustDeserialize(serialized{0xff, 0xff, 0xff, 0xf0})
 	y = mustDeserialize(serialized{0x01})
 	z = mustDeserialize(serialized{0x00, 0x00, 0x00, 0xf1})
-	c.Assert(sumRadix(x, y), DeepEquals, z)
+	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
 }
 
 //XXX This is broken in 64-bits, but everything else works

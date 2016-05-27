@@ -76,11 +76,6 @@ func (n *bigNumber) square(x *bigNumber) *bigNumber {
 	return n.mul(x, x)
 }
 
-//TODO: should not create a new bigNumber to save memory
-func sumRadix(a, b *bigNumber) *bigNumber {
-	return new(bigNumber).add(a, b)
-}
-
 //XXX Is there an optimum way of squaring with karatsuba?
 //func squareRadix(a *bigNumber) (c *bigNumber) {
 //	return new(bigNumber).square
