@@ -141,20 +141,20 @@ func (hP *homogeneousProjective) Double() Point {
 	z1 := hP[2]
 
 	b := new(bigNumber).add(x1, y1)
-	b = b.square(b).strongReduce()
-	c := new(bigNumber).square(x1).strongReduce()
-	d := new(bigNumber).square(y1).strongReduce()
+	b = b.square(b)
+	c := new(bigNumber).square(x1)
+	d := new(bigNumber).square(y1)
 
-	e := new(bigNumber).add(c, d).strongReduce()
-	h := new(bigNumber).square(z1).strongReduce()
+	e := new(bigNumber).add(c, d)
+	h := new(bigNumber).square(z1)
 	j := new(bigNumber).add(h, h) //XXX Is there an optimum double?
-	j.sub(e, j).strongReduce()
+	j.sub(e, j)
 
 	xx := new(bigNumber).sub(b, e)
 	xx.mul(xx, j) // a = 1 => F = E + D = C + D
 	yy := new(bigNumber).sub(c, d)
 	yy.mul(yy, e)
-	zz := new(bigNumber).mul(e, j).strongReduce()
+	zz := new(bigNumber).mul(e, j)
 
 	//XXX Should it change the same instance instead?
 	return &homogeneousProjective{
