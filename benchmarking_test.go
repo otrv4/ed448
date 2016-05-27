@@ -111,8 +111,7 @@ func (s *Ed448Suite) BenchmarkRadixPointUnifiedAddition(c *C) {
 	c.ResetTimer()
 	p := basePoint
 	for i := 0; i < c.N; i++ {
-		//TODO: add diferent points
-		p = basePoint.Add(basePoint)
+		p = p.Add(p)
 	}
 
 	curve := newRadixCurve()

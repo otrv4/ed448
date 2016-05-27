@@ -194,8 +194,8 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	tmp.weakReduce()
 
 	e := new(bigNumber).mul(tmp, d)
-	f := new(bigNumber).sub(b, e).strongReduce()
-	g := new(bigNumber).add(b, e).strongReduce()
+	f := new(bigNumber).sub(b, e)
+	g := new(bigNumber).add(b, e)
 
 	x3 := new(bigNumber).mul(new(bigNumber).add(x1, y1), new(bigNumber).add(x2, y2))
 	x3.sub(x3, c)
