@@ -16,16 +16,6 @@ func (s *Ed448Suite) BenchmarkBigintsAddition(c *C) {
 	}
 }
 
-func (s *Ed448Suite) BenchmarkRadixAddition(c *C) {
-	curve := newRadixCurve()
-	c.ResetTimer()
-	x, y := gx, gy
-	for i := 0; i < c.N; i++ {
-		rx, ry := curve.add(x, y, x, y)
-		x, y = rx.(*big.Int), ry.(*big.Int)
-	}
-}
-
 func (s *Ed448Suite) BenchmarkDoubling(c *C) {
 	curve := newBigintsCurve()
 	c.ResetTimer()
