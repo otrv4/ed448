@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 )
 
+//XXX: Should we remove this?
 type bytesCurve struct {
 }
 
