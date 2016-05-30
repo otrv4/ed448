@@ -1,5 +1,7 @@
 package ed448
 
+import "io"
+
 //XXX Why having a class at all and not just exported methods?
 type radixCurve struct {
 	zero, one, two             *bigNumber
@@ -68,6 +70,8 @@ type pointCurve interface {
 	double(p1 Point) (p2 Point)
 	//multiply(p Point, n *bigNumber) (p2 Point)
 	//multiplyByBase(n *bigNumber) (p Point)
+
+	generateKey(rand io.Reader) (priv []byte, pub []byte, err error)
 }
 
 func newRadixCurve() pointCurve {
@@ -86,4 +90,8 @@ func (c *radixCurve) add(p1, p2 Point) Point {
 //Returns 2*(x,y)
 func (c *radixCurve) double(p Point) Point {
 	return p.Double()
+}
+
+func (c *radixCurve) generateKey(rand io.Reader) (priv []byte, pub []byte, err error) {
+	return
 }
