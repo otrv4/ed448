@@ -17,6 +17,8 @@ type Point interface {
 	OnCurve() bool
 	Add(Point) Point
 	Double() Point
+
+	Marshal() []byte
 	//ReAdd(Point) Point //????
 	//Affine() *Affine
 }
@@ -65,6 +67,10 @@ func (aP *Affine) Double() Point {
 }
 
 func (aP *Affine) Add(Point) Point {
+	return nil
+}
+
+func (aP *Affine) Marshal() []byte {
 	return nil
 }
 
@@ -207,4 +213,37 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	return &homogeneousProjective{
 		x3, y3, z3,
 	}
+}
+
+func (hP *homogeneousProjective) Marshal() []byte {
+	byteLen := 56
+
+	dst := make([]byte, byteLen)
+	serialize(dst, hP[0]) //x little endian
+	x := new(big.Int).SetBytes(rev(dst))
+
+	serialize(dst, hP[1]) //y little endian
+	y := new(big.Int).SetBytes(rev(dst))
+
+	serialize(dst, hP[2]) //z little endian
+	z := new(big.Int).SetBytes(rev(dst))
+
+	fmt.Printf("x : %#v\n", x.Bytes())
+	fmt.Printf("y : %#v\n", y.Bytes())
+	fmt.Printf("z : %#v\n", z.Bytes())
+
+	//x and y in affine coordinates
+	//XXX I'm not sure if I need to covert to affine
+	x.Div(x, z)
+	y.Div(y, z)
+
+	ret := make([]byte, 1+2*byteLen)
+	ret[0] = 4 // uncompressed point
+
+	xBytes := x.Bytes()
+	copy(ret[1+byteLen-len(xBytes):], xBytes)
+
+	yBytes := y.Bytes()
+	copy(ret[1+2*byteLen-len(yBytes):], yBytes)
+	return ret
 }
