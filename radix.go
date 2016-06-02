@@ -40,6 +40,10 @@ func constantTimeGreaterOrEqualP(n *bigNumber) bool {
 
 //n = x + y
 func (n *bigNumber) add(x *bigNumber, y *bigNumber) *bigNumber {
+	return n.addRaw(x, y).weakReduce()
+}
+
+func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	for i := 0; i < len(n); i++ {
 		n[i] = x[i] + y[i]
 	}
