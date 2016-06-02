@@ -1,3 +1,5 @@
+//+build use64,amd64
+
 package ed448
 
 const (
