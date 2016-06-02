@@ -1,4 +1,4 @@
-//+build amd64
+//+build use64,amd64
 
 package ed448
 
