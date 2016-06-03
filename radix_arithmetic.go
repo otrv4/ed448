@@ -17,12 +17,27 @@ const (
 	// The size of the Goldilocks scalars, in bits.
 	ScalarBits = FieldBits - 2 // 446
 
-	//define FIELD_BYTES          (1+(FIELD_BITS-1)/8)
-	//define FIELD_WORDS          (1+(FIELD_BITS-1)/sizeof(word_t))
+	wordBits = 32 // 32-bits
+	//wordBits = 64 // 64-bits
+
+	// The number of words in the Goldilocks field.
+	// 14 for 32-bit and 7 for 64-bits
+	ScalarWords = (ScalarBits + wordBits - 1) / wordBits
 
 	BitSize  = ScalarBits
 	ByteSize = FieldBytes
+
+	//Comb configuration
+	CombNumber  = uint(8)  // 5 if 64-bits
+	CombTeeth   = uint(4)  // 5 in 64-bits
+	CombSpacing = uint(14) // 18 in 64-bit
 )
+
+type word_t uint32 //32-bits
+//type word_t uint64 //64-bits
+
+type dword_t uint64 //32-bits
+//type word_t uint128 //64-bits
 
 //XXX Why having a class at all and not just exported methods?
 type radixCurve struct {
@@ -103,6 +118,7 @@ type pointCurve interface {
 	//multiply(p Point, n *bigNumber) (p2 Point)
 	//multiplyByBase(n *bigNumber) (p Point)
 
+	multiplyByBase2(scalar [ScalarWords]word_t) Point
 	generateKey(rand io.Reader) (priv []byte, pub []byte, err error)
 }
 
@@ -141,6 +157,58 @@ func (c *radixCurve) multiplyByBase(n []byte) Point {
 	return priv
 }
 
+func (c *radixCurve) multiplyByBase2(scalar [ScalarWords]word_t) Point {
+	out := &twExtensible{
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+	}
+
+	n := CombNumber
+	t := CombTeeth
+	s := CombSpacing
+
+	schedule := make([]word_t, ScalarWords)
+	scheduleScalarForCombs(schedule, scalar)
+
+	var ni *nielsPoint
+
+	for i := uint(0); i < s; i++ {
+		if i != 0 {
+			out = out.double()
+		}
+
+		for j := uint(0); j < n; j++ {
+			tab := word_t(0)
+
+			for k := uint(0); k < t; k++ {
+				bit := (s - 1 - i) + k*s + j*(s*t)
+				if bit < ScalarWords*wordBits {
+					tab |= (schedule[bit/wordBits] >> (bit % wordBits) & 1) << k
+				}
+			}
+
+			invert := word_t(tab>>(t-1)) - 1
+			tab ^= invert
+			tab &= (1 << (t - 1)) - 1
+
+			ni = baseTable.lookup(j, t, uint(tab))
+			ni.conditionalNegate(invert != 0)
+
+			if i != 0 || j != 0 {
+				out = out.addTwNiels(ni)
+			} else {
+				out = ni.TwistedExtensible()
+			}
+		}
+
+	}
+
+	return out
+}
+
 func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err error) {
 	priv = make([]byte, ByteSize)
 
@@ -164,6 +232,7 @@ func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err e
 	fmt.Printf("Private is: %#v\n", m.Bytes())
 
 	//XXX This is sooooooo slow. We need to use an algorithm with some pre-computation
+	//XXX replace by multiplyByBase2
 	publicKey := c.multiplyByBase(m.Bytes())
 	pub = publicKey.Marshal()
 	return

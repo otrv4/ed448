@@ -70,8 +70,288 @@ func (aP *Affine) Add(Point) Point {
 	return nil
 }
 
+func (aP *Affine) conditionalNegate(neg bool) {
+	//XXX this should be constant-time
+	//XXX TODO
+}
+
 func (aP *Affine) Marshal() []byte {
 	return nil
+}
+
+//XXX This is actually twNiels
+type nielsPoint struct {
+	a, b, c *bigNumber
+}
+
+func newNielsPoint(a, b, c [56]byte) *nielsPoint {
+	return &nielsPoint{
+		a: mustDeserialize(serialized(a)),
+		b: mustDeserialize(serialized(b)),
+		c: mustDeserialize(serialized(c)),
+	}
+}
+
+func (p *nielsPoint) String() string {
+	return fmt.Sprintf("A: %s\nB: %s\nC: %s\n", p.a, p.b, p.c)
+}
+
+func (p *nielsPoint) copy() *nielsPoint {
+	return &nielsPoint{
+		a: p.a.copy(),
+		b: p.b.copy(),
+		c: p.c.copy(),
+	}
+}
+
+//XXX SECURITY this should be constant-time
+func (nP *nielsPoint) conditionalNegate(neg bool) {
+	if neg {
+		tmp := nP.a
+		nP.a = nP.b
+		nP.b = tmp
+		nP.c.neg(nP.c)
+	}
+}
+
+func (p *nielsPoint) TwistedExtensible() *twExtensible {
+	x := new(bigNumber)
+	y := new(bigNumber)
+	z := new(bigNumber)
+	t := new(bigNumber)
+	u := new(bigNumber)
+
+	y = y.add(p.b, p.a)
+	x = x.sub(p.b, p.a)
+	z = &bigNumber{1}
+	t = x.copy()
+	u = y.copy()
+
+	//PERF: should it be in-place?
+	return &twExtensible{x, y, z, t, u}
+}
+
+type twExtensible [5]*bigNumber
+
+func (p *twExtensible) Add(Point) Point {
+	return nil
+}
+
+func (p *twExtensible) Double() Point {
+	return nil
+}
+
+func (p *twExtensible) Marshal() []byte {
+	return nil
+}
+
+func (p *twExtensible) OnCurve() bool {
+	x := p[0]
+	y := p[1]
+	z := p[2]
+	t := p[3]
+	u := p[4]
+
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
+	l3 := new(bigNumber)
+
+	// Check invariant:
+	// 0 = -x*y + z*t*u
+	l1 = l1.mul(t, u)
+	l2 = l2.mul(z, l1)
+	l0 = l0.mul(x, y)
+	l1 = l1.neg(l0)
+	l0 = l0.add(l1, l2)
+	l5 := l0.zero()
+
+	// Check invariant:
+	// 0 = d*t^2*u^2 + x^2 - y^2 + z^2 - t^2*u^2
+
+	l2 = l2.square(y)
+	l1 = l1.neg(l2)
+	l0 = l0.square(x)
+	l2 = l2.add(l0, l1)
+	l3 = l3.square(u)
+	l0 = l0.square(t)
+	l1 = l1.mul(l0, l3)
+	l3 = l3.mulWSignedCurveConstant(l1, curveDSigned)
+	l0 = l0.add(l3, l2)
+	l3 = l3.neg(l1)
+	l2 = l2.add(l3, l0)
+	l1 = l1.square(z)
+	l0 = l0.add(l1, l2)
+	l4 := l0.zero()
+
+	//XXX SECURITY this might not be constant time (due logical short circuit)
+	//zero() should return an mask
+	return l4 && l5 && !z.zero()
+}
+
+func (p *twExtensible) String() string {
+	x := p[0]
+	y := p[1]
+	z := p[2]
+	t := p[3]
+	u := p[4]
+
+	ret := fmt.Sprintf("X: %s\n", x)
+	ret += fmt.Sprintf("Y: %s\n", y)
+	ret += fmt.Sprintf("Z: %s\n", z)
+	ret += fmt.Sprintf("T: %s\n", t)
+	ret += fmt.Sprintf("U: %s\n", u)
+
+	return ret
+}
+
+func (p *twExtensible) equals(p2 *twExtensible) bool {
+	ok := true
+
+	for i, pi := range p {
+		ok = ok && pi.equals(p2[i])
+	}
+
+	return ok
+}
+
+func (p *twExtensible) double() *twExtensible {
+	x := p[0].copy()
+	y := p[1].copy()
+	z := p[2].copy()
+	t := p[3].copy()
+	u := p[4].copy()
+
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
+
+	l2 = l2.square(x)
+	l0 = l0.square(y)
+	u = u.addRaw(l2, l0)
+	t = t.addRaw(y, x)
+	l1 = l1.square(t)
+	t = t.subRaw(l1, u)
+	t.bias(3)
+	t.weakReduce()
+	// This is equivalent do subx_nr in 32 bits. Change if using 64-bits
+	l1 = l1.sub(l0, l2)
+	x = x.square(z)
+	x.bias(1)
+	z = z.addRaw(x, x)
+	l0 = l0.subRaw(z, l1)
+	l0.weakReduce()
+	z = z.mul(l1, l0)
+	x = x.mul(l0, t)
+	y = y.mul(l1, u)
+
+	//PERF: should it be in-place?
+	return &twExtensible{x, y, z, t, u}
+}
+
+func (p *twExtensible) addTwNiels(p2 *nielsPoint) *twExtensible {
+	x := p[0].copy()
+	y := p[1].copy()
+	z := p[2].copy()
+	t := p[3].copy()
+	u := p[4].copy()
+
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+
+	l1 = l1.sub(y, x)
+	l0 = l0.mul(p2.a, l1)
+	l1 = l1.addRaw(x, y)
+	y = y.mul(p2.b, l1)
+	l1 = l1.mul(u, t)
+	x = x.mul(p2.c, l1)
+
+	u = u.addRaw(l0, y)
+	// This is equivalent do subx_nr in 32 bits. Change if using 64-bits
+	t = t.sub(y, l0)
+
+	// This is equivalent do subx_nr in 32 bits. Change if using 64-bits
+	y = y.sub(z, x)
+	l0 = l0.addRaw(x, z)
+
+	z = z.mul(l0, y)
+	x = x.mul(y, t)
+	y = y.mul(l0, u)
+
+	//PERF: should it be in-place?
+	return &twExtensible{x, y, z, t, u}
+}
+
+type twistedHomogeneousProjective [3]*bigNumber
+
+func (hP *twistedHomogeneousProjective) OnCurve() bool {
+	//TODO
+	return false
+}
+
+func (hP *twistedHomogeneousProjective) Add(p Point) Point {
+	//a = -1
+	//d = -39082
+	//A ← Z1*Z2,
+	//B ← A^2,
+	//C ← X1*X2,
+	//D ← Y1*Y2,
+	//E ← dC*D,
+	//F ← B−E,
+	//G ← B+E,
+	//U ← C+D,
+	//X3 ← A*F*((X1+Y1)*(X2+Y2)−U),
+	//Y3 ← A*G*U,
+	//Z3 ← F*G.
+
+	x1 := hP[0]
+	y1 := hP[1]
+	z1 := hP[2]
+
+	hP2 := p.(*homogeneousProjective)
+	x2 := hP2[0]
+	y2 := hP2[1]
+	z2 := hP2[2]
+
+	a := new(bigNumber).mul(z1, z2)
+	b := new(bigNumber).mul(a, a)
+	c := new(bigNumber).mul(x1, x2)
+	d := new(bigNumber).mul(y1, y2)
+
+	e := new(bigNumber).mulWSignedCurveConstant(c, int64(-39082))
+	e.mul(e, d)
+	f := new(bigNumber).sub(b, e)
+	g := new(bigNumber).add(b, e)
+	u := new(bigNumber).add(c, d)
+
+	//Just reusing e and b (unused) memory
+	x3 := e.mul(b.add(x1, y1), e.add(x2, y2))
+	x3.sub(x3, u)
+	x3.mul(x3, a).mul(x3, f)
+
+	//reuse u
+	y3 := u.mul(u, a)
+	y3 = y3.mul(y3, g)
+
+	z3 := f.mul(f, g)
+
+	return &homogeneousProjective{
+		x3, y3, z3,
+	}
+}
+
+func (hP *twistedHomogeneousProjective) Double() Point {
+	return nil
+}
+
+func (hP *twistedHomogeneousProjective) Marshal() []byte {
+	return nil
+}
+
+func (hP *twistedHomogeneousProjective) conditionalNegate(neg bool) {
+	if neg {
+		hP[0].neg(hP[0])
+	}
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
@@ -87,7 +367,29 @@ func newHomogeneousProjective(x *bigNumber, y *bigNumber) *homogeneousProjective
 }
 
 func (hP *homogeneousProjective) String() string {
-	return fmt.Sprintf("X: %s, Y: %s, Z: %s", hP[0], hP[1], hP[2])
+	x := hP[0]
+	y := hP[1]
+	z := hP[2]
+
+	buff := [56]byte{}
+	serialize(buff[:], x)
+	ret := fmt.Sprintf("X: %s\n", new(big.Int).SetBytes(rev(buff[:])).Text(16))
+
+	serialize(buff[:], y)
+	ret += fmt.Sprintf("Y: %s\n", new(big.Int).SetBytes(rev(buff[:])).Text(16))
+
+	serialize(buff[:], z)
+	ret += fmt.Sprintf("Z: %s\n", new(big.Int).SetBytes(rev(buff[:])).Text(16))
+
+	return ret
+	//return fmt.Sprintf("X: %s\nY: %s\nZ: %s\n", hP[0], hP[1], hP[2])
+}
+
+func (hP *homogeneousProjective) conditionalNegate(neg bool) {
+	//XXX this should be constant-time
+	if neg {
+		hP[0].neg(hP[0])
+	}
 }
 
 func (hP *homogeneousProjective) OnCurve() bool {
@@ -227,10 +529,6 @@ func (hP *homogeneousProjective) Marshal() []byte {
 
 	serialize(dst, hP[2]) //z little endian
 	z := new(big.Int).SetBytes(rev(dst))
-
-	fmt.Printf("x : %#v\n", x.Bytes())
-	fmt.Printf("y : %#v\n", y.Bytes())
-	fmt.Printf("z : %#v\n", z.Bytes())
 
 	//x and y in affine coordinates
 	//XXX I'm not sure if I need to covert to affine
