@@ -1,10 +1,8 @@
 package ed448
 
 import (
-	"fmt"
 	"io"
 	"math/big"
-	"math/rand"
 )
 
 const (
@@ -203,37 +201,54 @@ func (c *radixCurve) multiplyByBase2(scalar [ScalarWords]word_t) Point {
 				out = ni.TwistedExtensible()
 			}
 		}
-
 	}
+
+	//if(!out.OnCurve()){ return nil } //and maybe panic?
 
 	return out
 }
 
-func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err error) {
-	priv = make([]byte, ByteSize)
+func leBytesToWords(dst []word_t, src []byte) {
+	wordBytes := uint(wordBits / 8)
+	srcLen := uint(len(src))
 
-	if _, err = io.ReadFull(read, priv); err != nil {
+	dstLen := uint((srcLen + wordBytes - 1) / wordBytes)
+	if dstLen < uint(len(dst)) {
+		panic("wrong dst size")
+	}
+
+	for i := uint(0); i*wordBytes < srcLen; i++ {
+		out := word_t(0)
+		for j := uint(0); j < wordBytes && wordBytes*i*j < srcLen; j++ {
+			out |= word_t(src[wordBytes*i+j]) << (8 * j)
+		}
+
+		dst[i] = out
+	}
+}
+
+func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err error) {
+	buff := make([]byte, FieldBytes)
+	if _, err = io.ReadFull(read, buff); err != nil {
 		return
 	}
 
-	//XXX FIXME
-	//This is just to not break the API ;)
-	//We use the array of random bytes to generate a seed
-	seed := new(big.Int).SetBytes(priv)
-	seed.Mod(seed, big.NewInt(int64(9223372036854775807)))
-	r := rand.New(rand.NewSource(seed.Int64()))
+	m := new(big.Int)
+	randomSeed := new(big.Int).SetBytes(buff)
+	_, m = m.DivMod(randomSeed, new(big.Int).Sub(primeOrder, one), m)
+	m.Add(m, one) //m E [1, primeOrder-1]
 
-	one := big.NewInt(1)
-	m := new(big.Int).Rand(r, new(big.Int).Sub(primeOrder, one)) //[0, primeOrder-1)
-	m.Add(m, one)                                                //[1, primeOrder-1]
+	//XXX this does not always have 56bytes
+	privBytes := m.Bytes()
+	priv = make([]byte, FieldBytes)
+	for i := 0; i < len(privBytes); i++ {
+		priv[len(priv)-i-1] = privBytes[len(privBytes)-i-1]
+	}
 
-	priv = m.Bytes()
-
-	fmt.Printf("Private is: %#v\n", m.Bytes())
-
-	//XXX This is sooooooo slow. We need to use an algorithm with some pre-computation
-	//XXX replace by multiplyByBase2
-	publicKey := c.multiplyByBase(m.Bytes())
-	pub = publicKey.Marshal()
+	scalar := [14]word_t{}
+	leBytesToWords(scalar[:], priv[:])
+	publicKey := c.multiplyByBase2(scalar)
+	//XXX Hamburg's code makes a untwist_and_double_and_serialize before
+	pub = publicKey.Marshal() //I have no idea how to serialize "twisted extensible coordinates"
 	return
 }
