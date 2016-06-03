@@ -1,9 +1,6 @@
 package ed448
 
-import (
-	"fmt"
-	"math/big"
-)
+import "fmt"
 
 type limb Word
 type bigNumber [Limbs]limb //XXX Should this type be a pointer to an array?
@@ -181,8 +178,8 @@ func (n *bigNumber) setBytes(in []byte) *bigNumber {
 func (n *bigNumber) String() string {
 	dst := make([]byte, 56)
 	serialize(dst[:], n)
-	//return fmt.Sprintf("%#v", dst)
-	return fmt.Sprintf("0x%s", new(big.Int).SetBytes(rev(dst)).Text(16))
+	return fmt.Sprintf("%#v", dst)
+	//return fmt.Sprintf("0x%s", new(big.Int).SetBytes(rev(dst)).Text(16))
 }
 
 func (n *bigNumber) limbs() []limb {

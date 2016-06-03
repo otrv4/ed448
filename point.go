@@ -426,18 +426,7 @@ func (hP *homogeneousProjective) String() string {
 	y := hP[1]
 	z := hP[2]
 
-	buff := [56]byte{}
-	serialize(buff[:], x)
-	ret := fmt.Sprintf("X: %s\n", new(big.Int).SetBytes(rev(buff[:])).Text(16))
-
-	serialize(buff[:], y)
-	ret += fmt.Sprintf("Y: %s\n", new(big.Int).SetBytes(rev(buff[:])).Text(16))
-
-	serialize(buff[:], z)
-	ret += fmt.Sprintf("Z: %s\n", new(big.Int).SetBytes(rev(buff[:])).Text(16))
-
-	return ret
-	//return fmt.Sprintf("X: %s\nY: %s\nZ: %s\n", hP[0], hP[1], hP[2])
+	return fmt.Sprintf("X: %s\nY: %s\nZ: %s\n", hP[0], hP[1], hP[2])
 }
 
 func (hP *homogeneousProjective) conditionalNegate(neg bool) {
