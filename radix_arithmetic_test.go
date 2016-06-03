@@ -19,7 +19,18 @@ func (s *Ed448Suite) TestRadixBasePointIsOnCurve(c *C) {
 	})
 	gy, _ := deserialize(serialized{0x13})
 	curve := newRadixCurve()
+
 	c.Assert(curve.isOnCurve(&Affine{gx, gy}), Equals, true)
+}
+
+func (s *Ed448Suite) TestRadixMultiplyByBase(c *C) {
+	curve := newRadixCurve()
+	scalar := [ScalarWords]word_t{}
+	scalar[ScalarWords-1] = 1 //big-endian
+
+	p := curve.multiplyByBase2(scalar)
+
+	c.Assert(curve.isOnCurve(p), Equals, true)
 }
 
 func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
