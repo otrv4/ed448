@@ -151,6 +151,30 @@ func (n *bigNumber) zero() (eq bool) {
 	return r == 0
 }
 
+//in is big endian
+func (n *bigNumber) setBytes(in []byte) *bigNumber {
+	if len(in) != 56 {
+		panic("1")
+		return nil
+	}
+
+	s := serialized{}
+	for i, si := range in {
+		s[len(s)-i-1] = si
+	}
+
+	d, ok := deserialize(s)
+	if !ok {
+		return nil
+	}
+
+	for i, di := range d {
+		n[i] = di
+	}
+
+	return n
+}
+
 func (n *bigNumber) String() string {
 	dst := [56]byte{}
 	serialize(dst[:], n)
