@@ -422,10 +422,6 @@ func newHomogeneousProjective(x *bigNumber, y *bigNumber) *homogeneousProjective
 }
 
 func (hP *homogeneousProjective) String() string {
-	x := hP[0]
-	y := hP[1]
-	z := hP[2]
-
 	return fmt.Sprintf("X: %s\nY: %s\nZ: %s\n", hP[0], hP[1], hP[2])
 }
 
