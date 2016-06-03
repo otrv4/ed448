@@ -106,6 +106,13 @@ func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {
 	return r
 }
 
+func (n *bigNumber) neg(x *bigNumber) *bigNumber {
+	n.negRaw(x)
+	n.bias(2)
+	n.weakReduce()
+	return n
+}
+
 func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
 	for i, xi := range x {
 		n[i] = limb(-xi)
