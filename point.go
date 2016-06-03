@@ -8,8 +8,10 @@ import (
 )
 
 var (
-	bigNumOne    = mustDeserialize(serialized{1})
-	curveDSigned = int64(-39081)
+	bigNumOne           = mustDeserialize(serialized{1})
+	bigNumTwo           = mustDeserialize(serialized{2})
+	curveDSigned        = int64(-39081)
+	twistedCurveDSigned = int64(-39082)
 )
 
 // Point represents a point on the curve in a suitable coordinate system
@@ -43,7 +45,7 @@ func NewPoint(x serialized, y serialized) (p Point, e error) {
 type Affine [2]*bigNumber
 
 func (aP *Affine) OnCurve() bool {
-	// x² + y² - 1 - bx²y² = 0
+	// x² + y² - 1 - dx²y² = 0
 	x := aP[0]
 	y := aP[1]
 
@@ -66,7 +68,7 @@ func (aP *Affine) Double() Point {
 	return nil
 }
 
-func (aP *Affine) Add(Point) Point {
+func (aP *Affine) Add(bP Point) Point {
 	return nil
 }
 
@@ -284,9 +286,62 @@ func (p *twExtensible) addTwNiels(p2 *nielsPoint) *twExtensible {
 
 type twistedHomogeneousProjective [3]*bigNumber
 
+func NewTwistedPoint(x serialized, y serialized) (p Point, e error) {
+	xN, ok1 := deserialize(x)
+	yN, ok2 := deserialize(y)
+
+	p = newTwistedHomogeneousProjective(xN, yN)
+
+	if !(ok1 && ok2) {
+		e = errors.New("invalid coordinates")
+	}
+
+	return
+}
+
+//Affine to Twisted Homogeneous Projective
+func newTwistedHomogeneousProjective(x *bigNumber, y *bigNumber) *twistedHomogeneousProjective {
+	x1 := new(bigNumber).mul(x, y)
+	x1 = x1.mul(x1, bigNumTwo)
+
+	x2 := new(bigNumber).mul(x, x)
+	y2 := new(bigNumber).mul(y, y)
+	x2plusy2 := new(bigNumber).add(x2, y2)
+
+	y1 := x2plusy2
+
+	z1 := new(bigNumber).sub(y2, x2)
+	z2 := new(bigNumber).sub(bigNumTwo, x2plusy2)
+
+	return &twistedHomogeneousProjective{
+		x1.mul(x1, z2).copy(), // X * Z
+		y1.mul(y1, z1).copy(), // Y * Z
+		z1.mul(z1, z2).copy(), // Z = 1
+	}
+}
+
 func (hP *twistedHomogeneousProjective) OnCurve() bool {
-	//TODO
-	return false
+	// (-x² + y²)z² - z^4 - (d-1)x²y² = 0
+	x := hP[0]
+	y := hP[1]
+	z := hP[2]
+
+	x2 := new(bigNumber).mul(x, x)
+	y2 := new(bigNumber).mul(y, y)
+	z2 := new(bigNumber).mul(z, z)
+	z4 := new(bigNumber).mul(z2, z2)
+
+	x2y2 := new(bigNumber).mul(x2, y2)
+	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, twistedCurveDSigned)
+	dx2y2.weakReduce()
+
+	r := new(bigNumber).sub(y2, x2)
+	r.mul(r, z2)
+	r.sub(r, z4)
+	r.sub(r, dx2y2)
+
+	r.strongReduce()
+	return r.zero()
 }
 
 func (hP *twistedHomogeneousProjective) Add(p Point) Point {
@@ -308,7 +363,7 @@ func (hP *twistedHomogeneousProjective) Add(p Point) Point {
 	y1 := hP[1]
 	z1 := hP[2]
 
-	hP2 := p.(*homogeneousProjective)
+	hP2 := p.(*twistedHomogeneousProjective)
 	x2 := hP2[0]
 	y2 := hP2[1]
 	z2 := hP2[2]
@@ -318,7 +373,7 @@ func (hP *twistedHomogeneousProjective) Add(p Point) Point {
 	c := new(bigNumber).mul(x1, x2)
 	d := new(bigNumber).mul(y1, y2)
 
-	e := new(bigNumber).mulWSignedCurveConstant(c, int64(-39082))
+	e := new(bigNumber).mulWSignedCurveConstant(c, twistedCurveDSigned)
 	e.mul(e, d)
 	f := new(bigNumber).sub(b, e)
 	g := new(bigNumber).add(b, e)
@@ -335,7 +390,7 @@ func (hP *twistedHomogeneousProjective) Add(p Point) Point {
 
 	z3 := f.mul(f, g)
 
-	return &homogeneousProjective{
+	return &twistedHomogeneousProjective{
 		x3, y3, z3,
 	}
 }
