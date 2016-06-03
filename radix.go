@@ -130,17 +130,21 @@ func (n *bigNumber) copy() *bigNumber {
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	r := limb(0)
 
-	for i, oi := range o {
-		r |= n[i] ^ oi
+	x := n.copy().strongReduce()
+	y := o.copy().strongReduce()
+
+	for i, yi := range y {
+		r |= x[i] ^ yi
 	}
 
 	return r == 0
 }
 
 func (n *bigNumber) zero() (eq bool) {
+	x := n.copy().strongReduce()
 	r := limb(0)
 
-	for _, ni := range n {
+	for _, ni := range x {
 		r |= ni ^ 0
 	}
 
