@@ -171,7 +171,7 @@ func (c *radixCurve) multiplyByBase2(scalar [ScalarWords]word_t) Point {
 	schedule := make([]word_t, ScalarWords)
 	scheduleScalarForCombs(schedule, scalar)
 
-	var ni *nielsPoint
+	var ni *twNiels
 
 	for i := uint(0); i < s; i++ {
 		if i != 0 {
