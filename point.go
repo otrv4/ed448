@@ -41,46 +41,6 @@ func NewPoint(x serialized, y serialized) (p Point, e error) {
 	return
 }
 
-//XXX This should be removed
-type Affine [2]*bigNumber
-
-func (aP *Affine) OnCurve() bool {
-	// x² + y² - 1 - dx²y² = 0
-	x := aP[0]
-	y := aP[1]
-
-	x2 := new(bigNumber).mul(x, x)
-	y2 := new(bigNumber).mul(y, y)
-
-	x2y2 := new(bigNumber).mul(x2, y2)
-	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
-	dx2y2.weakReduce()
-
-	r := new(bigNumber).add(x2, y2)
-	r.sub(r, bigNumOne)
-	r.sub(r, dx2y2)
-
-	r.strongReduce()
-	return r.zero()
-}
-
-func (aP *Affine) Double() Point {
-	return nil
-}
-
-func (aP *Affine) Add(bP Point) Point {
-	return nil
-}
-
-func (aP *Affine) conditionalNegate(neg bool) {
-	//XXX this should be constant-time
-	//XXX TODO
-}
-
-func (aP *Affine) Marshal() []byte {
-	return nil
-}
-
 //XXX This is actually twNiels
 type nielsPoint struct {
 	a, b, c *bigNumber
