@@ -19,6 +19,12 @@ func isZero(n int64) int64 {
 	return ^n
 }
 
+func isZeroMask(n uint32) uint32 {
+	nn := uint64(n)
+	nn = nn - 1
+	return uint32(nn >> wordBits)
+}
+
 func constantTimeGreaterOrEqualP(n *bigNumber) bool {
 	var (
 		ge   = int64(-1)
@@ -140,7 +146,7 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	return r == 0
 }
 
-func (n *bigNumber) zero() (eq bool) {
+func (n *bigNumber) zeroMask() uint32 {
 	x := n.copy().strongReduce()
 	r := limb(0)
 
@@ -148,13 +154,16 @@ func (n *bigNumber) zero() (eq bool) {
 		r |= ni ^ 0
 	}
 
-	return r == 0
+	return isZeroMask(uint32(r))
+}
+
+func (n *bigNumber) zero() (eq bool) {
+	return n.zeroMask() == 0xffffffff
 }
 
 //in is big endian
 func (n *bigNumber) setBytes(in []byte) *bigNumber {
 	if len(in) != 56 {
-		panic("1")
 		return nil
 	}
 

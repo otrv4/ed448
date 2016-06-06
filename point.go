@@ -125,7 +125,7 @@ func (p *twExtensible) OnCurve() bool {
 	l0 = l0.mul(x, y)
 	l1 = l1.neg(l0)
 	l0 = l0.add(l1, l2)
-	l5 := l0.zero()
+	l5 := l0.zeroMask()
 
 	// Check invariant:
 	// 0 = d*t^2*u^2 + x^2 - y^2 + z^2 - t^2*u^2
@@ -143,11 +143,10 @@ func (p *twExtensible) OnCurve() bool {
 	l2 = l2.add(l3, l0)
 	l1 = l1.square(z)
 	l0 = l0.add(l1, l2)
-	l4 := l0.zero()
+	l4 := l0.zeroMask()
 
-	//XXX SECURITY this might not be constant time (due logical short circuit)
-	//zero() should return an mask
-	return l4 && l5 && !z.zero()
+	ret := l4 & l5 & (^z.zeroMask())
+	return ret == 0xffffffff
 }
 
 func (p *twExtensible) String() string {

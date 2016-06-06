@@ -16,3 +16,11 @@ func (s *Ed448Suite) TestNegate(c *C) {
 
 	c.Assert(out, DeepEquals, expected)
 }
+
+func (s *Ed448Suite) TestZeroMask(c *C) {
+	zero := &bigNumber{}
+	one := &bigNumber{1}
+
+	c.Assert(zero.zeroMask(), Equals, uint32(0xffffffff))
+	c.Assert(one.zeroMask(), Equals, uint32(0))
+}
