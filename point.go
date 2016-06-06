@@ -244,6 +244,7 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
+//XXX This can be replaced by extensible for simplicity
 type homogeneousProjective [3]*bigNumber
 
 //Affine to Homogeneous Projective
@@ -338,7 +339,7 @@ func (hP *homogeneousProjective) Double() Point {
 	yy.mul(yy, e)
 	zz := e.mul(e, j)
 
-	//XXX Should it change the same instance instead?
+	//XXX PERF Should it change the same instance instead?
 	return &homogeneousProjective{
 		xx, yy, zz,
 	}
