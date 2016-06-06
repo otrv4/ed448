@@ -74,6 +74,19 @@ func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
 }
 
 /*
+func (s *Ed448Suite) TestComputeSecret(c *C) {
+	curve := newRadixCurve()
+	privA, pubA, err := curve.generateKey(rand.Reader)
+	fmt.Printf("privA %v\npubA %v\n", privA, pubA)
+	c.Assert(err, Equals, nil)
+	privB, pubB, err := curve.generateKey(rand.Reader)
+	fmt.Printf("privB %v\npubB %v\n", privB, pubB)
+	c.Assert(err, Equals, nil)
+	out := curve.computeSecret(privA, pubB)
+	expected := curve.computeSecret(privB, pubA)
+	c.Assert(out, DeepEquals, expected)
+}
+
 func (s *Ed448Suite) TestAdd(c *C) {
 	curve := newBigintsCurve()
 
