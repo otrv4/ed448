@@ -118,6 +118,7 @@ type pointCurve interface {
 
 	multiplyByBase2(scalar [ScalarWords]word_t) Point
 	generateKey(rand io.Reader) (priv []byte, pub []byte, err error)
+	computeSecret(private []byte, public []byte) Point
 }
 
 func newRadixCurve() pointCurve {
@@ -141,6 +142,19 @@ func (c *radixCurve) double(p Point) Point {
 var (
 	primeOrder, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
 )
+
+func (c *radixCurve) multiply(n []byte, p Point) Point {
+	m := new(big.Int).SetBytes(n)
+	one := big.NewInt(1)
+
+	out := p
+
+	for i := big.NewInt(0); i.Cmp(m) == -1; i.Add(i, one) {
+		out.Add(p)
+	}
+
+	return out
+}
 
 func (c *radixCurve) multiplyByBase(n []byte) Point {
 	m := new(big.Int).SetBytes(n)
@@ -251,4 +265,12 @@ func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err e
 	//XXX Hamburg's code makes a untwist_and_double_and_serialize before
 	pub = publicKey.Marshal() //I have no idea how to serialize "twisted extensible coordinates"
 	return
+}
+
+func (c *radixCurve) computeSecret(private []byte, public []byte) Point {
+	scalar := [14]word_t{}
+	leBytesToWords(scalar[:], private[:])
+	ga := c.multiplyByBase2(scalar)
+	gab := c.multiply(public, ga)
+	return gab
 }
