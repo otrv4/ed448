@@ -62,7 +62,7 @@ func (s *Ed448Suite) TestMixedAddition(c *C) {
 	pb, _ := hex.DecodeString("81a45f02f41053f8d7d2a1f176a340529b33b7ee4d3fa84de384b750b35a54c315bf36c41d023ade226449916e668396589ea2145da09b95")
 	pc, _ := hex.DecodeString("5f5a2b06a2dbf7136f8dc979fd54d631ca7de50397250a196d3be2a721ab7cbaa92c545d9b15b5319e11b64bc031666049d8637e13838b3b")
 
-	n := &nielsPoint{
+	n := &twNiels{
 		a: new(bigNumber).setBytes(pa),
 		b: new(bigNumber).setBytes(pb),
 		c: new(bigNumber).setBytes(pc),

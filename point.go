@@ -41,25 +41,24 @@ func NewPoint(x serialized, y serialized) (p Point, e error) {
 	return
 }
 
-//XXX This is actually twNiels
-type nielsPoint struct {
+type twNiels struct {
 	a, b, c *bigNumber
 }
 
-func newNielsPoint(a, b, c [56]byte) *nielsPoint {
-	return &nielsPoint{
+func newNielsPoint(a, b, c [56]byte) *twNiels {
+	return &twNiels{
 		a: mustDeserialize(serialized(a)),
 		b: mustDeserialize(serialized(b)),
 		c: mustDeserialize(serialized(c)),
 	}
 }
 
-func (p *nielsPoint) String() string {
+func (p *twNiels) String() string {
 	return fmt.Sprintf("A: %s\nB: %s\nC: %s\n", p.a, p.b, p.c)
 }
 
-func (p *nielsPoint) copy() *nielsPoint {
-	return &nielsPoint{
+func (p *twNiels) copy() *twNiels {
+	return &twNiels{
 		a: p.a.copy(),
 		b: p.b.copy(),
 		c: p.c.copy(),
@@ -67,7 +66,7 @@ func (p *nielsPoint) copy() *nielsPoint {
 }
 
 //XXX SECURITY this should be constant-time
-func (nP *nielsPoint) conditionalNegate(neg bool) {
+func (nP *twNiels) conditionalNegate(neg bool) {
 	if neg {
 		tmp := nP.a
 		nP.a = nP.b
@@ -76,7 +75,7 @@ func (nP *nielsPoint) conditionalNegate(neg bool) {
 	}
 }
 
-func (p *nielsPoint) TwistedExtensible() *twExtensible {
+func (p *twNiels) TwistedExtensible() *twExtensible {
 	x := new(bigNumber)
 	y := new(bigNumber)
 	z := new(bigNumber)
@@ -211,7 +210,7 @@ func (p *twExtensible) double() *twExtensible {
 	return &twExtensible{x, y, z, t, u}
 }
 
-func (p *twExtensible) addTwNiels(p2 *nielsPoint) *twExtensible {
+func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	x := p[0].copy()
 	y := p[1].copy()
 	z := p[2].copy()
