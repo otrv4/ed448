@@ -156,6 +156,23 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return out
 }
 
+//multiply2 is Montgomery Ladder Exp
+func (c *radixCurve) multiply2(n []byte, p Point) Point {
+	m := new(big.Int).SetBytes(n)
+	R0 := c.basePoint
+	R1 := p
+	for pos := m.BitLen() - 2; pos >= 0; pos-- {
+		if m.Bit(pos) == 0 {
+			R1 = c.add(R0, R1)
+			R0 = c.double(R0)
+		} else {
+			R0 = c.add(R0, R1)
+			R1 = c.double(R1)
+		}
+	}
+	return R0
+}
+
 func (c *radixCurve) multiplyByBase(n []byte) Point {
 	m := new(big.Int).SetBytes(n)
 	one := big.NewInt(1)
@@ -271,6 +288,6 @@ func (c *radixCurve) computeSecret(private []byte, public []byte) Point {
 	scalar := [14]word_t{}
 	leBytesToWords(scalar[:], private[:])
 	ga := c.multiplyByBase2(scalar)
-	gab := c.multiply(public, ga)
+	gab := c.multiply2(public, ga)
 	return gab
 }
