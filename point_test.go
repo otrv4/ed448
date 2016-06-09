@@ -75,3 +75,26 @@ func (s *Ed448Suite) TestMixedAddition(c *C) {
 	ret := tx.addTwNiels(n)
 	c.Assert(ret.equals(expected), Equals, true)
 }
+
+func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
+	px, _ := hex.DecodeString("4ed74e709fb89daba40d2aad54b8befa01e3cc2cd9eee3d72f9869a2897e5e44c32990e0366df5da4d36a890f10835a1ff85db9058b346b8")
+	py, _ := hex.DecodeString("79c2294410f6371b2074d4ce8c40e366ebcf3770f45867e2280de6cb5e7da2c9e9c53a3ba0e9e38af58ac04092ef2a4d09510502adab1b90")
+	pz, _ := hex.DecodeString("0b629561746bb03a5a1806376c6e424d51c704677885fc9947e3ae97d9146726dafa80b16a53f9bf492982b997466bf1c36e0ebaea3c7feb")
+	pt, _ := hex.DecodeString("04073f6f22d607005b286fe02183753ffaf9c16d39e4d14b4291e8995cbb638fc123f0276ed08a394605221b0d76b87c80d92e327e49815a")
+	pu, _ := hex.DecodeString("1531409e631a1e5f630426b33faf8d7a4f61653b32e4116bbf6cb4e170c143a887c2789a3409bcc5c2bbc3540e5b30a00050b83bfa04ae27")
+
+	p := &twExtensible{
+		new(bigNumber).setBytes(px),
+		new(bigNumber).setBytes(py),
+		new(bigNumber).setBytes(pz),
+		new(bigNumber).setBytes(pt),
+		new(bigNumber).setBytes(pu),
+	}
+
+	b, _ := hex.DecodeString("b690c6bcccee269215e1d7b86728e410ad4f6d1b933acaccf9e3b5b25c81cfe7e3c225e0f24afe060f3160f33cde18df3e6317db48c61aa5")
+	exp := new(bigNumber).setBytes(b)
+
+	ser := p.untwistAndDoubleAndSerialize()
+
+	c.Assert(ser.equals(exp), Equals, true)
+}

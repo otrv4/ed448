@@ -15,8 +15,10 @@ func mustDeserialize(in serialized) *bigNumber {
 	return n
 }
 
-func isZero(n int64) int64 {
-	return ^n
+func isZero(n int64) uint32 {
+	nn := uint64(n)
+	nn = nn - 1
+	return uint32(nn >> wordBits)
 }
 
 func isZeroMask(n uint32) uint32 {
@@ -35,7 +37,7 @@ func constantTimeGreaterOrEqualP(n *bigNumber) bool {
 		ge &= int64(n[i])
 	}
 
-	ge = (ge & (int64(n[4]) + 1)) | isZero(int64(n[4])^mask)
+	ge = (ge & (int64(n[4]) + 1)) | int64(isZero(int64(n[4])^mask))
 
 	for i := 5; i < 8; i++ {
 		ge &= int64(n[i])
@@ -49,9 +51,25 @@ func (n *bigNumber) add(x *bigNumber, y *bigNumber) *bigNumber {
 	return n.addRaw(x, y).weakReduce()
 }
 
+func (n *bigNumber) addW(w uint32) *bigNumber {
+	n[0] += limb(w)
+	return n
+}
+
 func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	for i := 0; i < len(n); i++ {
 		n[i] = x[i] + y[i]
+	}
+
+	return n
+}
+
+func (n *bigNumber) setUi(x *bigNumber, y uint64) *bigNumber {
+	n[0] = limb(y) & radixMask
+	n[1] = limb(y >> Radix)
+
+	for i := 2; i < Limbs; i++ {
+		n[i] = 0
 	}
 
 	return n
@@ -80,9 +98,58 @@ func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 	return n
 }
 
+//XXX What is ISR? Inverted Square Root?
+func (n *bigNumber) isr(x *bigNumber) *bigNumber {
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
+
+	l1 = l1.square(x)      // l1 = x^2
+	l2 = l2.mul(x, l1)     // l2 = l1 * x = x^3
+	l1 = l1.square(l2)     // l1 = l2^2 = x^6
+	l2 = l2.mul(x, l1)     // l2 = l1 * x = x^7
+	l1 = l1.squareN(l2, 3) // l1 = l2^6
+	l0 = l0.mul(l2, l1)
+	l1 = l1.squareN(l0, 3)
+	l0 = l0.mul(l2, l1)
+	l2 = l2.squareN(l0, 9)
+	l1 = l1.mul(l0, l2)
+	l0 = l0.square(l1)
+	l2 = l2.mul(x, l0)
+	l0 = l0.squareN(l2, 18)
+	l2 = l2.mul(l1, l0)
+	l0 = l0.squareN(l2, 37)
+	l1 = l1.mul(l2, l0)
+	l0 = l0.squareN(l1, 37)
+	l1 = l1.mul(l2, l0)
+	l0 = l0.squareN(l1, 111)
+	l2 = l2.mul(l1, l0)
+	l0 = l0.square(l2)
+	l1 = l1.mul(x, l0)
+	l0 = l0.squareN(l1, 223)
+
+	return l1.mul(l2, l0)
+}
+
 //XXX Is there any optimum way of squaring?
 func (n *bigNumber) square(x *bigNumber) *bigNumber {
 	return n.mul(x, x)
+}
+
+func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
+	if y&1 != 0 {
+		n.square(x)
+		y -= 1
+	} else {
+		n.square(x).square(n)
+		y -= 2
+	}
+
+	for ; y > 0; y -= 2 {
+		n.square(n).square(n)
+	}
+
+	return n
 }
 
 //XXX It may not work on 64-bit
@@ -100,6 +167,7 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	return n
 }
 
+//XXX Security this should be constant time
 func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {
 	if c >= 0 {
 		return n.mulW(x, uint64(c))
