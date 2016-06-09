@@ -7,6 +7,8 @@ import (
 
 type Ed448 interface {
 	GenerateKeys() (priv, pub []byte, err error)
+	Sign(priv, message []byte) (signature []byte, err error)
+	Verify(signature, message, pub []byte) (valid bool)
 }
 
 type ed448 struct{}
@@ -23,5 +25,15 @@ func (ed *ed448) GenerateKeys() (priv, pub []byte, err error) {
 		errors.New("Generation of keys has failed.")
 	}
 
+	return
+}
+
+// Signs a message using the provided private key and returns the signature.
+func (ed *ed448) Sign(priv, message []byte) (signature []byte, err error) {
+	return
+}
+
+// Verify a signature does correspond a message by a public key.
+func (ed *ed448) Verify(signature, message, pub []byte) (valid bool) {
 	return
 }
