@@ -12,7 +12,7 @@ type Ed448Suite struct{}
 
 var _ = Suite(&Ed448Suite{})
 
-func (s *Ed448Suite) TestKeyGenerationProducesValidPoint(c *C) {
+func (s *Ed448Suite) TestKeysGenerationProducesKeyPair(c *C) {
 	c.Skip("Public key is not being set yet.")
 	ed448 := NewEd448()
 	priv, pub, err := ed448.GenerateKeys()
