@@ -110,19 +110,23 @@ func init() {
 }
 
 type pointCurve interface {
+	BasePoint() Point
 	isOnCurve(p Point) bool
 	add(p1, p2 Point) (p3 Point)
 	double(p1 Point) (p2 Point)
-	//multiply(p Point, n *bigNumber) (p2 Point)
-	//multiplyByBase(n *bigNumber) (p Point)
-
-	multiplyByBase2(scalar [ScalarWords]word_t) Point
+	multiplyRaw(n []byte, p Point) (p2 Point)
+	multiply(n []byte, p Point) (p2 Point)
+	multiplyByBase(scalar [ScalarWords]word_t) Point
 	generateKey(rand io.Reader) (priv []byte, pub []byte, err error)
 	computeSecret(private []byte, public []byte) Point
 }
 
 func newRadixCurve() pointCurve {
 	return &rCurve
+}
+
+func (c *radixCurve) BasePoint() Point {
+	return c.basePoint
 }
 
 func (c *radixCurve) isOnCurve(p Point) bool {
@@ -143,7 +147,8 @@ var (
 	primeOrder, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
 )
 
-func (c *radixCurve) multiply(n []byte, p Point) Point {
+//multiplyRaw is Naive multiply
+func (c *radixCurve) multiplyRaw(n []byte, p Point) Point {
 	m := new(big.Int).SetBytes(n)
 	one := big.NewInt(1)
 
@@ -156,8 +161,9 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return out
 }
 
-//multiply2 is Montgomery Ladder Exp
-func (c *radixCurve) multiply2(n []byte, p Point) Point {
+//multiply is Montgomery Ladder Exp
+func (c *radixCurve) multiply(n []byte, p Point) Point {
+	// XXX remove big Int here
 	m := new(big.Int).SetBytes(n)
 	R0 := c.basePoint
 	R1 := p
@@ -173,20 +179,7 @@ func (c *radixCurve) multiply2(n []byte, p Point) Point {
 	return R0
 }
 
-func (c *radixCurve) multiplyByBase(n []byte) Point {
-	m := new(big.Int).SetBytes(n)
-	one := big.NewInt(1)
-
-	priv := c.basePoint
-	for i := big.NewInt(0); i.Cmp(m) == -1; i.Add(i, one) {
-		//XXX could be optimized by using a readdition formula
-		priv = priv.Add(c.basePoint)
-	}
-
-	return priv
-}
-
-func (c *radixCurve) multiplyByBase2(scalar [ScalarWords]word_t) Point {
+func (c *radixCurve) multiplyByBase(scalar [ScalarWords]word_t) Point {
 	out := &twExtensible{
 		new(bigNumber),
 		new(bigNumber),
@@ -264,10 +257,12 @@ func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err e
 		return
 	}
 
+	// XXX remove big Int here
 	m := new(big.Int)
 	randomSeed := new(big.Int).SetBytes(buff)
-	_, m = m.DivMod(randomSeed, new(big.Int).Sub(primeOrder, one), m)
-	m.Add(m, one) //m E [1, primeOrder-1]
+	bigOne := big.NewInt(1)
+	_, m = m.DivMod(randomSeed, new(big.Int).Sub(primeOrder, bigOne), m)
+	m.Add(m, bigOne) //m E [1, primeOrder-1]
 
 	//XXX this does not always have 56bytes
 	privBytes := m.Bytes()
@@ -278,7 +273,7 @@ func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err e
 
 	scalar := [14]word_t{}
 	leBytesToWords(scalar[:], priv[:])
-	publicKey := c.multiplyByBase2(scalar)
+	publicKey := c.multiplyByBase(scalar)
 	//XXX Hamburg's code makes a untwist_and_double_and_serialize before
 	pub = publicKey.Marshal() //I have no idea how to serialize "twisted extensible coordinates"
 	return
@@ -287,7 +282,7 @@ func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err e
 func (c *radixCurve) computeSecret(private []byte, public []byte) Point {
 	scalar := [14]word_t{}
 	leBytesToWords(scalar[:], private[:])
-	ga := c.multiplyByBase2(scalar)
-	gab := c.multiply2(public, ga)
+	ga := c.multiplyByBase(scalar)
+	gab := c.multiply(public, ga)
 	return gab
 }
