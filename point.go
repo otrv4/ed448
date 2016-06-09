@@ -14,6 +14,10 @@ var (
 	twistedCurveDSigned = int64(-39082)
 )
 
+func maskToBoolean(m uint32) bool {
+	return m == 0xffffffff
+}
+
 // Point represents a point on the curve in a suitable coordinate system
 type Point interface {
 	OnCurve() bool
@@ -39,6 +43,163 @@ func NewPoint(x serialized, y serialized) (p Point, e error) {
 	}
 
 	return
+}
+
+type extensibleCoordinates struct {
+	x, y, z, t, u *bigNumber
+}
+
+//Affina(x,y) => extensible(X, Y, Z, T, U)
+func newExtensible(px, py *bigNumber) *extensibleCoordinates {
+	x := px.copy()
+	y := py.copy()
+	z := &bigNumber{1}
+	t := x.copy()
+	u := y.copy()
+
+	return &extensibleCoordinates{
+		x: x,
+		y: y,
+		z: z,
+		t: t,
+		u: u,
+	}
+}
+
+func (p *extensibleCoordinates) twist() *twExtensible {
+	x := new(bigNumber)
+	y := new(bigNumber)
+	z := new(bigNumber)
+	t := new(bigNumber)
+	u := new(bigNumber)
+
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+
+	u = u.square(p.z)
+	y = y.square(p.x)
+	z = z.sub(u, y)
+	y = y.add(z, z)
+	u = u.add(y, y)
+	y = y.sub(p.z, p.x)
+	x = x.mul(y, p.y)
+	z = z.sub(p.z, p.y)
+	t = t.mul(z, x)
+	l1 = l1.mul(t, u)
+
+	x = x.mul(t, l1)
+	l0 = l0.isr(x)
+	u = u.mul(t, l0)
+	l1 = l1.square(l0)
+	t = t.mul(x, l1)
+	l1 = l1.add(p.x, p.y)
+	l0 = l0.sub(p.x, p.y)
+	x = x.mul(t, l0)
+	l0 = l0.add(x, l1)
+	t = t.sub(l1, x)
+	x = x.mul(l0, u)
+	x = x.addW(-y.zeroMask())
+	y = y.mul(t, u)
+	y = y.addW(-z.zeroMask())
+	z = z.setUi(z, 1+uint64(y.zeroMask()))
+	t = x.copy()
+	u = y.copy()
+
+	return &twExtensible{x, y, z, t, u}
+}
+
+func (p *extensibleCoordinates) Double() *extensibleCoordinates {
+	x := p.x.copy()
+	y := p.y.copy()
+	z := p.z.copy()
+	t := p.t.copy()
+	u := p.u.copy()
+
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
+
+	l2 = l2.square(x)
+	l0 = l0.square(y)
+	l1 = l1.addRaw(l2, l0)
+	t = t.addRaw(y, x)
+	u = u.square(t)
+	t = t.subRaw(u, l1).bias(3).weakReduce()
+	u = u.sub(l0, l2) // equivalent to subx in 32-bits
+	x = x.square(z).bias(2)
+	z = z.addRaw(x, x)
+	l0 = l0.subRaw(z, l1).weakReduce()
+	z = z.mul(l1, l0)
+	x = x.mul(l0, t)
+	y = y.mul(l1, u)
+
+	return &extensibleCoordinates{
+		x: x,
+		y: y,
+		z: z,
+		t: t,
+		u: u,
+	}
+}
+
+func (p *extensibleCoordinates) OnCurve() bool {
+	x := p.x
+	y := p.y
+	z := p.z
+	t := p.t
+	u := p.u
+
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
+	l3 := new(bigNumber)
+
+	// Check invariant:
+	// 0 = d*t^2*u^2 - x^2 - y^2 + z^2
+	l2 = l2.square(y)
+	l1 = l1.neg(l2)
+	l0 = l0.square(z)
+	l2 = l2.add(l0, l1)
+	l3 = l3.square(u)
+	l0 = l0.square(t)
+	l1 = l1.mul(l0, l3)
+	l0 = l0.mulWSignedCurveConstant(l1, curveDSigned)
+	l1 = l1.add(l0, l2)
+	l0 = l0.square(x)
+	l2 = l2.neg(l0)
+	l0 = l0.add(l2, l1)
+	l5 := l0.zeroMask()
+
+	// Check invariant:
+	// 0 = -x*y + z*t*u
+	l1 = l1.mul(t, u)
+	l2 = l2.mul(z, l1)
+	l0 = l0.mul(x, y)
+	l1 = l1.neg(l0)
+	l0 = l0.add(l1, l2)
+
+	l4 := l0.zeroMask()
+
+	ret := l4 & l5 & (^z.zeroMask())
+	return maskToBoolean(ret)
+}
+
+func (p *extensibleCoordinates) equals(q *extensibleCoordinates) bool {
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
+
+	l2 = l2.mul(q.z, p.x)
+	l1 = l1.mul(p.z, q.x)
+	l0 = l0.sub(l2, l1)
+	l4 := l0.zeroMask()
+
+	l2 = l2.mul(q.z, p.y)
+	l1 = l1.mul(p.z, q.y)
+	l0 = l0.sub(l2, l1)
+	l3 := l0.zeroMask()
+
+	return maskToBoolean(l4 & l3)
 }
 
 type twNiels struct {
@@ -92,7 +253,9 @@ func (p *twNiels) TwistedExtensible() *twExtensible {
 	return &twExtensible{x, y, z, t, u}
 }
 
-type twExtensible [5]*bigNumber
+type twExtensible struct {
+	x, y, z, t, u *bigNumber
+}
 
 func (p *twExtensible) Add(Point) Point {
 	return nil
@@ -107,12 +270,6 @@ func (p *twExtensible) Marshal() []byte {
 }
 
 func (p *twExtensible) OnCurve() bool {
-	x := p[0]
-	y := p[1]
-	z := p[2]
-	t := p[3]
-	u := p[4]
-
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
@@ -120,9 +277,9 @@ func (p *twExtensible) OnCurve() bool {
 
 	// Check invariant:
 	// 0 = -x*y + z*t*u
-	l1 = l1.mul(t, u)
-	l2 = l2.mul(z, l1)
-	l0 = l0.mul(x, y)
+	l1 = l1.mul(p.t, p.u)
+	l2 = l2.mul(p.z, l1)
+	l0 = l0.mul(p.x, p.y)
 	l1 = l1.neg(l0)
 	l0 = l0.add(l1, l2)
 	l5 := l0.zeroMask()
@@ -130,37 +287,31 @@ func (p *twExtensible) OnCurve() bool {
 	// Check invariant:
 	// 0 = d*t^2*u^2 + x^2 - y^2 + z^2 - t^2*u^2
 
-	l2 = l2.square(y)
+	l2 = l2.square(p.y)
 	l1 = l1.neg(l2)
-	l0 = l0.square(x)
+	l0 = l0.square(p.x)
 	l2 = l2.add(l0, l1)
-	l3 = l3.square(u)
-	l0 = l0.square(t)
+	l3 = l3.square(p.u)
+	l0 = l0.square(p.t)
 	l1 = l1.mul(l0, l3)
 	l3 = l3.mulWSignedCurveConstant(l1, curveDSigned)
 	l0 = l0.add(l3, l2)
 	l3 = l3.neg(l1)
 	l2 = l2.add(l3, l0)
-	l1 = l1.square(z)
+	l1 = l1.square(p.z)
 	l0 = l0.add(l1, l2)
 	l4 := l0.zeroMask()
 
-	ret := l4 & l5 & (^z.zeroMask())
-	return ret == 0xffffffff
+	ret := l4 & l5 & (^p.z.zeroMask())
+	return maskToBoolean(ret)
 }
 
 func (p *twExtensible) String() string {
-	x := p[0]
-	y := p[1]
-	z := p[2]
-	t := p[3]
-	u := p[4]
-
-	ret := fmt.Sprintf("X: %s\n", x)
-	ret += fmt.Sprintf("Y: %s\n", y)
-	ret += fmt.Sprintf("Z: %s\n", z)
-	ret += fmt.Sprintf("T: %s\n", t)
-	ret += fmt.Sprintf("U: %s\n", u)
+	ret := fmt.Sprintf("X: %s\n", p.x)
+	ret += fmt.Sprintf("Y: %s\n", p.y)
+	ret += fmt.Sprintf("Z: %s\n", p.z)
+	ret += fmt.Sprintf("T: %s\n", p.t)
+	ret += fmt.Sprintf("U: %s\n", p.u)
 
 	return ret
 }
@@ -168,19 +319,21 @@ func (p *twExtensible) String() string {
 func (p *twExtensible) equals(p2 *twExtensible) bool {
 	ok := true
 
-	for i, pi := range p {
-		ok = ok && pi.equals(p2[i])
-	}
+	ok = ok && p.x.equals(p2.x)
+	ok = ok && p.y.equals(p2.y)
+	ok = ok && p.z.equals(p2.z)
+	ok = ok && p.t.equals(p2.t)
+	ok = ok && p.u.equals(p2.u)
 
 	return ok
 }
 
 func (p *twExtensible) double() *twExtensible {
-	x := p[0].copy()
-	y := p[1].copy()
-	z := p[2].copy()
-	t := p[3].copy()
-	u := p[4].copy()
+	x := p.x.copy()
+	y := p.y.copy()
+	z := p.z.copy()
+	t := p.t.copy()
+	u := p.u.copy()
 
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
@@ -210,11 +363,11 @@ func (p *twExtensible) double() *twExtensible {
 }
 
 func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
-	x := p[0].copy()
-	y := p[1].copy()
-	z := p[2].copy()
-	t := p[3].copy()
-	u := p[4].copy()
+	x := p.x.copy()
+	y := p.y.copy()
+	z := p.z.copy()
+	t := p.t.copy()
+	u := p.u.copy()
 
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
@@ -240,6 +393,35 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 
 	//PERF: should it be in-place?
 	return &twExtensible{x, y, z, t, u}
+}
+
+func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
+	l3 := new(bigNumber)
+	b := new(bigNumber)
+
+	l3 = l3.mul(p.y, p.x)
+	b = b.add(p.y, p.x)
+	l1 = l1.square(b)
+	l2 = l2.add(l3, l3)
+	b = b.sub(l1, l2)
+	l2 = l2.square(p.z)
+	l1 = l1.square(l2)
+	b = b.add(b, b)
+	l2 = l2.mulWSignedCurveConstant(b, curveDSigned-1)
+	b = b.mulWSignedCurveConstant(l2, curveDSigned-1)
+	l0 = l0.mul(l2, l1)
+	l2 = l2.mul(b, l0)
+	l0 = l0.isr(l2)
+	l1 = l1.mul(b, l0)
+
+	//XXX This is included in the original code, but it seems not to be used
+	//b = b.square(l0)
+	//l0 = l0.mul(l2, b)
+
+	return b.mul(l1, l3)
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
