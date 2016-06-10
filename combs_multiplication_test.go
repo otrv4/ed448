@@ -3,11 +3,11 @@ package ed448
 import . "gopkg.in/check.v1"
 
 func (s *Ed448Suite) TestRadixScheduleForCombs(c *C) {
-	scalar := [ScalarWords]word_t{
+	scalar := [scalarWords]word_t{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 	}
 
-	schedule := make([]word_t, ScalarWords)
+	schedule := make([]word_t, scalarWords)
 	scheduleScalarForCombs(schedule, scalar)
 	c.Assert(schedule, DeepEquals, []word_t{
 		0xfefb9893, 0x4acadc23, 0x2b57a900, 0xcddcdc54,
@@ -16,7 +16,7 @@ func (s *Ed448Suite) TestRadixScheduleForCombs(c *C) {
 		0x80000000, 0x20000000,
 	})
 
-	scalar = [ScalarWords]word_t{
+	scalar = [scalarWords]word_t{
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE,
 	}
 	scheduleScalarForCombs(schedule, scalar)

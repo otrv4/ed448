@@ -8,48 +8,48 @@ import (
 
 const (
 	// The size of the Goldilocks field, in bits.
-	FieldBits = 448
+	fieldBits = 448
 
 	// The size of the Goldilocks field, in bytes.
-	FieldBytes = (FieldBits + 7) / 8 // 56
+	fieldBytes = (fieldBits + 7) / 8 // 56
 
 	// The number of words in the Goldilocks field.
-	fieldWords = (FieldBits + wordBits - 1) / wordBits // 14
+	fieldWords = (fieldBits + wordBits - 1) / wordBits // 14
 
 	// The size of the Goldilocks scalars, in bits.
-	ScalarBits = FieldBits - 2 // 446
+	scalarBits = fieldBits - 2 // 446
 
 	wordBits = 32 // 32-bits
 	//wordBits = 64 // 64-bits
 
 	// The number of words in the Goldilocks field.
 	// 14 for 32-bit and 7 for 64-bits
-	ScalarWords = (ScalarBits + wordBits - 1) / wordBits
+	scalarWords = (scalarBits + wordBits - 1) / wordBits
 
-	BitSize  = ScalarBits
-	ByteSize = FieldBytes
+	bitSize  = scalarBits
+	byteSize = fieldBytes
 
 	symKeyBytes  = 32
-	privKeyBytes = 2*FieldBytes + symKeyBytes
+	privKeyBytes = 2*fieldBytes + symKeyBytes
 
 	//Comb configuration
-	CombNumber  = uint(8)  // 5 if 64-bits
-	CombTeeth   = uint(4)  // 5 in 64-bits
-	CombSpacing = uint(14) // 18 in 64-bit
+	combNumber  = uint(8)  // 5 if 64-bits
+	combTeeth   = uint(4)  // 5 if 64-bits
+	combSpacing = uint(14) // 18 if 64-bit
 )
 
 type privateKey [privKeyBytes]byte
 
 func (k *privateKey) secretKey() []byte {
-	return k[:FieldBytes]
+	return k[:fieldBytes]
 }
 
 func (k *privateKey) publicKey() []byte {
-	return k[FieldBytes : 2*FieldBytes]
+	return k[fieldBytes : 2*fieldBytes]
 }
 
 func (k *privateKey) symKey() []byte {
-	return k[2*FieldBytes:]
+	return k[2*fieldBytes:]
 }
 
 type word_t uint32 //32-bits
@@ -138,7 +138,7 @@ type pointCurve interface {
 	double(p1 Point) (p2 Point)
 	multiplyRaw(n []byte, p Point) (p2 Point)
 	multiply(n []byte, p Point) (p2 Point)
-	multiplyByBase(scalar [ScalarWords]word_t) *twExtensible
+	multiplyByBase(scalar [scalarWords]word_t) *twExtensible
 	generateKey(rand io.Reader) (k privateKey, err error)
 	computeSecret(private []byte, public []byte) Point
 }
@@ -201,7 +201,7 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return R0
 }
 
-func (c *radixCurve) multiplyByBase(scalar [ScalarWords]word_t) *twExtensible {
+func (c *radixCurve) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 	out := &twExtensible{
 		new(bigNumber),
 		new(bigNumber),
@@ -210,11 +210,11 @@ func (c *radixCurve) multiplyByBase(scalar [ScalarWords]word_t) *twExtensible {
 		new(bigNumber),
 	}
 
-	n := CombNumber
-	t := CombTeeth
-	s := CombSpacing
+	n := combNumber
+	t := combTeeth
+	s := combSpacing
 
-	schedule := make([]word_t, ScalarWords)
+	schedule := make([]word_t, scalarWords)
 	scheduleScalarForCombs(schedule, scalar)
 
 	var ni *twNiels
@@ -229,7 +229,7 @@ func (c *radixCurve) multiplyByBase(scalar [ScalarWords]word_t) *twExtensible {
 
 			for k := uint(0); k < t; k++ {
 				bit := (s - 1 - i) + k*s + j*(s*t)
-				if bit < ScalarWords*wordBits {
+				if bit < scalarWords*wordBits {
 					tab |= (schedule[bit/wordBits] >> (bit % wordBits) & 1) << k
 				}
 			}
