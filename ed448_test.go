@@ -15,8 +15,8 @@ var _ = Suite(&Ed448Suite{})
 func (s *Ed448Suite) TestGenerateKeysProducesKeyPair(c *C) {
 	c.Skip("Public key is not being set yet.")
 	ed448 := NewEd448()
-	priv, pub, err := ed448.GenerateKeys()
-	c.Assert(err, IsNil)
+	priv, pub, ok := ed448.GenerateKeys()
+	c.Assert(ok, Equals, true)
 	c.Assert(priv, NotNil)
 	c.Assert(pub, NotNil)
 }
@@ -27,9 +27,9 @@ func (s *Ed448Suite) TestSignAndVerify(c *C) {
 	priv, pub, _ := ed448.GenerateKeys()
 	message := []byte("sign here.")
 
-	signature, err := ed448.Sign(priv, message)
+	signature, ok := ed448.Sign(priv, message)
 
-	c.Assert(err, IsNil)
+	c.Assert(ok, Equals, true)
 	c.Assert(signature, NotNil)
 
 	valid := ed448.Verify(signature, message, pub)
