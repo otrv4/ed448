@@ -1,6 +1,7 @@
 package ed448
 
 import (
+	"crypto/sha512"
 	"io"
 	"math/big"
 )
@@ -11,6 +12,9 @@ const (
 
 	// The size of the Goldilocks field, in bytes.
 	FieldBytes = (FieldBits + 7) / 8 // 56
+
+	// The number of words in the Goldilocks field.
+	fieldWords = (FieldBits + wordBits - 1) / wordBits // 14
 
 	// The size of the Goldilocks scalars, in bits.
 	ScalarBits = FieldBits - 2 // 446
@@ -25,11 +29,28 @@ const (
 	BitSize  = ScalarBits
 	ByteSize = FieldBytes
 
+	symKeyBytes  = 32
+	privKeyBytes = 2*FieldBytes + symKeyBytes
+
 	//Comb configuration
 	CombNumber  = uint(8)  // 5 if 64-bits
 	CombTeeth   = uint(4)  // 5 in 64-bits
 	CombSpacing = uint(14) // 18 in 64-bit
 )
+
+type privateKey [privKeyBytes]byte
+
+func (k *privateKey) secretKey() []byte {
+	return k[:FieldBytes]
+}
+
+func (k *privateKey) publicKey() []byte {
+	return k[FieldBytes : 2*FieldBytes]
+}
+
+func (k *privateKey) symKey() []byte {
+	return k[2*FieldBytes:]
+}
 
 type word_t uint32 //32-bits
 //type word_t uint64 //64-bits
@@ -109,6 +130,7 @@ func init() {
 	}
 }
 
+//XXX We dont need an interface anymore
 type pointCurve interface {
 	BasePoint() Point
 	isOnCurve(p Point) bool
@@ -116,8 +138,8 @@ type pointCurve interface {
 	double(p1 Point) (p2 Point)
 	multiplyRaw(n []byte, p Point) (p2 Point)
 	multiply(n []byte, p Point) (p2 Point)
-	multiplyByBase(scalar [ScalarWords]word_t) Point
-	generateKey(rand io.Reader) (priv []byte, pub []byte, err error)
+	multiplyByBase(scalar [ScalarWords]word_t) *twExtensible
+	generateKey(rand io.Reader) (k privateKey, err error)
 	computeSecret(private []byte, public []byte) Point
 }
 
@@ -179,7 +201,7 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return R0
 }
 
-func (c *radixCurve) multiplyByBase(scalar [ScalarWords]word_t) Point {
+func (c *radixCurve) multiplyByBase(scalar [ScalarWords]word_t) *twExtensible {
 	out := &twExtensible{
 		new(bigNumber),
 		new(bigNumber),
@@ -232,7 +254,8 @@ func (c *radixCurve) multiplyByBase(scalar [ScalarWords]word_t) Point {
 	return out
 }
 
-func leBytesToWords(dst []word_t, src []byte) {
+// Deserializes an array of bytes (little-endian) into an array of words
+func bytesToWords(dst []word_t, src []byte) {
 	wordBytes := uint(wordBits / 8)
 	srcLen := uint(len(src))
 
@@ -243,7 +266,7 @@ func leBytesToWords(dst []word_t, src []byte) {
 
 	for i := uint(0); i*wordBytes < srcLen; i++ {
 		out := word_t(0)
-		for j := uint(0); j < wordBytes && wordBytes*i*j < srcLen; j++ {
+		for j := uint(0); j < wordBytes && wordBytes*i+j < srcLen; j++ {
 			out |= word_t(src[wordBytes*i+j]) << (8 * j)
 		}
 
@@ -251,37 +274,67 @@ func leBytesToWords(dst []word_t, src []byte) {
 	}
 }
 
-func (c *radixCurve) generateKey(read io.Reader) (priv []byte, pub []byte, err error) {
-	buff := make([]byte, FieldBytes)
-	if _, err = io.ReadFull(read, buff); err != nil {
+// Serializes an array of words into an array of bytes (little-endian)
+func wordsToBytes(dst []byte, src []word_t) {
+	wordBytes := wordBits / 8
+
+	for i := 0; i*wordBytes < len(dst); i++ {
+		for j := 0; j < wordBytes; j++ {
+			b := src[i] >> uint(8*j)
+			dst[wordBytes*i+j] = byte(b)
+		}
+	}
+}
+
+//See Goldilocks spec, "Public and private keys" section.
+//This is equivalent to PRF(k)
+func pseudoRandomFunction(k [symKeyBytes]byte) (r [sha512.Size]byte) {
+	h := sha512.New()
+	h.Write([]byte("derivepk"))
+	h.Write(k[:])
+	copy(r[:], h.Sum(nil)) //XXX should we simply return the sum?
+	return r
+}
+
+//See Goldilocks spec, "Public and private keys" section.
+//This is equivalent to DESERMODq()
+func deserializeModQ(dst []word_t, serial [64]byte) {
+	barretDeserializeAndReduce(dst, serial, &curvePrimeOrder)
+}
+
+func generateSymmetricKey(read io.Reader) (symKey [symKeyBytes]byte, err error) {
+	_, err = io.ReadFull(read, symKey[:])
+	return
+}
+
+func (c *radixCurve) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, error) {
+	k := privateKey{}
+	copy(k.symKey(), symmetricKey[:])
+
+	skb := pseudoRandomFunction(symmetricKey)
+	secretKey := [fieldWords]word_t{}
+	deserializeModQ(secretKey[:], skb)
+	wordsToBytes(k.secretKey(), secretKey[:])
+
+	publicKey := c.multiplyByBase(secretKey)
+	serializedPublicKey := publicKey.untwistAndDoubleAndSerialize()
+	serialize(k.publicKey(), serializedPublicKey)
+
+	return k, nil
+}
+
+func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
+	symKey, err := generateSymmetricKey(read)
+	if err != nil {
 		return
 	}
 
-	// XXX remove big Int here
-	m := new(big.Int)
-	randomSeed := new(big.Int).SetBytes(buff)
-	bigOne := big.NewInt(1)
-	_, m = m.DivMod(randomSeed, new(big.Int).Sub(primeOrder, bigOne), m)
-	m.Add(m, bigOne) //m E [1, primeOrder-1]
-
-	//XXX this does not always have 56bytes
-	privBytes := m.Bytes()
-	priv = make([]byte, FieldBytes)
-	for i := 0; i < len(privBytes); i++ {
-		priv[len(priv)-i-1] = privBytes[len(privBytes)-i-1]
-	}
-
-	scalar := [14]word_t{}
-	leBytesToWords(scalar[:], priv[:])
-	publicKey := c.multiplyByBase(scalar)
-	//XXX Hamburg's code makes a untwist_and_double_and_serialize before
-	pub = publicKey.Marshal() //I have no idea how to serialize "twisted extensible coordinates"
-	return
+	return c.derivePrivateKey(symKey)
 }
 
 func (c *radixCurve) computeSecret(private []byte, public []byte) Point {
 	scalar := [14]word_t{}
-	leBytesToWords(scalar[:], private[:])
+	bytesToWords(scalar[:], private[:])
 	ga := c.multiplyByBase(scalar)
 	gab := c.multiply(public, ga)
 	return gab
