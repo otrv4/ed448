@@ -15,8 +15,8 @@ func (s *Ed448Suite) TestRadixBasePointIsOnCurve(c *C) {
 
 func (s *Ed448Suite) TestRadixMultiplyByBase(c *C) {
 	curve := newRadixCurve()
-	scalar := [ScalarWords]word_t{}
-	scalar[ScalarWords-1] = 1000 //little-endian
+	scalar := [scalarWords]word_t{}
+	scalar[scalarWords-1] = 1000 //little-endian
 
 	p := curve.multiplyByBase(scalar)
 
