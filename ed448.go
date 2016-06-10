@@ -15,10 +15,14 @@ func NewEd448() Ed448 {
 }
 
 // Generates a private key and its correspondent public key.
+// XXX This is missing the symmetricKey
 func (ed *ed448) GenerateKeys() (priv, pub []byte, ok bool) {
 	var err error
-	priv, pub, err = newRadixCurve().generateKey(rand.Reader)
+	privKey, err := newRadixCurve().generateKey(rand.Reader)
 	ok = err == nil
+
+	copy(priv, privKey.secretKey())
+	copy(pub, privKey.publicKey())
 
 	return
 }
