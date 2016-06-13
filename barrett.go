@@ -1,12 +1,12 @@
 package ed448
 
-type barretPrime struct {
+type barrettPrime struct {
 	wordsInP uint32
 	pShift   uint32
 	lowWords []word_t
 }
 
-var curvePrimeOrder = barretPrime{
+var curvePrimeOrder = barrettPrime{
 	wordsInP: 14,
 	pShift:   30,
 	lowWords: []word_t{
@@ -20,7 +20,7 @@ var curvePrimeOrder = barretPrime{
 	},
 }
 
-func barretDeserialize(dst []word_t, serial []byte, p *barretPrime) bool {
+func barrettDeserialize(dst []word_t, serial []byte, p *barrettPrime) bool {
 	s := p.wordsInP * wordBits / 8
 	if p.pShift != 0 {
 		s -= (wordBits - p.pShift) / 8
@@ -51,48 +51,48 @@ func barretDeserialize(dst []word_t, serial []byte, p *barretPrime) bool {
 	return ^scarry != 0
 }
 
-func barretDeserializeAndReduce(dst []word_t, serial [64]byte, curvePrimeOrder *barretPrime) {
+func barrettDeserializeAndReduce(dst []word_t, serial [64]byte, p *barrettPrime) {
 	tmp := [16]word_t{} //XXX Why is this 16 if dst has len = 14?
 
 	bytesToWords(tmp[:], serial[:])
-	barrettReduce(tmp[:], 0, curvePrimeOrder)
+	barrettReduce(tmp[:], 0, p)
 
-	for i := uint32(0); i < curvePrimeOrder.wordsInP; i++ {
+	for i := uint32(0); i < p.wordsInP; i++ {
 		dst[i] = tmp[i]
 	}
 }
 
-func barrettReduce(dst []word_t, carry word_t, prime *barretPrime) {
-	for wordsLeft := uint32(len(dst)); wordsLeft >= prime.wordsInP; wordsLeft-- {
+func barrettReduce(dst []word_t, carry word_t, p *barrettPrime) {
+	for wordsLeft := uint32(len(dst)); wordsLeft >= p.wordsInP; wordsLeft-- {
 		//XXX PERF unroll
 		for repeat := 0; repeat < 2; repeat++ {
-			mand := dst[wordsLeft-1] >> prime.pShift
-			dst[wordsLeft-1] &= (word_t(1) << prime.pShift) - 1
+			mand := dst[wordsLeft-1] >> p.pShift
+			dst[wordsLeft-1] &= (word_t(1) << p.pShift) - 1
 
-			if prime.pShift != 0 && repeat == 0 {
+			if p.pShift != 0 && repeat == 0 {
 				if wordsLeft < uint32(len(dst)) {
-					mand |= dst[wordsLeft] << (wordBits - prime.pShift)
+					mand |= dst[wordsLeft] << (wordBits - p.pShift)
 					dst[wordsLeft] = 0
 				} else {
-					mand |= carry << (wordBits - prime.pShift)
+					mand |= carry << (wordBits - p.pShift)
 				}
 			}
 
 			carry = widemac(
-				dst[wordsLeft-prime.wordsInP:wordsLeft],
-				prime.lowWords, mand, 0)
+				dst[wordsLeft-p.wordsInP:wordsLeft],
+				p.lowWords, mand, 0)
 		}
 	}
 
-	cout := addExtPacked(dst, dst[:prime.wordsInP], prime.lowWords, 0xffffffff)
+	cout := addExtPacked(dst, dst[:p.wordsInP], p.lowWords, 0xffffffff)
 
-	if prime.pShift != 0 {
-		cout = (cout << (wordBits - prime.pShift)) + (dst[prime.wordsInP-1] >> prime.pShift)
-		dst[prime.wordsInP-1] &= word_t(1)<<prime.pShift - 1
+	if p.pShift != 0 {
+		cout = (cout << (wordBits - p.pShift)) + (dst[p.wordsInP-1] >> p.pShift)
+		dst[p.wordsInP-1] &= word_t(1)<<p.pShift - 1
 	}
 
 	/* mask = carry-1: if no carry then do sub, otherwise don't */
-	subExtPacked(dst, dst[:prime.wordsInP], prime.lowWords, cout-1)
+	subExtPacked(dst, dst[:p.wordsInP], p.lowWords, cout-1)
 }
 
 func addExtPacked(dst, x, y []word_t, mask word_t) word_t {
