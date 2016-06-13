@@ -299,7 +299,7 @@ func pseudoRandomFunction(k [symKeyBytes]byte) (r [sha512.Size]byte) {
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to DESERMODq()
 func deserializeModQ(dst []word_t, serial [64]byte) {
-	barretDeserializeAndReduce(dst, serial, &curvePrimeOrder)
+	barrettDeserializeAndReduce(dst, serial, &curvePrimeOrder)
 }
 
 func generateSymmetricKey(read io.Reader) (symKey [symKeyBytes]byte, err error) {
