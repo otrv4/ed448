@@ -323,6 +323,91 @@ func (c *radixCurve) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKe
 	return k, nil
 }
 
+func (c *radixCurve) deserializeAndTwistApprox(pub []byte) (*twExtensible, bool) {
+	var publicKey serialized
+	copy(publicKey[:], pub[:])
+	sz := mustDeserialize(publicKey)
+	a := new(twExtensible)
+
+	var L0, L1 *bigNumber
+	// field_sqr ( a->z, sz );
+	a.z.square(sz)
+	// field_copy ( a->y, a->z );
+	a.y = a.z.copy()
+	// field_addw ( a->y, 1 );
+	a.y.addW(1)
+	// field_sqr ( L0, a->y );
+	L0.square(a.y)
+	// field_mulw_scc ( a->x, L0, EDWARDS_D-1 );
+	a.x.mulWSignedCurveConstant(L0, curveDSigned-1)
+	// field_add ( a->y, a->z, a->z );
+	a.y.add(a.z, a.z)
+	// field_add ( a->u, a->y, a->y );
+	a.u.add(a.y, a.y)
+	// field_add ( a->y, a->u, a->x );
+	a.y.add(a.u, a.x)
+	// field_sqr ( a->x, a->z );
+	a.x.square(a.z)
+	// field_neg ( a->u, a->x );
+	a.u.neg(a.x)
+	// field_addw ( a->u, 1 );
+	a.u.addW(1)
+	// field_mul ( a->x, sqrt_d_minus_1, a->u );
+	a.x.mul(sqrtDminus1, a.u)
+	// field_mul ( L0, a->x, a->y );
+	L0.mul(a.x, a.y)
+	// field_mul ( a->t, L0, a->y );
+	a.t.mul(L0, a.y)
+	// field_mul ( a->u, a->x, a->t );
+	a.u.mul(a.x, a.t)
+	// field_mul ( a->t, a->u, L0 );
+	a.t.mul(a.u, L0)
+	// field_mul ( a->y, a->x, a->t );
+	a.y.mul(a.x, a.t)
+	// field_isr ( L0, a->y );
+	L0.isr(a.y)
+	// field_mul ( a->y, a->u, L0 );
+	a.y.mul(a.u, L0)
+	// field_sqr ( L1, L0 );
+	L1.square(L0)
+	// field_mul ( a->u, a->t, L1 );
+	a.u.mul(a.t, L1)
+	// field_mul ( a->t, a->x, a->u );
+	a.t.mul(a.x, a.u)
+	// field_add ( a->x, sz, sz );
+	a.x.add(sz, sz)
+	// field_mul ( L0, a->u, a->x );
+	L0.mul(a.u, a.x)
+	// field_copy ( a->x, a->z );
+	a.x = a.z.copy()
+	// field_neg ( L1, a->x );
+	L1.neg(a.x)
+	// field_addw ( L1, 1 );
+	L1.addW(1)
+	// field_mul ( a->x, L1, L0 );
+	a.x.mul(L1, L0)
+	// field_mul ( L0, a->u, a->y );
+	L0.mul(a.u, a.y)
+	// field_addw ( a->z, 1 );
+	a.z.addW(1)
+	// field_mul ( a->y, a->z, L0 );
+	a.y.mul(a.z, L0)
+	// field_subw( a->t, 1 );
+	a.t.subW(1)
+	// mask_t ret = field_is_zero( a->t );
+	// XXX maybe related with constant time
+	ret := a.t.zero()
+	// field_set_ui( a->z, 1 );
+	a.z.setUi(1)
+	// field_copy ( a->t, a->x );
+	a.t = a.x.copy()
+	// field_copy ( a->u, a->y );
+	a.u = a.y.copy()
+	// return ret;
+
+	return a, ret
+}
+
 func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
 	symKey, err := generateSymmetricKey(read)
 	if err != nil {
