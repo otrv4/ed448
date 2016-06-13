@@ -140,7 +140,7 @@ type pointCurve interface {
 	multiply(n []byte, p Point) (p2 Point)
 	multiplyByBase(scalar [scalarWords]word_t) *twExtensible
 	generateKey(rand io.Reader) (k privateKey, err error)
-	computeSecret(private []byte, public []byte) Point
+	computeSecret(private []byte, public []byte) []byte
 }
 
 func newRadixCurve() pointCurve {
@@ -332,10 +332,11 @@ func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
 	return c.derivePrivateKey(symKey)
 }
 
-func (c *radixCurve) computeSecret(private []byte, public []byte) Point {
-	scalar := [14]word_t{}
-	bytesToWords(scalar[:], private[:])
-	ga := c.multiplyByBase(scalar)
-	gab := c.multiply(public, ga)
-	return gab
+func (c *radixCurve) deserializePoint(p []byte) Point {
+	return c.basePoint
+}
+
+func (c *radixCurve) computeSecret(private, public []byte) []byte {
+	gab := c.multiply(private[:], c.deserializePoint(public))
+	return gab.Marshal()
 }

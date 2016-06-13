@@ -36,3 +36,12 @@ func (s *Ed448Suite) TestSignAndVerify(c *C) {
 
 	c.Assert(valid, Equals, true)
 }
+
+func (s *Ed448Suite) TestComputeSecret(c *C) {
+	ed448 := NewEd448()
+	privA, pubA, _ := ed448.GenerateKeys()
+	privB, pubB, _ := ed448.GenerateKeys()
+	secretA := ed448.ComputeSecret(privA, pubB)
+	secretB := ed448.ComputeSecret(privB, pubA)
+	c.Assert(secretA, DeepEquals, secretB)
+}
