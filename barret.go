@@ -20,6 +20,37 @@ var curvePrimeOrder = barretPrime{
 	},
 }
 
+func barretDeserialize(dst []word_t, serial []byte, p *barretPrime) bool {
+	s := p.wordsInP * wordBits / 8
+	if p.pShift != 0 {
+		s -= (wordBits - p.pShift) / 8
+	}
+
+	bytesToWords(dst, serial[:s])
+
+	carry := uint64(0)
+	for i, wi := range dst {
+		carry >>= wordBits
+		carry += uint64(wi)
+		if i < len(p.lowWords) {
+			carry += uint64(p.lowWords[i])
+		}
+	}
+
+	if p.pShift != 0 {
+		carry >>= p.pShift
+	} else {
+		carry >>= wordBits
+	}
+
+	scarry := int64(carry)
+	scarry = -scarry
+	scarry >>= wordBits
+	scarry >>= wordBits
+
+	return ^scarry != 0
+}
+
 func barretDeserializeAndReduce(dst []word_t, serial [64]byte, curvePrimeOrder *barretPrime) {
 	tmp := [16]word_t{} //XXX Why is this 16 if dst has len = 14?
 
