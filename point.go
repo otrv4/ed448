@@ -101,7 +101,7 @@ func (p *extensibleCoordinates) twist() *twExtensible {
 	x = x.addW(-y.zeroMask())
 	y = y.mul(t, u)
 	y = y.addW(-z.zeroMask())
-	z = z.setUi(z, 1+uint64(y.zeroMask()))
+	z = z.setUi(1 + uint64(y.zeroMask()))
 	t = x.copy()
 	u = y.copy()
 

@@ -64,7 +64,7 @@ func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	return n
 }
 
-func (n *bigNumber) setUi(x *bigNumber, y uint64) *bigNumber {
+func (n *bigNumber) setUi(y uint64) *bigNumber {
 	n[0] = limb(y) & radixMask
 	n[1] = limb(y >> Radix)
 
@@ -78,6 +78,11 @@ func (n *bigNumber) setUi(x *bigNumber, y uint64) *bigNumber {
 //n = x - y
 func (n *bigNumber) sub(x *bigNumber, y *bigNumber) *bigNumber {
 	return n.subRaw(x, y).bias(2).weakReduce()
+}
+
+func (n *bigNumber) subW(w uint32) *bigNumber {
+	n[0] -= limb(w)
+	return n
 }
 
 func (n *bigNumber) subRaw(x *bigNumber, y *bigNumber) *bigNumber {
