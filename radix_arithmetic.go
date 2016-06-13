@@ -333,6 +333,7 @@ func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
 }
 
 func (c *radixCurve) deserializePoint(p []byte) Point {
+	// XXX deserializePoint
 	return c.basePoint
 }
 
