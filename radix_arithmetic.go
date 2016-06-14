@@ -2,6 +2,7 @@ package ed448
 
 import (
 	"crypto/sha512"
+	"errors"
 	"io"
 	"math/big"
 )
@@ -30,27 +31,16 @@ const (
 	byteSize = fieldBytes
 
 	symKeyBytes  = 32
+	pubKeyBytes  = fieldBytes
 	privKeyBytes = 2*fieldBytes + symKeyBytes
+
+	signatureBytes = 2 * fieldBytes
 
 	//Comb configuration
 	combNumber  = uint(8)  // 5 if 64-bits
 	combTeeth   = uint(4)  // 5 if 64-bits
 	combSpacing = uint(14) // 18 if 64-bit
 )
-
-type privateKey [privKeyBytes]byte
-
-func (k *privateKey) secretKey() []byte {
-	return k[:fieldBytes]
-}
-
-func (k *privateKey) publicKey() []byte {
-	return k[fieldBytes : 2*fieldBytes]
-}
-
-func (k *privateKey) symKey() []byte {
-	return k[2*fieldBytes:]
-}
 
 type word_t uint32 //32-bits
 //type word_t uint64 //64-bits
@@ -340,4 +330,62 @@ func (c *radixCurve) deserializePoint(p []byte) Point {
 func (c *radixCurve) computeSecret(private, public []byte) []byte {
 	gab := c.multiply(private[:], c.deserializePoint(public))
 	return gab.Marshal()
+}
+
+func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {
+	secretKeyWords := [fieldWords]word_t{}
+	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
+		//XXX SECURITY should we wipe secretKeyWords?
+		e = errors.New("corrupted private key")
+		return
+	}
+
+	temporaryKey := [fieldWords]word_t{}
+	deriveNonce(temporaryKey[:], msg, k)
+
+	// 4[nonce]G
+	tmpSig := [fieldBytes]byte{}
+	gsk := c.multiplyByBase(temporaryKey).double().untwistAndDoubleAndSerialize()
+	serialize(tmpSig[:], gsk)
+
+	challenge := [fieldWords]word_t{}
+	deriveChallenge(challenge[:], k.publicKey(), tmpSig, msg)
+
+	barrettNegate(challenge[:], &curvePrimeOrder)
+	barrettMac(temporaryKey[:], challenge[:], secretKeyWords[:], &curvePrimeOrder)
+
+	carry := addExtPacked(temporaryKey[:], temporaryKey[:], temporaryKey[:], 0xffffffff)
+	barrettReduce(temporaryKey[:], carry, &curvePrimeOrder)
+
+	copy(s[:], tmpSig[:fieldBytes])
+	wordsToBytes(tmpSig[fieldBytes:], temporaryKey[:])
+
+	//XXX SECURITY Should we wipe temporaryKey, gsk, secretKeyWords, tmpSig, challenge?
+
+	/* response = 2(nonce_secret - sk*challenge)
+	 * Nonce = 8[nonce_secret]*G
+	 * PK = 2[sk]*G, except doubled (TODO)
+	 * so [2] ( [response]G + 2[challenge]PK ) = Nonce
+	 */
+
+	return
+}
+
+//XXX Should pubKey have a fixed size here?
+func deriveChallenge(dst []word_t, pubKey []byte, tmpSig [fieldBytes]byte, msg []byte) {
+	//TODO
+}
+
+func deriveNonce(dst []word_t, msg []byte, k *privateKey) {
+	r := [sha512.Size]byte{}
+	h := sha512.New()
+	h.Write([]byte("signonce"))
+	h.Write(k.symKey())
+	h.Write(msg)
+	h.Write(k.symKey())
+	copy(r[:], h.Sum(nil))
+
+	barrettDeserializeAndReduce(dst, r, &curvePrimeOrder)
+
+	//XXX SECURITY should we wipe r?
 }
