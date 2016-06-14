@@ -148,3 +148,72 @@ func widemac(accum []word_t, mier []word_t, mand, carry word_t) word_t {
 
 	return carry
 }
+
+func barrettNegate(dst []word_t, p *barrettPrime) {
+	carry := int64(0)
+	barrettReduce(dst, 0, p)
+
+	for i := 0; i < len(p.lowWords); i++ {
+		carry -= int64(p.lowWords[i]) - int64(dst[i])
+		dst[i] = word_t(carry)
+		carry >>= wordBits
+	}
+
+	for i := len(p.lowWords); i < int(p.wordsInP); i++ {
+		carry -= int64(p.lowWords[i]) - int64(dst[i])
+		dst[i] = word_t(carry)
+		if i < int(p.wordsInP-1) {
+			carry >>= wordBits
+		}
+	}
+
+	carry += int64(word_t(1) << p.pShift)
+	dst[p.wordsInP-1] = word_t(carry)
+}
+
+func barrettMac(dst, x, y []word_t, p *barrettPrime) {
+	nWords := int(p.wordsInP)
+	if nWords < len(x) {
+		nWords = len(x)
+	}
+	nWords++
+
+	if nWords < len(dst) {
+		nWords = len(dst)
+	}
+
+	tmp := make([]word_t, nWords)
+
+	for bpos := len(y) - 1; bpos >= 0; bpos-- {
+		for idown := nWords - 2; idown >= 0; idown-- {
+			tmp[idown+1] = tmp[idown]
+		}
+
+		tmp[0] = 0
+
+		carry := widemac(tmp, x, y[bpos], 0)
+		barrettReduce(tmp, carry, p)
+
+		cout := addPacked(tmp, dst)
+		barrettReduce(tmp, cout, p)
+
+		for i := 0; i < nWords && i < len(dst); i++ {
+			dst[i] = tmp[i]
+		}
+
+		for i := nWords; i < len(dst); i++ {
+			dst[i] = 0
+		}
+	}
+}
+
+func addPacked(dst []word_t, x []word_t) word_t {
+	carry := uint64(0)
+	for i := 0; i < len(dst); i++ {
+		carry += uint64(dst[i]) + uint64(x[i])
+		dst[i] = word_t(carry)
+		carry >>= wordBits
+	}
+
+	return word_t(carry)
+}
