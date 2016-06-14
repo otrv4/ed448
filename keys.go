@@ -1,5 +1,6 @@
 package ed448
 
+// secret || public || symmetric
 type privateKey [privKeyBytes]byte
 
 func (k *privateKey) secretKey() []byte {
