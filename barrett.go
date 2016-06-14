@@ -52,8 +52,13 @@ func barrettDeserialize(dst []word_t, serial []byte, p *barrettPrime) bool {
 }
 
 func barrettDeserializeAndReduce(dst []word_t, serial [64]byte, p *barrettPrime) {
-	tmp := [16]word_t{} //XXX Why is this 16 if dst has len = 14?
+	wordLen := wordBits / 8
+	size := (len(serial) + wordLen - 1) / wordLen
+	if size < int(p.wordsInP) {
+		size = int(p.wordsInP)
+	}
 
+	tmp := make([]word_t, size)
 	bytesToWords(tmp[:], serial[:])
 	barrettReduce(tmp[:], 0, p)
 
@@ -150,24 +155,24 @@ func widemac(accum []word_t, mier []word_t, mand, carry word_t) word_t {
 }
 
 func barrettNegate(dst []word_t, p *barrettPrime) {
-	carry := int64(0)
 	barrettReduce(dst, 0, p)
 
+	carry := int64(0)
 	for i := 0; i < len(p.lowWords); i++ {
-		carry -= int64(p.lowWords[i]) - int64(dst[i])
+		carry = carry - int64(p.lowWords[i]) - int64(dst[i])
 		dst[i] = word_t(carry)
 		carry >>= wordBits
 	}
 
 	for i := len(p.lowWords); i < int(p.wordsInP); i++ {
-		carry -= int64(p.lowWords[i]) - int64(dst[i])
+		carry = carry - int64(dst[i])
 		dst[i] = word_t(carry)
 		if i < int(p.wordsInP-1) {
 			carry >>= wordBits
 		}
 	}
 
-	carry += int64(word_t(1) << p.pShift)
+	carry = carry + int64(word_t(1)<<p.pShift)
 	dst[p.wordsInP-1] = word_t(carry)
 }
 
@@ -193,24 +198,26 @@ func barrettMac(dst, x, y []word_t, p *barrettPrime) {
 
 		carry := widemac(tmp, x, y[bpos], 0)
 		barrettReduce(tmp, carry, p)
+	}
 
-		cout := addPacked(tmp, dst)
-		barrettReduce(tmp, cout, p)
+	cout := addPacked(tmp, dst)
+	barrettReduce(tmp, cout, p)
 
-		for i := 0; i < nWords && i < len(dst); i++ {
-			dst[i] = tmp[i]
-		}
+	for i := 0; i < nWords && i < len(dst); i++ {
+		dst[i] = tmp[i]
+	}
 
-		for i := nWords; i < len(dst); i++ {
-			dst[i] = 0
-		}
+	for i := nWords; i < len(dst); i++ {
+		dst[i] = 0
 	}
 }
 
-func addPacked(dst []word_t, x []word_t) word_t {
+func addPacked(dst, x []word_t) word_t {
 	carry := uint64(0)
-	for i := 0; i < len(dst); i++ {
-		carry += uint64(dst[i]) + uint64(x[i])
+
+	//dst can be longer than x
+	for i := 0; i < len(x); i++ {
+		carry = carry + uint64(dst[i]) + uint64(x[i])
 		dst[i] = word_t(carry)
 		carry >>= wordBits
 	}

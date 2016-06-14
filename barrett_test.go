@@ -2,7 +2,7 @@ package ed448
 
 import . "gopkg.in/check.v1"
 
-func (s *Ed448Suite) TestBarretDeserializeAndReduce(c *C) {
+func (s *Ed448Suite) TestBarrettDeserializeAndReduce(c *C) {
 	serialized := [64]byte{
 		0x1d, 0x07, 0xfb, 0x9c, 0x79, 0x80, 0x5f, 0x01,
 		0x52, 0xc9, 0x09, 0xbf, 0x4c, 0xdb, 0xb1, 0x31,
@@ -29,7 +29,7 @@ func (s *Ed448Suite) TestBarretDeserializeAndReduce(c *C) {
 	})
 }
 
-func (s *Ed448Suite) TestBarretDeserialize(c *C) {
+func (s *Ed448Suite) TestBarrettDeserialize(c *C) {
 	//This is not reduced
 	serialized := [56]byte{
 		0xfe, 0x58, 0x5b, 0x65, 0x91, 0x38, 0x65, 0x18,
@@ -79,4 +79,76 @@ func (s *Ed448Suite) TestBarretDeserialize(c *C) {
 		0xde2ea468, 0x4ae66076,
 		0x35b11251, 0x0804ac3d,
 	})
+}
+
+func (s *Ed448Suite) TestBarrettNegate(c *C) {
+	n := [fieldWords]word_t{
+		0x6c226d73, 0x70edcfc3,
+		0x44156c47, 0x84f4695,
+		0xe72606ac, 0x9d0ce5e5,
+		0xed96d3ba, 0x9ff3fa11,
+		0x4a15c383, 0xca38a0af,
+		0xead789b3, 0xb96613ba,
+		0x48ba4461, 0x34eb2031,
+	}
+
+	notN := [fieldWords]word_t{
+		0x3f35d780, 0xb28af2cf,
+		0x49b0230d, 0x191d7bdd,
+		0xc7b02fe4, 0x2741f563,
+		0x8f33502f, 0x600c05ed,
+		0xb5ea3c7c, 0x35c75f50,
+		0x1528764c, 0x4699ec45,
+		0xb745bb9e, 0x0b14dfce,
+	}
+
+	barrettNegate(n[:], &curvePrimeOrder)
+
+	c.Assert(n, DeepEquals, notN)
+}
+
+func (s *Ed448Suite) TestBarrettMac(c *C) {
+	accum := [fieldWords]word_t{
+		0xc7a99dbd, 0xb92054cc,
+		0x79b10a3e, 0x38afe6b9,
+		0x859aa259, 0x007e0791,
+		0x91958009, 0x1ed45cd0,
+		0xbbfa381b, 0x1f427b27,
+		0xb194eb5c, 0x501789df,
+		0x1616d689, 0x17db93b0,
+	}
+
+	x := [fieldWords]word_t{
+		0x3f35d780, 0xb28af2cf,
+		0x49b0230d, 0x191d7bdd,
+		0xc7b02fe4, 0x2741f563,
+		0x8f33502f, 0x600c05ed,
+		0xb5ea3c7c, 0x35c75f50,
+		0x1528764c, 0x4699ec45,
+		0xb745bb9e, 0x0b14dfce,
+	}
+
+	y := [fieldWords]word_t{
+		0x2efd441f, 0xa8ca47de,
+		0x88454c7c, 0x5a017e1a,
+		0xfb3701a9, 0xe0b9be0d,
+		0xf72947eb, 0x235c0b74,
+		0x39fdaa66, 0x80783803,
+		0x1306b28f, 0x02cffb4e,
+		0x3a114311, 0x22b8f8d1,
+	}
+
+	expected := [fieldWords]word_t{
+		0x908c5c63, 0x21ab566a,
+		0x936bf39e, 0xa2c8ba5b,
+		0xf885f518, 0xc1f2945d,
+		0x5cb06b4a, 0xe86d3f14,
+		0xdd6bfcd0, 0x74fadd00,
+		0x4a750a8c, 0x8962c665,
+		0x18163b75, 0x1de81b1f,
+	}
+
+	barrettMac(accum[:], x[:], y[:], &curvePrimeOrder)
+
+	c.Assert(accum, DeepEquals, expected)
 }
