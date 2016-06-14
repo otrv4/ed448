@@ -22,10 +22,7 @@ func (ed *ed448) GenerateKeys() (priv, pub []byte, ok bool) {
 	privKey, err := newRadixCurve().generateKey(rand.Reader)
 	ok = err == nil
 
-	copy(priv, privKey.secretKey())
-	copy(pub, privKey.publicKey())
-
-	return
+	return privKey.secretKey(), privKey.publicKey(), ok
 }
 
 // Signs a message using the provided private key and returns the signature.
@@ -38,7 +35,7 @@ func (ed *ed448) Verify(signature, message, pub []byte) (valid bool) {
 	return
 }
 
-// Compute secret according to private key and peer's public key.
+// ECDH Compute secret according to private key and peer's public key.
 func (ed *ed448) ComputeSecret(private, public []byte) (secret []byte) {
 	return newRadixCurve().computeSecret(private, public)
 }
