@@ -88,33 +88,6 @@ func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
 	c.Assert(privKey.publicKey(), DeepEquals, expectedPublic)
 }
 
-func (s *Ed448Suite) TestMultiplication(c *C) {
-	curve := newRadixCurve()
-
-	scalar := []byte{0x02}
-	p1 := curve.multiplyRaw(scalar, curve.BasePoint())
-	p2 := curve.multiply(scalar, curve.BasePoint())
-
-	c.Assert(curve.isOnCurve(p1), Equals, true)
-	c.Assert(curve.isOnCurve(p2), Equals, true)
-	// c.Assert(p2.Marshal(), DeepEquals, p1.Marshal())
-}
-
-/*
-func (s *Ed448Suite) TestComputeSecret(c *C) {
-	curve := newRadixCurve()
-	privA, pubA, err := curve.generateKey(rand.Reader)
-	fmt.Printf("privA %v\npubA %v\n", privA, pubA)
-	c.Assert(err, Equals, nil)
-	privB, pubB, err := curve.generateKey(rand.Reader)
-	fmt.Printf("privB %v\npubB %v\n", privB, pubB)
-	c.Assert(err, Equals, nil)
-	out := curve.computeSecret(privA, pubB)
-	expected := curve.computeSecret(privB, pubA)
-	c.Assert(out, DeepEquals, expected)
-}
-*/
-
 func (s *Ed448Suite) TestAdd(c *C) {
 	curve := newRadixCurve()
 
@@ -142,9 +115,12 @@ func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
 	// addp2 := curve.add(curve.BasePoint(), curve.BasePoint())
 	doublep2 := curve.double(curve.BasePoint())
 	mulp2 := curve.multiply([]byte{0x02}, curve.BasePoint())
+	doubledoublep2 := curve.double(doublep2)
+	mulp4 := curve.multiply([]byte{0x04}, curve.BasePoint())
 
 	// c.Assert(addp2, DeepEquals, doublep2)
 	c.Assert(doublep2, DeepEquals, mulp2)
+	c.Assert(doubledoublep2, DeepEquals, mulp4)
 }
 
 func (s *Ed448Suite) TestDeriveNonce(c *C) {

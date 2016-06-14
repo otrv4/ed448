@@ -212,6 +212,11 @@ func (p *extensibleCoordinates) equals(q *extensibleCoordinates) bool {
 	return maskToBoolean(l4 & l3)
 }
 
+type twPNiels struct {
+	n *twNiels
+	z *bigNumber
+}
+
 type twNiels struct {
 	a, b, c *bigNumber
 }
@@ -267,16 +272,49 @@ type twExtensible struct {
 	x, y, z, t, u *bigNumber
 }
 
-func (p *twExtensible) Add(Point) Point {
-	return nil
+func (p *twExtensible) Add(p1 Point) Point {
+	p.addTwPNiels(p1.(*twExtensible).twPNiels())
+	return p
+}
+
+func (p *twExtensible) addTwPNiels(a *twPNiels) Point {
+	// field_mul ( L0, e->z, a->z );
+	L0 := new(bigNumber).mul(p.z, a.z)
+	// field_copy ( e->z, L0 );
+	p.z = L0.copy()
+	// add_tw_niels_to_tw_extensible( e, a->n );
+	p = p.addTwNiels(a.n)
+	return p
 }
 
 func (p *twExtensible) Double() Point {
-	return nil
+	p = p.double()
+	return p
 }
 
 func (p *twExtensible) Marshal() []byte {
 	return nil
+}
+
+func (a *twExtensible) twPNiels() *twPNiels {
+	// field_sub ( b->n->a, a->y, a->x );
+	na := new(bigNumber).sub(a.y, a.x)
+	// field_add ( b->n->b, a->x, a->y );
+	nb := new(bigNumber).add(a.x, a.y)
+	// field_mul ( b->z, a->u, a->t );
+	z := new(bigNumber).mul(a.u, a.t)
+	// field_mulw_scc_wr ( b->n->c, b->z, 2*EDWARDS_D-2 );
+	nc := new(bigNumber).mulWSignedCurveConstant(z, curveDSigned*2-2)
+	// field_add ( b->z, a->z, a->z );
+	z.add(a.z, a.z)
+	return &twPNiels{
+		n: &twNiels{
+			a: na,
+			b: nb,
+			c: nc,
+		},
+		z: z,
+	}
 }
 
 func (p *twExtensible) OnCurve() bool {

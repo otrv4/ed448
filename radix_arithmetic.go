@@ -161,7 +161,7 @@ var (
 	primeOrder, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
 )
 
-//multiplyRaw is Naive multiply
+// XXX to be removed
 func (c *radixCurve) multiplyRaw(n []byte, p Point) Point {
 	m := new(big.Int).SetBytes(n)
 	one := big.NewInt(1)
@@ -325,12 +325,14 @@ func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
 }
 
 func (c *radixCurve) deserializePoint(p []byte) Point {
-	// XXX deserializePoint
-	return c.basePoint
+	var pk serialized
+	copy(pk[:], p[:])
+	ret, _ := mustDeserialize(pk).deserializeHomogeneousProjective()
+	return ret
 }
 
 func (c *radixCurve) computeSecret(private, public []byte) []byte {
-	gab := c.multiply(private[:], c.deserializePoint(public))
+	gab := c.multiply(private, c.deserializePoint(public))
 	return gab.Marshal()
 }
 
