@@ -129,7 +129,9 @@ type pointCurve interface {
 	multiplyRaw(n []byte, p Point) (p2 Point)
 	multiply(n []byte, p Point) (p2 Point)
 	multiplyByBase(scalar [scalarWords]word_t) *twExtensible
+
 	generateKey(rand io.Reader) (k privateKey, err error)
+	sign(msg []byte, k *privateKey) ([signatureBytes]byte, error)
 	computeSecret(private []byte, public []byte) []byte
 }
 
@@ -340,27 +342,27 @@ func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e 
 		return
 	}
 
-	temporaryKey := [fieldWords]word_t{}
-	deriveNonce(temporaryKey[:], msg, k)
+	nonce := [fieldWords]word_t{}
+	deriveNonce(nonce[:], msg, k.symKey())
 
-	// 4[nonce]G
+	// tmpSig = 4 * nonce * basePoint
 	tmpSig := [fieldBytes]byte{}
-	gsk := c.multiplyByBase(temporaryKey).double().untwistAndDoubleAndSerialize()
+	gsk := c.multiplyByBase(nonce).double().untwistAndDoubleAndSerialize()
 	serialize(tmpSig[:], gsk)
 
 	challenge := [fieldWords]word_t{}
 	deriveChallenge(challenge[:], k.publicKey(), tmpSig, msg)
 
 	barrettNegate(challenge[:], &curvePrimeOrder)
-	barrettMac(temporaryKey[:], challenge[:], secretKeyWords[:], &curvePrimeOrder)
+	barrettMac(nonce[:], challenge[:], secretKeyWords[:], &curvePrimeOrder)
 
-	carry := addExtPacked(temporaryKey[:], temporaryKey[:], temporaryKey[:], 0xffffffff)
-	barrettReduce(temporaryKey[:], carry, &curvePrimeOrder)
+	carry := addExtPacked(nonce[:], nonce[:], nonce[:], 0xffffffff)
+	barrettReduce(nonce[:], carry, &curvePrimeOrder)
 
 	copy(s[:], tmpSig[:fieldBytes])
-	wordsToBytes(tmpSig[fieldBytes:], temporaryKey[:])
+	wordsToBytes(s[fieldBytes:], nonce[:])
 
-	//XXX SECURITY Should we wipe temporaryKey, gsk, secretKeyWords, tmpSig, challenge?
+	//XXX SECURITY Should we wipe nonce, gsk, secretKeyWords, tmpSig, challenge?
 
 	/* response = 2(nonce_secret - sk*challenge)
 	 * Nonce = 8[nonce_secret]*G
@@ -372,17 +374,24 @@ func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e 
 }
 
 //XXX Should pubKey have a fixed size here?
-func deriveChallenge(dst []word_t, pubKey []byte, tmpSig [fieldBytes]byte, msg []byte) {
-	//TODO
+func deriveChallenge(dst []word_t, pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) {
+	r := [sha512.Size]byte{}
+	h := sha512.New()
+	h.Write(pubKey)
+	h.Write(tmpSignature[:])
+	h.Write(msg)
+	copy(r[:], h.Sum(nil))
+
+	barrettDeserializeAndReduce(dst, r, &curvePrimeOrder)
 }
 
-func deriveNonce(dst []word_t, msg []byte, k *privateKey) {
+func deriveNonce(dst []word_t, msg []byte, symKey []byte) {
 	r := [sha512.Size]byte{}
 	h := sha512.New()
 	h.Write([]byte("signonce"))
-	h.Write(k.symKey())
+	h.Write(symKey)
 	h.Write(msg)
-	h.Write(k.symKey())
+	h.Write(symKey)
 	copy(r[:], h.Sum(nil))
 
 	barrettDeserializeAndReduce(dst, r, &curvePrimeOrder)
