@@ -277,14 +277,13 @@ func (p *twExtensible) Add(p1 Point) Point {
 	return p
 }
 
-func (p *twExtensible) addTwPNiels(a *twPNiels) Point {
+func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	// field_mul ( L0, e->z, a->z );
 	L0 := new(bigNumber).mul(p.z, a.z)
 	// field_copy ( e->z, L0 );
 	p.z = L0.copy()
 	// add_tw_niels_to_tw_extensible( e, a->n );
-	p = p.addTwNiels(a.n)
-	return p
+	return p.addTwNiels(a.n)
 }
 
 func (p *twExtensible) Double() Point {
