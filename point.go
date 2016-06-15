@@ -217,6 +217,30 @@ type twPNiels struct {
 	z *bigNumber
 }
 
+func newTwistedPNiels(a, b, c, z [56]byte) *twPNiels {
+	return &twPNiels{
+		&twNiels{
+			a: mustDeserialize(serialized(a)),
+			b: mustDeserialize(serialized(b)),
+			c: mustDeserialize(serialized(c)),
+		},
+		mustDeserialize(serialized(z)),
+	}
+}
+
+func (p *twPNiels) String() string {
+	return fmt.Sprintf("A: %s\nB: %s\nC: %s\nZ: %s\n", p.n.a, p.n.b, p.n.c, p.z)
+}
+
+func (p *twPNiels) equals(p2 *twPNiels) bool {
+	ok := true
+
+	ok = ok && p.n.equals(p2.n)
+	ok = ok && p.z.equals(p2.z)
+
+	return ok
+}
+
 type twNiels struct {
 	a, b, c *bigNumber
 }
@@ -227,6 +251,16 @@ func newNielsPoint(a, b, c [56]byte) *twNiels {
 		b: mustDeserialize(serialized(b)),
 		c: mustDeserialize(serialized(c)),
 	}
+}
+
+func (p *twNiels) equals(p2 *twNiels) bool {
+	ok := true
+
+	ok = ok && p.a.equals(p2.a)
+	ok = ok && p.b.equals(p2.b)
+	ok = ok && p.c.equals(p2.c)
+
+	return ok
 }
 
 func (p *twNiels) String() string {
