@@ -28,12 +28,12 @@ func barrettDeserialize(dst []word_t, serial []byte, p *barrettPrime) bool {
 
 	bytesToWords(dst, serial[:s])
 
-	carry := uint64(0)
+	carry := dword_t(0)
 	for i, wi := range dst {
 		carry >>= wordBits
-		carry += uint64(wi)
+		carry += dword_t(wi)
 		if i < len(p.lowWords) {
-			carry += uint64(p.lowWords[i])
+			carry += dword_t(p.lowWords[i])
 		}
 	}
 
@@ -137,16 +137,16 @@ func subExtPacked(dst, x, y []word_t, mask word_t) word_t {
 //XXX Is this the same as mulAddVWW_g() ?
 func widemac(accum []word_t, mier []word_t, mand, carry word_t) word_t {
 	for i := 0; i < len(mier); i++ {
-		product := uint64(mand) * uint64(mier[i])
-		product += uint64(accum[i])
-		product += uint64(carry)
+		product := dword_t(mand) * dword_t(mier[i])
+		product += dword_t(accum[i])
+		product += dword_t(carry)
 
 		accum[i] = word_t(product)
 		carry = word_t(product >> wordBits)
 	}
 
 	for i := len(mier); i < len(accum); i++ {
-		sum := uint64(carry) + uint64(accum[i])
+		sum := dword_t(carry) + dword_t(accum[i])
 		accum[i] = word_t(sum)
 		carry = word_t(sum >> wordBits)
 	}
@@ -213,11 +213,11 @@ func barrettMac(dst, x, y []word_t, p *barrettPrime) {
 }
 
 func addPacked(dst, x []word_t) word_t {
-	carry := uint64(0)
+	carry := dword_t(0)
 
 	//dst can be longer than x
 	for i := 0; i < len(x); i++ {
-		carry = carry + uint64(dst[i]) + uint64(x[i])
+		carry = carry + dword_t(dst[i]) + dword_t(x[i])
 		dst[i] = word_t(carry)
 		carry >>= wordBits
 	}
