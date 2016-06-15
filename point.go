@@ -613,7 +613,7 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	z2 := hP2[2]
 
 	a := new(bigNumber).mul(z1, z2)
-	b := new(bigNumber).mul(a, a)
+	b := new(bigNumber).square(a)
 	c := new(bigNumber).mul(x1, x2)
 	d := new(bigNumber).mul(y1, y2)
 
@@ -664,4 +664,83 @@ func (hP *homogeneousProjective) Marshal() []byte {
 	yBytes := y.Bytes()
 	copy(ret[1+2*byteLen-len(yBytes):], yBytes)
 	return ret
+}
+
+type montgomery struct {
+	z0, xd, zd, xa, za *bigNumber
+}
+
+func (a montgomery) montgomeryStep() {
+	L0 := new(bigNumber)
+	L1 := new(bigNumber)
+	L0.addRaw(a.zd, a.xd)
+	L1.subxRaw(a.xd, a.zd)
+	a.zd.subxRaw(a.xa, a.za)
+	a.xd.mul(L0, a.zd)
+	a.zd.addRaw(a.za, a.xa)
+	a.za.mul(L1, a.zd)
+	a.xa.addRaw(a.za, a.xd)
+	a.zd.square(a.xa)
+	a.xa.mul(a.z0, a.zd)
+	a.zd.subxRaw(a.xd, a.za)
+	a.za.square(a.zd)
+	a.xd.square(L0)
+	L0.square(L1)
+	a.zd.mulWSignedCurveConstant(a.xd, 1-curveDSigned) /* FIXME PERF MULW */
+	L1.subxRaw(a.xd, L0)
+	a.xd.mul(L0, a.zd)
+	L0.subRaw(a.zd, L1)
+	L0.bias(2 /*is32 ? 2 : 4*/)
+	//XXX 64bits don't need this
+	L0.weakReduce()
+	a.zd.mul(L0, L1)
+}
+
+func (a montgomery) serialize(sbz *bigNumber) (b *bigNumber) {
+	L0 := new(bigNumber)
+	L1 := new(bigNumber)
+	L2 := new(bigNumber)
+	L3 := new(bigNumber)
+	b = new(bigNumber)
+
+	L3.mul(a.z0, a.zd)
+	L1.sub(L3, a.xd)
+	L3.mul(a.za, L1)
+	L2.mul(a.z0, a.xd)
+	L1.sub(L2, a.zd)
+	L0.mul(a.xa, L1)
+	L2.add(L0, L3)
+	L1.sub(L3, L0)
+	L3.mul(L1, L2)
+	L2 = a.z0.copy()
+	L2.addW(1)
+	L0.square(L2)
+	L1.mulWSignedCurveConstant(L0, curveDSigned-1)
+	L2.add(a.z0, a.z0)
+	L0.add(L2, L2)
+	L2.add(L0, L1)
+	L0.mul(a.xd, L2)
+	L5 := a.zd.zeroMask()
+	L6 := -L5
+	// constant_time_mask ( L1, L0, sizeof(L1), L5 );
+	mask(L1, L0, L5)
+	L2.add(L1, a.zd)
+	L4 := ^L5
+	L1.mul(sbz, L3)
+	L1.addW(L6)
+	L3.mul(L2, L1)
+	L1.mul(L3, L2)
+	L2.mul(L3, a.xd)
+	L3.mul(L1, L2)
+	L0.isr(L3)
+	L2.mul(L1, L0)
+	L1.square(L0)
+	L0.mul(L3, L1)
+	// constant_time_mask ( b, L2, sizeof(L1), L4 );
+	mask(b, L2, L4)
+	L0.subW(1)
+	// L5 = field_is_zero( L0 );
+	// L4 = field_is_zero( sbz );
+	// return    L5 |    L4;
+	return b
 }

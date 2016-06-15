@@ -112,15 +112,20 @@ func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
 	curve := newRadixCurve()
 
 	//XXX something wrong here
-	// addp2 := curve.add(curve.BasePoint(), curve.BasePoint())
+	addp2 := curve.add(curve.BasePoint(), curve.BasePoint())
 	doublep2 := curve.double(curve.BasePoint())
 	mulp2 := curve.multiply([]byte{0x02}, curve.BasePoint())
-	doubledoublep2 := curve.double(doublep2)
+	doublep4 := curve.double(doublep2)
 	mulp4 := curve.multiply([]byte{0x04}, curve.BasePoint())
+	doublep8 := curve.double(doublep4)
+	mulp8 := curve.multiply([]byte{0x08}, curve.BasePoint())
 
-	// c.Assert(addp2, DeepEquals, doublep2)
+	c.Assert(addp2.OnCurve(), Equals, true)
+	c.Assert(doublep2.OnCurve(), Equals, true)
+	c.Assert(mulp2.OnCurve(), Equals, true)
 	c.Assert(doublep2, DeepEquals, mulp2)
-	c.Assert(doubledoublep2, DeepEquals, mulp4)
+	c.Assert(doublep4, DeepEquals, mulp4)
+	c.Assert(doublep8, DeepEquals, mulp8)
 }
 
 func (s *Ed448Suite) TestDeriveNonce(c *C) {
