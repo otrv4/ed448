@@ -1,7 +1,10 @@
 package ed448
 
 import (
+	"bytes"
 	"encoding/hex"
+	"fmt"
+	"math/big"
 
 	. "gopkg.in/check.v1"
 )
@@ -97,4 +100,20 @@ func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
 	ser := p.untwistAndDoubleAndSerialize()
 
 	c.Assert(ser.equals(exp), Equals, true)
+}
+
+func compareNumbers(label string, n *bigNumber, b *big.Int) {
+	s := [56]byte{}
+	serialize(s[:], n)
+
+	r := rev(s[:])
+	bs := b.Bytes()
+
+	for i := len(r) - len(bs); i > 0; i-- {
+		bs = append([]byte{0}, bs...)
+	}
+
+	if !bytes.Equal(r, bs) {
+		fmt.Printf("%s does not match!\n\t%#v\n\n vs\n\n\t%#v\n", label, r, bs)
+	}
 }
