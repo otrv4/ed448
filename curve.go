@@ -193,6 +193,32 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return R0
 }
 
+func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]word_t) *bigNumber {
+	mont := in.deserializeMontgomery()
+	var i, j, n int
+	n = (scalarBits - 1) % wordBits
+	pflip := word_t(0)
+	for j = (scalarBits+wordBits-1)/wordBits - 1; j >= 0; j-- {
+		w := scalar[j]
+		for i = n; i >= 0; i-- {
+			flip := -((w >> uint(i)) & 1)
+			condSwap(mont.xa, mont.xd, flip^pflip)
+			condSwap(mont.za, mont.zd, flip^pflip)
+			mont.montgomeryStep()
+			pflip = flip
+		}
+		n = wordBits - 1
+	}
+	condSwap(mont.xa, mont.xd, pflip)
+	condSwap(mont.za, mont.zd, pflip)
+	//assert(n_extra_doubles < INT_MAX);
+	n_extra_doubles := int(1)
+	for j = 0; j < n_extra_doubles; j++ {
+		mont.montgomeryStep()
+	}
+	return mont.serialize(in)
+}
+
 func (c *radixCurve) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 	out := &twExtensible{
 		new(bigNumber),
@@ -331,8 +357,40 @@ func (c *radixCurve) deserializePoint(p []byte) Point {
 }
 
 func (c *radixCurve) computeSecret(private, public []byte) []byte {
-	gab := c.multiply(private, c.deserializePoint(public))
-	return gab.Marshal()
+	// uint8_t gxy[GOLDI_FIELD_BYTES];
+	//
+	// /* This function doesn't actually need anything in goldilocks_global,
+	//  * so it doesn't check init.
+	//  */
+	//
+	// assert(GOLDI_SHARED_SECRET_BYTES == SHA512_OUTPUT_BYTES);
+	// word_t sk[GOLDI_FIELD_WORDS];
+	// field_a_t pk;
+	// mask_t succ = field_deserialize(pk,your_pubkey->opaque), msucc = -1;
+	var sk [fieldWords]word_t
+	var pub serialized
+	copy(pub[:], public[:])
+	pk := mustDeserialize(pub)
+	// msucc &= barrett_deserialize(sk,my_privkey->opaque,&curve_prime_order);
+	barrettDeserializeAndReduce(sk[:], private, &curvePrimeOrder)
+	// succ &= montgomery_ladder(pk,pk,sk,GOLDI_SCALAR_BITS,1);
+	c.multiplyMontgomery(pk, pk, sk)
+	gxy := make([]byte, fieldBytes)
+	pk.serialize(gxy)
+	//
+	// /* obliterate records of our failure by adjusting with obliteration key */
+	// sha512_ctx_a_t ctx;
+	// sha512_init(ctx);
+	//
+	// /* stir in the shared key and finish */
+	// sha512_update(ctx, gxy, GOLDI_FIELD_BYTES);
+	// sha512_final(ctx, shared);
+	//
+	// return (GOLDI_ECORRUPT & ~msucc)
+	//     | (GOLDI_EINVAL & msucc &~ succ)
+	//     | (GOLDI_EOK & msucc & succ);
+	//
+	return gxy
 }
 
 func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {

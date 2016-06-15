@@ -93,6 +93,11 @@ func (n *bigNumber) subRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	return n
 }
 
+func (n *bigNumber) subxRaw(x *bigNumber, y *bigNumber) *bigNumber {
+	// XXX Only weakReduce when 32bits
+	return n.subRaw(x, y).bias(2).weakReduce()
+}
+
 //n = x * y
 func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 	//it does not work in place, that why the temporary bigNumber is necessary
@@ -268,6 +273,19 @@ func (n *bigNumber) limbs() []limb {
 	return n[:]
 }
 
+func (n *bigNumber) serialize(serial []byte) {
+	var i, j int
+	red := n.copy()
+	red.strongReduce()
+	for i = 0; i < 8; i++ {
+		limb := red[2*i] + ((red[2*i+1]) << 28)
+		for j = 0; j < 7; j++ {
+			serial[7*i+j] = byte(limb)
+			limb >>= 8
+		}
+	}
+}
+
 func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	a := &twExtensible{
 		x: new(bigNumber),
@@ -424,4 +442,19 @@ func (sz *bigNumber) deserializeHomogeneousProjective() (*homogeneousProjective,
 	//     return field_is_zero( L0 );
 	// }
 	return newHomogeneousProjective(x, y), L0.zero()
+}
+
+func (sz *bigNumber) deserializeMontgomery() *montgomery {
+	a := new(montgomery)
+	// field_sqr ( a->z0, sz );
+	a.z0 = new(bigNumber).square(sz)
+	// field_set_ui( a->xd, 1 );
+	a.xd = new(bigNumber).setUi(1)
+	// field_set_ui( a->zd, 0 );
+	a.zd = new(bigNumber).setUi(0)
+	// field_set_ui( a->xa, 1 );
+	a.xa = new(bigNumber).setUi(1)
+	// field_copy ( a->za, a->z0 );
+	a.za = a.z0.copy()
+	return a
 }

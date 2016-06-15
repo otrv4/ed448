@@ -37,7 +37,6 @@ func (s *Ed448Suite) TestSignAndVerify(c *C) {
 }
 
 func (s *Ed448Suite) TestComputeSecret(c *C) {
-	c.Skip("Montgomery ladder is not implemented yet.")
 	ed448 := NewEd448()
 	privA, pubA, _ := ed448.GenerateKeys()
 	privB, pubB, _ := ed448.GenerateKeys()
