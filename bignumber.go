@@ -2,7 +2,7 @@ package ed448
 
 import "fmt"
 
-type limb Word
+type limb word_t
 type bigNumber [Limbs]limb //XXX Should this type be a pointer to an array?
 type serialized [56]byte
 
