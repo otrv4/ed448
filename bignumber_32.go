@@ -87,7 +87,7 @@ func (n *bigNumber) strongReduce() *bigNumber {
 		scarry >>= 28
 	}
 
-	scarryMask := Word(scarry) & Word(radixMask)
+	scarryMask := word_t(scarry) & word_t(radixMask)
 	carry := uint64(0)
 	for i := 0; i < 16; i++ {
 		m := uint64(scarryMask)
