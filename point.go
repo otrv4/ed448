@@ -1,7 +1,6 @@
 package ed448
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -561,22 +560,6 @@ func rev(in []byte) []byte {
 	}
 
 	return r
-}
-
-func compareNumbers(label string, n *bigNumber, b *big.Int) {
-	s := [56]byte{}
-	serialize(s[:], n)
-
-	r := rev(s[:])
-	bs := b.Bytes()
-
-	for i := len(r) - len(bs); i > 0; i-- {
-		bs = append([]byte{0}, bs...)
-	}
-
-	if !bytes.Equal(r, bs) {
-		fmt.Printf("%s does not match!\n\t%#v\n\n vs\n\n\t%#v\n", label, r, bs)
-	}
 }
 
 // See Hisil, formula 5.1

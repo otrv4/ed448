@@ -161,7 +161,7 @@ var (
 	primeOrder, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
 )
 
-// XXX to be removed
+// XXX Only for testing multiply
 func (c *radixCurve) multiplyRaw(n []byte, p Point) Point {
 	m := new(big.Int).SetBytes(n)
 	one := big.NewInt(1)
