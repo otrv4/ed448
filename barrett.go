@@ -51,7 +51,7 @@ func barrettDeserialize(dst []word_t, serial []byte, p *barrettPrime) bool {
 	return ^scarry != 0
 }
 
-func barrettDeserializeAndReduce(dst []word_t, serial [64]byte, p *barrettPrime) {
+func barrettDeserializeAndReduce(dst []word_t, serial []byte, p *barrettPrime) {
 	wordLen := wordBits / 8
 	size := (len(serial) + wordLen - 1) / wordLen
 	if size < int(p.wordsInP) {

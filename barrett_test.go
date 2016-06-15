@@ -16,7 +16,7 @@ func (s *Ed448Suite) TestBarrettDeserializeAndReduce(c *C) {
 
 	result := [fieldWords]word_t{}
 
-	barrettDeserializeAndReduce(result[:], serialized, &curvePrimeOrder)
+	barrettDeserializeAndReduce(result[:], serialized[:], &curvePrimeOrder)
 
 	c.Assert(result, DeepEquals, [fieldWords]word_t{
 		0x3e3f0106, 0x109e3fb3,

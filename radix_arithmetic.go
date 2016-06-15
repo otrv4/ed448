@@ -280,17 +280,16 @@ func wordsToBytes(dst []byte, src []word_t) {
 
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to PRF(k)
-func pseudoRandomFunction(k [symKeyBytes]byte) (r [sha512.Size]byte) {
+func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
 	h := sha512.New()
 	h.Write([]byte("derivepk"))
 	h.Write(k[:])
-	copy(r[:], h.Sum(nil)) //XXX should we simply return the sum?
-	return r
+	return h.Sum(nil)
 }
 
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to DESERMODq()
-func deserializeModQ(dst []word_t, serial [64]byte) {
+func deserializeModQ(dst []word_t, serial []byte) {
 	barrettDeserializeAndReduce(dst, serial, &curvePrimeOrder)
 }
 
@@ -377,26 +376,22 @@ func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e 
 
 //XXX Should pubKey have a fixed size here?
 func deriveChallenge(dst []word_t, pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) {
-	r := [sha512.Size]byte{}
 	h := sha512.New()
 	h.Write(pubKey)
 	h.Write(tmpSignature[:])
 	h.Write(msg)
-	copy(r[:], h.Sum(nil))
 
-	barrettDeserializeAndReduce(dst, r, &curvePrimeOrder)
+	barrettDeserializeAndReduce(dst, h.Sum(nil), &curvePrimeOrder)
 }
 
 func deriveNonce(dst []word_t, msg []byte, symKey []byte) {
-	r := [sha512.Size]byte{}
 	h := sha512.New()
 	h.Write([]byte("signonce"))
 	h.Write(symKey)
 	h.Write(msg)
 	h.Write(symKey)
-	copy(r[:], h.Sum(nil))
 
-	barrettDeserializeAndReduce(dst, r, &curvePrimeOrder)
+	barrettDeserializeAndReduce(dst, h.Sum(nil), &curvePrimeOrder)
 
 	//XXX SECURITY should we wipe r?
 }
