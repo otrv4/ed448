@@ -102,6 +102,28 @@ func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
 	c.Assert(ser.equals(exp), Equals, true)
 }
 
+func (s *Ed448Suite) TestConditionalNegate(c *C) {
+	pa, _ := hex.DecodeString("4b8a632c1feab72769cd96e7aaa577861871b3613945c802b89377e8b85331ecc0ffb1cb20169bfc9c27274d38b0d01e87a1d5d851770bc8")
+	pb, _ := hex.DecodeString("81a45f02f41053f8d7d2a1f176a340529b33b7ee4d3fa84de384b750b35a54c315bf36c41d023ade226449916e668396589ea2145da09b95")
+	pc, _ := hex.DecodeString("5f5a2b06a2dbf7136f8dc979fd54d631ca7de50397250a196d3be2a721ab7cbaa92c545d9b15b5319e11b64bc031666049d8637e13838b3b")
+
+	n := &twNiels{
+		a: new(bigNumber).setBytes(pa),
+		b: new(bigNumber).setBytes(pb),
+		c: new(bigNumber).setBytes(pc),
+	}
+
+	negN := &twNiels{
+		a: n.b.copy(),
+		b: n.a.copy(),
+		c: new(bigNumber).neg(n.c.copy()),
+	}
+
+	x := n.copy()
+	x.conditionalNegate(0xffffffff)
+	c.Assert(x, DeepEquals, negN)
+}
+
 func compareNumbers(label string, n *bigNumber, b *big.Int) {
 	s := [56]byte{}
 	serialize(s[:], n)

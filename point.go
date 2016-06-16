@@ -274,14 +274,9 @@ func (p *twNiels) copy() *twNiels {
 	}
 }
 
-//XXX SECURITY this should be constant-time
-func (nP *twNiels) conditionalNegate(neg bool) {
-	if neg {
-		tmp := nP.a
-		nP.a = nP.b
-		nP.b = tmp
-		nP.c.neg(nP.c)
-	}
+func (nP *twNiels) conditionalNegate(neg word_t) {
+	nP.a.conditionalSwap(nP.b, neg)
+	nP.c = nP.c.conditionalNegate(neg)
 }
 
 func (p *twNiels) TwistedExtensible() *twExtensible {
