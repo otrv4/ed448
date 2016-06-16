@@ -202,15 +202,18 @@ func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]w
 		w := scalar[j]
 		for i = n; i >= 0; i-- {
 			flip := -((w >> uint(i)) & 1)
-			condSwap(mont.xa, mont.xd, flip^pflip)
-			condSwap(mont.za, mont.zd, flip^pflip)
+
+			swap := flip ^ pflip
+			mont.xa.conditionalSwap(mont.xd, swap)
+			mont.za.conditionalSwap(mont.zd, swap)
 			mont.montgomeryStep()
 			pflip = flip
 		}
 		n = wordBits - 1
 	}
-	condSwap(mont.xa, mont.xd, pflip)
-	condSwap(mont.za, mont.zd, pflip)
+
+	mont.xa.conditionalSwap(mont.xd, pflip)
+	mont.za.conditionalSwap(mont.zd, pflip)
 	//assert(n_extra_doubles < INT_MAX);
 	n_extra_doubles := int(1)
 	for j = 0; j < n_extra_doubles; j++ {
@@ -257,7 +260,7 @@ func (c *radixCurve) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 			tab &= (1 << (t - 1)) - 1
 
 			ni = baseTable.lookup(j, t, uint(tab))
-			ni.conditionalNegate(invert != 0)
+			ni.conditionalNegate(invert)
 
 			if i != 0 || j != 0 {
 				out = out.addTwNiels(ni)

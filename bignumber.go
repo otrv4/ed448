@@ -3,7 +3,7 @@ package ed448
 import "fmt"
 
 type limb word_t
-type bigNumber [Limbs]limb //XXX Should this type be a pointer to an array?
+type bigNumber [Limbs]limb
 type serialized [56]byte
 
 func mustDeserialize(in serialized) *bigNumber {
@@ -15,12 +15,6 @@ func mustDeserialize(in serialized) *bigNumber {
 	return n
 }
 
-func isZero(n int64) uint32 {
-	nn := uint64(n)
-	nn = nn - 1
-	return uint32(nn >> wordBits)
-}
-
 func isZeroMask(n uint32) uint32 {
 	nn := uint64(n)
 	nn = nn - 1
@@ -28,22 +22,19 @@ func isZeroMask(n uint32) uint32 {
 }
 
 func constantTimeGreaterOrEqualP(n *bigNumber) bool {
-	var (
-		ge   = int64(-1)
-		mask = int64(1)<<Radix - 1
-	)
+	ge := limb(0xffffffff)
 
 	for i := 0; i < 4; i++ {
-		ge &= int64(n[i])
+		ge &= n[i]
 	}
 
-	ge = (ge & (int64(n[4]) + 1)) | int64(isZero(int64(n[4])^mask))
+	ge = (ge & (n[4] + 1)) | limb(isZeroMask(uint32(n[4]^radixMask)))
 
 	for i := 5; i < 8; i++ {
-		ge &= int64(n[i])
+		ge &= n[i]
 	}
 
-	return ge == mask
+	return ge == radixMask
 }
 
 //n = x + y
@@ -108,35 +99,34 @@ func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 	return n
 }
 
-//XXX What is ISR? Inverted Square Root?
 func (n *bigNumber) isr(x *bigNumber) *bigNumber {
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
 
-	l1 = l1.square(x)      // l1 = x^2
-	l2 = l2.mul(x, l1)     // l2 = l1 * x = x^3
-	l1 = l1.square(l2)     // l1 = l2^2 = x^6
-	l2 = l2.mul(x, l1)     // l2 = l1 * x = x^7
-	l1 = l1.squareN(l2, 3) // l1 = l2^6
-	l0 = l0.mul(l2, l1)
-	l1 = l1.squareN(l0, 3)
-	l0 = l0.mul(l2, l1)
-	l2 = l2.squareN(l0, 9)
-	l1 = l1.mul(l0, l2)
-	l0 = l0.square(l1)
-	l2 = l2.mul(x, l0)
-	l0 = l0.squareN(l2, 18)
-	l2 = l2.mul(l1, l0)
-	l0 = l0.squareN(l2, 37)
-	l1 = l1.mul(l2, l0)
-	l0 = l0.squareN(l1, 37)
-	l1 = l1.mul(l2, l0)
-	l0 = l0.squareN(l1, 111)
-	l2 = l2.mul(l1, l0)
-	l0 = l0.square(l2)
-	l1 = l1.mul(x, l0)
-	l0 = l0.squareN(l1, 223)
+	l1.square(x)
+	l2.mul(x, l1)
+	l1.square(l2)
+	l2.mul(x, l1)
+	l1.squareN(l2, 3)
+	l0.mul(l2, l1)
+	l1.squareN(l0, 3)
+	l0.mul(l2, l1)
+	l2.squareN(l0, 9)
+	l1.mul(l0, l2)
+	l0.square(l1)
+	l2.mul(x, l0)
+	l0.squareN(l2, 18)
+	l2.mul(l1, l0)
+	l0.squareN(l2, 37)
+	l1.mul(l2, l0)
+	l0.squareN(l1, 37)
+	l1.mul(l2, l0)
+	l0.squareN(l1, 111)
+	l2.mul(l1, l0)
+	l0.square(l2)
+	l1.mul(x, l0)
+	l0.squareN(l1, 223)
 
 	return l1.mul(l2, l0)
 }
@@ -162,7 +152,6 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	return n
 }
 
-//XXX It may not work on 64-bit
 func (n *bigNumber) weakReduce() *bigNumber {
 	tmp := limb(uint64(n[Limbs-1]) >> Radix)
 
@@ -191,9 +180,26 @@ func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {
 }
 
 func (n *bigNumber) neg(x *bigNumber) *bigNumber {
-	n.negRaw(x)
-	n.bias(2)
-	n.weakReduce()
+	return n.negRaw(x).bias(2).weakReduce()
+}
+
+func (n *bigNumber) conditionalNegate(neg word_t) *bigNumber {
+	return constantTimeSelect(new(bigNumber).neg(n), n, neg)
+}
+
+func constantTimeSelect(x, y *bigNumber, first word_t) *bigNumber {
+	//XXX this is probably more complicate than it should
+	return y.copy().conditionalSwap(x.copy(), first)
+}
+
+//if swap == 0xffffffff => n = x, x = n
+func (n *bigNumber) conditionalSwap(x *bigNumber, swap word_t) *bigNumber {
+	for i, xv := range x {
+		s := (xv ^ n[i]) & limb(swap)
+		x[i] ^= s
+		n[i] ^= s
+	}
+
 	return n
 }
 
@@ -213,7 +219,6 @@ func (n *bigNumber) copy() *bigNumber {
 
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	r := limb(0)
-
 	x := n.copy().strongReduce()
 	y := o.copy().strongReduce()
 
@@ -286,6 +291,7 @@ func (n *bigNumber) serialize(serial []byte) {
 	}
 }
 
+//XXX Move: bigNumber should not know about points
 func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	a := &twExtensible{
 		x: new(bigNumber),
@@ -376,6 +382,7 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	return a, ret
 }
 
+//XXX Move: bigNumber should not know about points
 func (sz *bigNumber) deserializeHomogeneousProjective() (*homogeneousProjective, bool) {
 	// mask_t
 	// deserialize_affine (
@@ -444,6 +451,7 @@ func (sz *bigNumber) deserializeHomogeneousProjective() (*homogeneousProjective,
 	return newHomogeneousProjective(x, y), L0.zero()
 }
 
+//XXX Move: bigNumber should not know about points
 func (sz *bigNumber) deserializeMontgomery() *montgomery {
 	a := new(montgomery)
 	// field_sqr ( a->z0, sz );
