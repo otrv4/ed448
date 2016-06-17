@@ -193,12 +193,12 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return R0
 }
 
-func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]word_t) {
+func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) {
 	mont := in.deserializeMontgomery()
 	var i, j, n int
-	n = (scalarBits - 1) % wordBits
+	n = (nbits - 1) % wordBits
 	pflip := word_t(0)
-	for j = (scalarBits+wordBits-1)/wordBits - 1; j >= 0; j-- {
+	for j = (nbits+wordBits-1)/wordBits - 1; j >= 0; j-- {
 		w := scalar[j]
 		for i = n; i >= 0; i-- {
 			flip := -((w >> uint(i)) & 1)
@@ -215,7 +215,6 @@ func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]w
 	mont.xa.conditionalSwap(mont.xd, pflip)
 	mont.za.conditionalSwap(mont.zd, pflip)
 	//assert(n_extra_doubles < INT_MAX);
-	n_extra_doubles := int(1)
 	for j = 0; j < n_extra_doubles; j++ {
 		mont.montgomeryStep()
 	}
@@ -361,24 +360,13 @@ func (c *radixCurve) deserializePoint(p []byte) Point {
 }
 
 func (c *radixCurve) computeSecret(private, public []byte) []byte {
-	// uint8_t gxy[GOLDI_FIELD_BYTES];
-	//
-	// /* This function doesn't actually need anything in goldilocks_global,
-	//  * so it doesn't check init.
-	//  */
-	//
-	// assert(GOLDI_SHARED_SECRET_BYTES == SHA512_OUTPUT_BYTES);
-	// word_t sk[GOLDI_FIELD_WORDS];
-	// field_a_t pk;
-	// mask_t succ = field_deserialize(pk,your_pubkey->opaque), msucc = -1;
 	var sk [fieldWords]word_t
 	var pub serialized
-	copy(pub[:], public[:])
+	copy(pub[:], public)
 	pk := mustDeserialize(pub)
-	// msucc &= barrett_deserialize(sk,my_privkey->opaque,&curve_prime_order);
-	barrettDeserializeAndReduce(sk[:], private, &curvePrimeOrder)
+	barrettDeserialize(sk[:], private, &curvePrimeOrder)
 	// succ &= montgomery_ladder(pk,pk,sk,GOLDI_SCALAR_BITS,1);
-	c.multiplyMontgomery(pk, pk, sk)
+	c.multiplyMontgomery(pk, pk, sk, scalarBits, 1)
 	gxy := make([]byte, fieldBytes)
 	serialize(gxy, pk)
 	//
