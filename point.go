@@ -685,8 +685,8 @@ func (a montgomery) montgomeryStep() {
 	L1.subxRaw(a.xd, L0)
 	a.xd.mul(L0, a.zd)
 	L0.subRaw(a.zd, L1)
-	L0.bias(2 /*is32 ? 2 : 4*/)
-	//XXX 64bits don't need this
+	L0.bias(4 - 2*1 /*is32 ? 2 : 4*/)
+	//XXX 64bits don't need this reduce
 	L0.weakReduce()
 	a.zd.mul(L0, L1)
 }
