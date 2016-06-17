@@ -280,70 +280,38 @@ func (n *bigNumber) limbs() []limb {
 
 //XXX Move: bigNumber should not know about points
 func (sz *bigNumber) deserializeHomogeneousProjective() (*homogeneousProjective, bool) {
-	// mask_t
-	// deserialize_affine (
-	//     affine_a_t     a,
-	//     const field_a_t sz
-	// ) {
-	//     field_a_t L0, L1, L2, L3;
 	L0 := new(bigNumber)
 	L1 := new(bigNumber)
 	L2 := new(bigNumber)
 	L3 := new(bigNumber)
 	x := new(bigNumber)
 	y := new(bigNumber)
-	//     field_sqr ( L1, sz );
 	L1.square(sz)
-	//     field_copy ( L3, L1 );
 	L3 = L1.copy()
-	//     field_addw ( L3, 1 );
 	L3.addW(1)
-	//     field_sqr ( L2, L3 );
 	L2.square(L3)
-	//     field_mulw_scc ( a->x, L2, EDWARDS_D-1 ); /* PERF MULW */
 	x.mulWSignedCurveConstant(L2, curveDSigned-1)
-	//     field_add ( L3, L1, L1 ); /* FIXME: i adjusted the bias here, was it right? */
 	L3.add(L1, L1)
-	//     field_add ( a->y, L3, L3 );
 	y.add(L3, L3)
-	//     field_add ( L3, a->y, a->x );
 	L3.add(y, x)
-	//     field_copy ( a->y, L1 );
 	y = L1.copy()
-	//     field_neg ( a->x, a->y );
 	x.neg(y)
-	//     field_addw ( a->x, 1 );
 	x.addW(1)
-	//     field_mul ( a->y, a->x, L3 );
 	y.mul(x, L3)
-	//     field_sqr ( L2, a->x );
 	L2.square(x)
-	//     field_mul ( L0, L2, a->y );
 	L0.mul(L2, y)
-	//     field_mul ( a->y, a->x, L0 );
 	y.mul(x, L0)
-	//     field_isr ( L3, a->y );
 	L3.isr(y)
-	//     field_mul ( a->y, L2, L3 );
 	y.mul(L2, L3)
-	//     field_sqr ( L2, L3 );
 	L2.square(L3)
-	//     field_mul ( L3, L0, L2 );
 	L3.mul(L0, L2)
-	//     field_mul ( L0, a->x, L3 );
 	L0.mul(x, L3)
-	//     field_add ( L2, a->y, a->y );
 	L2.add(y, y)
-	//     field_mul ( a->x, sz, L2 );
 	x.mul(sz, L2)
-	//     field_addw ( L1, 1 );
 	L1.addW(1)
-	//     field_mul ( a->y, L1, L3 );
 	y.mul(L1, L3)
-	//     field_subw( L0, 1 );
 	L0.subW(1)
-	//     return field_is_zero( L0 );
-	// }
+
 	return newHomogeneousProjective(x, y), L0.zero()
 }
 
