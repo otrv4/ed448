@@ -1,12 +1,15 @@
 package ed448
 
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"crypto/sha512"
+)
 
 type Ed448 interface {
 	GenerateKeys() (priv, pub []byte, ok bool)
 	Sign(priv, message []byte) (signature []byte, ok bool)
 	Verify(signature, message, pub []byte) (valid bool)
-	ComputeSecret(private, public []byte) (secret []byte)
+	ComputeSecret(private, public []byte) (secret [sha512.Size]byte)
 }
 
 type ed448 struct{}
@@ -36,6 +39,6 @@ func (ed *ed448) Verify(signature, message, pub []byte) (valid bool) {
 }
 
 // ECDH Compute secret according to private key and peer's public key.
-func (ed *ed448) ComputeSecret(private, public []byte) (secret []byte) {
-	return newRadixCurve().computeSecret(private, public)
+func (ed *ed448) ComputeSecret(private, public []byte) (secret [sha512.Size]byte) {
+	return sha512.Sum512(newRadixCurve().computeSecret(private, public))
 }
