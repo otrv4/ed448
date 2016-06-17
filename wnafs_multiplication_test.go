@@ -162,6 +162,7 @@ func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 }
 
 func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
+	c.Skip("not yet, hold your horses!")
 	px, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
 	py, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
 	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
@@ -212,4 +213,44 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 	linear_combo_var_fixed_vt(p, x[:], y[:], wnfsTable[:])
 
 	c.Assert(p.equals(expectedP), Equals, true)
+}
+
+func (s *Ed448Suite) TestRecodeWnafForS0(c *C) {
+	//nbits_var := 446
+	nbits_pre := 446
+	table_bits_pre := 5
+	//struct smvt_control control_var[nbits_var/(table_bits_var+1)+3];
+	controlLen := nbits_pre/(table_bits_pre+1) + 3
+	control_pre := make([]smvt_control, controlLen)
+	sig := [scalarWords]word_t{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}
+
+	position := recodeWnaf(control_pre[:], sig[:], nbits_pre, table_bits_pre)
+
+	c.Assert(position, Equals, uint32(0))
+	c.Assert(control_pre[position].power, Equals, -1)
+	c.Assert(control_pre[position].addend, Equals, 0)
+}
+
+func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
+	nbits := 446
+	table_bits := 4
+	controlLen := nbits/(table_bits+1) + 3
+	control := make([]smvt_control, controlLen)
+	challenge := [scalarWords]word_t{
+		0xfd27ffdd, 0xa4a42c92,
+		0xd9464f36, 0xac8078dd,
+		0x91e922f8, 0x76ebe5e8,
+		0x4f1d8f84, 0x968d2c41,
+		0x857c5a17, 0x9f74691c,
+		0x3595bd83, 0x5b966fb6,
+		0xb1428aca, 0x31b43b4d,
+	}
+
+	position := recodeWnaf(control[:], challenge[:], nbits, table_bits)
+
+	c.Assert(position, Equals, uint32(67))
+	c.Assert(control[position].power, Equals, -1)
+	c.Assert(control[position].addend, Equals, 0)
 }
