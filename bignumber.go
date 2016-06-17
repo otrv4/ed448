@@ -128,7 +128,7 @@ func (n *bigNumber) isr(x *bigNumber) *bigNumber {
 	l1.mul(x, l0)
 	l0.squareN(l1, 223)
 
-	return l1.mul(l2, l0)
+	return n.mul(l2, l0)
 }
 
 //XXX Is there any optimum way of squaring?
