@@ -193,7 +193,7 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return R0
 }
 
-func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]word_t) *bigNumber {
+func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]word_t) {
 	mont := in.deserializeMontgomery()
 	var i, j, n int
 	n = (scalarBits - 1) % wordBits
@@ -219,7 +219,8 @@ func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]w
 	for j = 0; j < n_extra_doubles; j++ {
 		mont.montgomeryStep()
 	}
-	return mont.serialize(in)
+	out = mont.serialize(in)
+	return
 }
 
 func (c *radixCurve) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
@@ -379,7 +380,7 @@ func (c *radixCurve) computeSecret(private, public []byte) []byte {
 	// succ &= montgomery_ladder(pk,pk,sk,GOLDI_SCALAR_BITS,1);
 	c.multiplyMontgomery(pk, pk, sk)
 	gxy := make([]byte, fieldBytes)
-	pk.serialize(gxy)
+	serialize(gxy, pk)
 	//
 	// /* obliterate records of our failure by adjusting with obliteration key */
 	// sha512_ctx_a_t ctx;
