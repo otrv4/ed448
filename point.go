@@ -665,7 +665,7 @@ type montgomery struct {
 	z0, xd, zd, xa, za *bigNumber
 }
 
-func (a montgomery) montgomeryStep() {
+func (a *montgomery) montgomeryStep() {
 	L0 := new(bigNumber)
 	L1 := new(bigNumber)
 	L0.addRaw(a.zd, a.xd)
@@ -691,7 +691,7 @@ func (a montgomery) montgomeryStep() {
 	a.zd.mul(L0, L1)
 }
 
-func (a montgomery) serialize(sbz *bigNumber) (b *bigNumber) {
+func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
 	L0 := new(bigNumber)
 	L1 := new(bigNumber)
 	L2 := new(bigNumber)
@@ -734,8 +734,17 @@ func (a montgomery) serialize(sbz *bigNumber) (b *bigNumber) {
 	// constant_time_mask ( b, L2, sizeof(L1), L4 );
 	mask(b, L2, L4)
 	L0.subW(1)
-	// L5 = field_is_zero( L0 );
-	// L4 = field_is_zero( sbz );
-	// return    L5 |    L4;
-	return b
+	L5 = L0.zeroMask()
+	L4 = sbz.zeroMask()
+
+	return b, L5 | L4
+}
+
+func (a *montgomery) deserialize(sz *bigNumber) {
+	a.z0 = new(bigNumber).square(sz)
+	a.xd = new(bigNumber).setUi(1)
+	a.zd = new(bigNumber).setUi(0)
+	a.xa = new(bigNumber).setUi(1)
+	a.za = a.z0.copy()
+	return
 }

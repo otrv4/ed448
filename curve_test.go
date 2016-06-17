@@ -83,7 +83,7 @@ func (s *Ed448Suite) TestDouble(c *C) {
 func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
 	curve := newRadixCurve()
 
-	//XXX something wrong here
+	//XXX something maybe wrong here
 	addp2 := curve.add(curve.BasePoint(), curve.BasePoint())
 	doublep2 := curve.double(curve.BasePoint())
 	mulp2 := curve.multiply([]byte{0x02}, curve.BasePoint())

@@ -314,14 +314,3 @@ func (sz *bigNumber) deserializeHomogeneousProjective() (*homogeneousProjective,
 
 	return newHomogeneousProjective(x, y), L0.zero()
 }
-
-//XXX Move: bigNumber should not know about points
-func (sz *bigNumber) deserializeMontgomery() *montgomery {
-	a := new(montgomery)
-	a.z0 = new(bigNumber).square(sz)
-	a.xd = new(bigNumber).setUi(1)
-	a.zd = new(bigNumber).setUi(0)
-	a.xa = new(bigNumber).setUi(1)
-	a.za = a.z0.copy()
-	return a
-}

@@ -194,7 +194,8 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 }
 
 func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) {
-	mont := in.deserializeMontgomery()
+	mont := new(montgomery)
+	mont.deserialize(in)
 	var i, j, n int
 	n = (nbits - 1) % wordBits
 	pflip := word_t(0)
@@ -218,7 +219,10 @@ func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]w
 	for j = 0; j < n_extra_doubles; j++ {
 		mont.montgomeryStep()
 	}
-	out = mont.serialize(in)
+	out, ok := mont.serialize(in)
+	if ok != uint32(0) {
+		panic("serialize failure")
+	}
 	return
 }
 

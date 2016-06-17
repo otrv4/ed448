@@ -191,25 +191,3 @@ func (s *Ed448Suite) TestISR(c *C) {
 
 	c.Assert(gx.equals(exp), Equals, true)
 }
-
-func (s *Ed448Suite) TestDeserializeMontgomery(c *C) {
-	bs_in, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008")
-	in := new(bigNumber).setBytes(bs_in)
-	out := in.deserializeMontgomery()
-	bs_z0, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040")
-	z0 := new(bigNumber).setBytes(bs_z0)
-	bs_xd, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	xd := new(bigNumber).setBytes(bs_xd)
-	bs_zd, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-	zd := new(bigNumber).setBytes(bs_zd)
-	bs_xa, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	xa := new(bigNumber).setBytes(bs_xa)
-	bs_za, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040")
-	za := new(bigNumber).setBytes(bs_za)
-
-	c.Assert(out.z0.equals(z0), Equals, true)
-	c.Assert(out.xd.equals(xd), Equals, true)
-	c.Assert(out.zd.equals(zd), Equals, true)
-	c.Assert(out.xa.equals(xa), Equals, true)
-	c.Assert(out.za.equals(za), Equals, true)
-}
