@@ -184,12 +184,12 @@ func (s *Ed448Suite) TestISR(c *C) {
 		0xff, 0x92, 0x26, 0xea, 0xa0, 0x7e, 0x29,
 	})
 
-	y := gx.isr(gx)
+	gx.isr(gx)
 
 	bs, _ := hex.DecodeString("04027d13a34bbe052fdf4247b02a4a3406268203a09076e56dee9dc2b699c4abc66f2832a677dfd0bf7e70ee72f01db170839717d1c64f02")
 	exp := new(bigNumber).setBytes(bs)
 
-	c.Assert(y.equals(exp), Equals, true)
+	c.Assert(gx.equals(exp), Equals, true)
 }
 
 func (s *Ed448Suite) TestDeserializeMontgomery(c *C) {
