@@ -219,10 +219,11 @@ func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]w
 	for j = 0; j < n_extra_doubles; j++ {
 		mont.montgomeryStep()
 	}
-	out, ok := mont.serialize(in)
+	ret, ok := mont.serialize(in)
 	if ok != uint32(0) {
 		panic("serialize failure")
 	}
+	copy(out[:], ret[:])
 	return
 }
 
@@ -368,7 +369,9 @@ func (c *radixCurve) computeSecret(private, public []byte) []byte {
 	var pub serialized
 	copy(pub[:], public)
 	pk := mustDeserialize(pub)
-	barrettDeserialize(sk[:], private, &curvePrimeOrder)
+	if succ := barrettDeserialize(sk[:], private, &curvePrimeOrder); !succ {
+		panic("invalid private")
+	}
 	// succ &= montgomery_ladder(pk,pk,sk,GOLDI_SCALAR_BITS,1);
 	c.multiplyMontgomery(pk, pk, sk, scalarBits, 1)
 	gxy := make([]byte, fieldBytes)
@@ -382,11 +385,13 @@ func (c *radixCurve) computeSecret(private, public []byte) []byte {
 	// sha512_update(ctx, gxy, GOLDI_FIELD_BYTES);
 	// sha512_final(ctx, shared);
 	//
+	h := sha512.New()
+	h.Write(gxy)
 	// return (GOLDI_ECORRUPT & ~msucc)
 	//     | (GOLDI_EINVAL & msucc &~ succ)
 	//     | (GOLDI_EOK & msucc & succ);
 	//
-	return gxy
+	return h.Sum(nil)
 }
 
 func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {
