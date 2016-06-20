@@ -122,6 +122,25 @@ func (s *Ed448Suite) TestConditionalSelect(c *C) {
 	c.Assert(constantTimeSelect(x, y, 0), DeepEquals, y)
 }
 
+func (s *Ed448Suite) TestConditionalSwap(c *C) {
+	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
+	x := new(bigNumber).setBytes(bs)
+
+	bs, _ = hex.DecodeString("190a4751b63108861a8823d67db100bac0e3bef9fcff77eea15b64b017b58483201f91f29dd03aa383aa654e093c15cda83f86867f6fd921")
+	y := new(bigNumber).setBytes(bs)
+
+	a := x.copy()
+	b := y.copy()
+	a.conditionalSwap(b, 0xffffffff)
+
+	c.Assert(a, DeepEquals, y)
+	c.Assert(b, DeepEquals, x)
+
+	a.conditionalSwap(b, 0)
+	c.Assert(a, DeepEquals, y)
+	c.Assert(b, DeepEquals, x)
+}
+
 func (s *Ed448Suite) TestConditionalNegateNumber(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
 	n := new(bigNumber).setBytes(bs)

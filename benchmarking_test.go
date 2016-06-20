@@ -56,6 +56,17 @@ func (s *Ed448Suite) BenchmarkGenerateKey(c *C) {
 	}
 }
 
+func (s *Ed448Suite) BenchmarkComputeSecret(c *C) {
+	curve := newRadixCurve()
+	k, err := curve.generateKey(rand.Reader)
+	c.Assert(err, IsNil)
+
+	c.ResetTimer()
+	for i := 0; i < c.N; i++ {
+		curve.computeSecret(k.secretKey(), k.publicKey())
+	}
+}
+
 func (s *Ed448Suite) BenchmarkSign(c *C) {
 	curve := newRadixCurve()
 	msg := []byte("hey there")

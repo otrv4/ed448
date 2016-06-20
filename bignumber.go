@@ -21,7 +21,7 @@ func isZeroMask(n uint32) uint32 {
 	return uint32(nn >> wordBits)
 }
 
-func constantTimeGreaterOrEqualP(n *bigNumber) bool {
+func constantTimeGreaterOrEqualP(n *bigNumber) word_t {
 	ge := limb(0xffffffff)
 
 	for i := 0; i < 4; i++ {
@@ -34,7 +34,7 @@ func constantTimeGreaterOrEqualP(n *bigNumber) bool {
 		ge &= n[i]
 	}
 
-	return ge == radixMask
+	return word_t(^isZeroMask(uint32(ge ^ radixMask)))
 }
 
 //n = x + y
