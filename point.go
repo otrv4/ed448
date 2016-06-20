@@ -3,7 +3,6 @@ package ed448
 import (
 	"errors"
 	"fmt"
-	"math/big"
 )
 
 var (
@@ -27,21 +26,10 @@ func maskToBoolean(m uint32) bool {
 	return m == 0xffffffff
 }
 
-// Point represents a point on the curve in a suitable coordinate system
-type Point interface {
-	OnCurve() bool
-	Add(Point) Point
-	Double() Point
-
-	Marshal() []byte
-	//ReAdd(Point) Point //????
-	//Affine() *Affine
-}
-
 // NewPoint instantiates a new point in a suitable coordinate system.
 // The x and y coordinates must be affine coordinates in little-endian
 //XXX This should probably receive []byte{}
-func NewPoint(x serialized, y serialized) (p Point, e error) {
+func NewPoint(x serialized, y serialized) (p *homogeneousProjective, e error) {
 	xN, ok1 := deserialize(x)
 	yN, ok2 := deserialize(y)
 
@@ -117,7 +105,8 @@ func (p *extensibleCoordinates) twist() *twExtensible {
 	return &twExtensible{x, y, z, t, u}
 }
 
-func (p *extensibleCoordinates) Double() *extensibleCoordinates {
+//XXX unused
+func (p *extensibleCoordinates) double() *extensibleCoordinates {
 	x := p.x.copy()
 	y := p.y.copy()
 	z := p.z.copy()
@@ -300,11 +289,6 @@ type twExtensible struct {
 	x, y, z, t, u *bigNumber
 }
 
-func (p *twExtensible) Add(p1 Point) Point {
-	p.addTwPNiels(p1.(*twExtensible).twPNiels())
-	return p
-}
-
 func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	// field_mul ( L0, e->z, a->z );
 	L0 := new(bigNumber).mul(p.z, a.z)
@@ -312,15 +296,6 @@ func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	p.z = L0.copy()
 	// add_tw_niels_to_tw_extensible( e, a->n );
 	return p.addTwNiels(a.n)
-}
-
-func (p *twExtensible) Double() Point {
-	p = p.double()
-	return p
-}
-
-func (p *twExtensible) Marshal() []byte {
-	return nil
 }
 
 func (a *twExtensible) twPNiels() *twPNiels {
@@ -412,6 +387,7 @@ func (p *twExtensible) equals(p2 *twExtensible) bool {
 }
 
 func (p *twExtensible) double() *twExtensible {
+
 	x := p.x.copy()
 	y := p.y.copy()
 	z := p.z.copy()
@@ -566,7 +542,7 @@ func rev(in []byte) []byte {
 }
 
 // See Hisil, formula 5.1
-func (hP *homogeneousProjective) Double() Point {
+func (hP *homogeneousProjective) double() *homogeneousProjective {
 	x1 := hP[0]
 	y1 := hP[1]
 	z1 := hP[2]
@@ -594,7 +570,7 @@ func (hP *homogeneousProjective) Double() Point {
 }
 
 // See Hisil, formula 5.3
-func (hP *homogeneousProjective) Add(p Point) Point {
+func (hP *homogeneousProjective) add(hP2 *homogeneousProjective) *homogeneousProjective {
 	//A ← Z1*Z2,
 	//B ← A^2,
 	//C ← X1*X2,
@@ -610,7 +586,6 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	y1 := hP[1]
 	z1 := hP[2]
 
-	hP2 := p.(*homogeneousProjective)
 	x2 := hP2[0]
 	y2 := hP2[1]
 	z2 := hP2[2]
@@ -638,35 +613,6 @@ func (hP *homogeneousProjective) Add(p Point) Point {
 	return &homogeneousProjective{
 		x3, y3, z3,
 	}
-}
-
-func (hP *homogeneousProjective) Marshal() []byte {
-	byteLen := 56
-
-	dst := make([]byte, byteLen)
-	serialize(dst, hP[0]) //x little endian
-	x := new(big.Int).SetBytes(rev(dst))
-
-	serialize(dst, hP[1]) //y little endian
-	y := new(big.Int).SetBytes(rev(dst))
-
-	serialize(dst, hP[2]) //z little endian
-	z := new(big.Int).SetBytes(rev(dst))
-
-	//x and y in affine coordinates
-	//XXX I'm not sure if I need to covert to affine
-	x.Div(x, z)
-	y.Div(y, z)
-
-	ret := make([]byte, 1+2*byteLen)
-	ret[0] = 4 // uncompressed point
-
-	xBytes := x.Bytes()
-	copy(ret[1+byteLen-len(xBytes):], xBytes)
-
-	yBytes := y.Bytes()
-	copy(ret[1+2*byteLen-len(yBytes):], yBytes)
-	return ret
 }
 
 type montgomery struct {

@@ -11,17 +11,17 @@ func (s *Ed448Suite) TestRadixBasePointIsOnCurve(c *C) {
 	curve := newRadixCurve()
 	p := curve.BasePoint()
 
-	c.Assert(curve.isOnCurve(p), Equals, true)
+	c.Assert(p.OnCurve(), Equals, true)
 }
 
 func (s *Ed448Suite) TestRadixMultiplyByBase(c *C) {
 	curve := newRadixCurve()
 	scalar := [scalarWords]word_t{}
-	scalar[scalarWords-1] = 1000 //little-endian
+	scalar[scalarWords-1] = 1000
 
 	p := curve.multiplyByBase(scalar)
 
-	c.Assert(curve.isOnCurve(p), Equals, true)
+	c.Assert(p.OnCurve(), Equals, true)
 }
 
 func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
@@ -59,46 +59,6 @@ func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
 	c.Assert(privKey.symKey(), DeepEquals, expectedSymKey)
 	c.Assert(privKey.secretKey(), DeepEquals, expectedPriv)
 	c.Assert(privKey.publicKey(), DeepEquals, expectedPublic)
-}
-
-func (s *Ed448Suite) TestAdd(c *C) {
-	curve := newRadixCurve()
-
-	p2 := curve.add(curve.BasePoint(), curve.BasePoint())
-	p4 := curve.add(p2, p2)
-
-	c.Assert(curve.isOnCurve(p2), Equals, true)
-	c.Assert(curve.isOnCurve(p4), Equals, true)
-}
-
-func (s *Ed448Suite) TestDouble(c *C) {
-	curve := newRadixCurve()
-
-	p2 := curve.double(curve.BasePoint())
-	p4 := curve.double(p2)
-
-	c.Assert(curve.isOnCurve(p2), Equals, true)
-	c.Assert(curve.isOnCurve(p4), Equals, true)
-}
-
-func (s *Ed448Suite) TestOperationsAreEquivalent(c *C) {
-	curve := newRadixCurve()
-
-	//XXX something maybe wrong here
-	addp2 := curve.add(curve.BasePoint(), curve.BasePoint())
-	doublep2 := curve.double(curve.BasePoint())
-	mulp2 := curve.multiply([]byte{0x02}, curve.BasePoint())
-	doublep4 := curve.double(doublep2)
-	mulp4 := curve.multiply([]byte{0x04}, curve.BasePoint())
-	doublep8 := curve.double(doublep4)
-	mulp8 := curve.multiply([]byte{0x08}, curve.BasePoint())
-
-	c.Assert(addp2.OnCurve(), Equals, true)
-	c.Assert(doublep2.OnCurve(), Equals, true)
-	c.Assert(mulp2.OnCurve(), Equals, true)
-	c.Assert(doublep2, DeepEquals, mulp2)
-	c.Assert(doublep4, DeepEquals, mulp4)
-	c.Assert(doublep8, DeepEquals, mulp8)
 }
 
 func (s *Ed448Suite) TestDeriveNonce(c *C) {
