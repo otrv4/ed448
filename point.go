@@ -392,15 +392,23 @@ func (p *twExtensible) String() string {
 }
 
 func (p *twExtensible) equals(p2 *twExtensible) bool {
-	ok := true
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
 
-	ok = ok && p.x.equals(p2.x)
-	ok = ok && p.y.equals(p2.y)
-	ok = ok && p.z.equals(p2.z)
-	ok = ok && p.t.equals(p2.t)
-	ok = ok && p.u.equals(p2.u)
+	l2 = l2.mul(p2.z, p.x)
+	l1 = l1.mul(p.z, p2.x)
+	l0 = l0.sub(l2, l1)
 
-	return ok
+	l4 := l0.zeroMask()
+
+	l2 = l2.mul(p2.z, p.y)
+	l1 = l1.mul(p.z, p2.y)
+	l0 = l0.sub(l2, l1)
+
+	l3 := l0.zeroMask()
+
+	return (l4 & l3) == 0xffffffff
 }
 
 func (p *twExtensible) double() *twExtensible {
