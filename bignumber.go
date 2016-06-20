@@ -278,6 +278,7 @@ func (n *bigNumber) limbs() []limb {
 	return n[:]
 }
 
+//XXX unused
 //XXX Move: bigNumber should not know about points
 func (sz *bigNumber) deserializeHomogeneousProjective() (*homogeneousProjective, bool) {
 	L0 := new(bigNumber)
