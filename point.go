@@ -241,6 +241,7 @@ func newNielsPoint(a, b, c [56]byte) *twNiels {
 	}
 }
 
+//XXX this may not always work
 func (p *twNiels) equals(p2 *twNiels) bool {
 	ok := true
 
@@ -281,7 +282,7 @@ func (p *twNiels) TwistedExtensible() *twExtensible {
 	t = x.copy()
 	u = y.copy()
 
-	//PERF: should it be in-place?
+	//XXX PERF: should it be in-place?
 	return &twExtensible{x, y, z, t, u}
 }
 
@@ -417,7 +418,7 @@ func (p *twExtensible) double() *twExtensible {
 	x = x.mul(l0, t)
 	y = y.mul(l1, u)
 
-	//PERF: should it be in-place?
+	//XXX PERF: should it be in-place?
 	return &twExtensible{x, y, z, t, u}
 }
 
@@ -450,7 +451,7 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	x = x.mul(y, t)
 	y = y.mul(l0, u)
 
-	//PERF: should it be in-place?
+	//XXX PERF: should it be in-place?
 	return &twExtensible{x, y, z, t, u}
 }
 
@@ -484,34 +485,30 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
-//XXX This can be replaced by extensible for simplicity
-type homogeneousProjective [3]*bigNumber
+//XXX This can be replaced by extensible for simplicity if we neither use ADD
+//on the basePoint in test and benchmark (it is not used elsewhere)
+type homogeneousProjective struct {
+	x, y, z *bigNumber
+}
 
 //Affine to Homogeneous Projective
 func newHomogeneousProjective(x *bigNumber, y *bigNumber) *homogeneousProjective {
 	return &homogeneousProjective{
-		x.copy(),         // X * Z
-		y.copy(),         // Y * Z
-		bigNumOne.copy(), // Z = 1
+		x: x.copy(),
+		y: y.copy(),
+		z: bigNumOne.copy(),
 	}
 }
 
-func (hP *homogeneousProjective) String() string {
-	return fmt.Sprintf("X: %s\nY: %s\nZ: %s\n", hP[0], hP[1], hP[2])
+func (p *homogeneousProjective) String() string {
+	return fmt.Sprintf("X: %s\nY: %s\nZ: %s\n", p.x, p.y, p.z)
 }
 
-func (hP *homogeneousProjective) conditionalNegate(neg bool) {
-	//XXX this should be constant-time
-	if neg {
-		hP[0].neg(hP[0])
-	}
-}
-
-func (hP *homogeneousProjective) OnCurve() bool {
+func (p *homogeneousProjective) OnCurve() bool {
 	// (x² + y²)z² - z^4 - dx²y² = 0
-	x := hP[0]
-	y := hP[1]
-	z := hP[2]
+	x := p.x
+	y := p.y
+	z := p.z
 
 	x2 := new(bigNumber).mul(x, x)
 	y2 := new(bigNumber).mul(y, y)
@@ -542,10 +539,10 @@ func rev(in []byte) []byte {
 }
 
 // See Hisil, formula 5.1
-func (hP *homogeneousProjective) double() *homogeneousProjective {
-	x1 := hP[0]
-	y1 := hP[1]
-	z1 := hP[2]
+func (p *homogeneousProjective) double() *homogeneousProjective {
+	x1 := p.x
+	y1 := p.y
+	z1 := p.z
 
 	b := new(bigNumber).add(x1, y1)
 	b.square(b)
@@ -570,7 +567,7 @@ func (hP *homogeneousProjective) double() *homogeneousProjective {
 }
 
 // See Hisil, formula 5.3
-func (hP *homogeneousProjective) add(hP2 *homogeneousProjective) *homogeneousProjective {
+func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProjective {
 	//A ← Z1*Z2,
 	//B ← A^2,
 	//C ← X1*X2,
@@ -582,13 +579,13 @@ func (hP *homogeneousProjective) add(hP2 *homogeneousProjective) *homogeneousPro
 	//Y3 ← A*G*(D−aC),
 	//Z3 ← F*G.
 
-	x1 := hP[0]
-	y1 := hP[1]
-	z1 := hP[2]
+	x1 := p.x
+	y1 := p.y
+	z1 := p.z
 
-	x2 := hP2[0]
-	y2 := hP2[1]
-	z2 := hP2[2]
+	x2 := p2.x
+	y2 := p2.y
+	z2 := p2.z
 
 	a := new(bigNumber).mul(z1, z2)
 	b := new(bigNumber).square(a)
