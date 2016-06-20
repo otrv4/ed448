@@ -31,7 +31,7 @@ func (s *Ed448Suite) BenchmarkPointDouble(c *C) {
 
 	c.ResetTimer()
 	for i := 0; i < c.N; i++ {
-		p = p.Double()
+		p = p.double()
 	}
 
 	c.Assert(p.OnCurve(), Equals, true)
@@ -42,7 +42,7 @@ func (s *Ed448Suite) BenchmarkPointUnifiedAddition(c *C) {
 
 	c.ResetTimer()
 	for i := 0; i < c.N; i++ {
-		p = p.Add(p)
+		p = p.add(p)
 	}
 
 	c.Assert(p.OnCurve(), Equals, true)

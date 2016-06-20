@@ -26,14 +26,13 @@ func (s *Ed448Suite) TestPoint(c *C) {
 	basePoint, err := NewPoint(gx, gy)
 	c.Assert(err, IsNil)
 
-	curve := newRadixCurve()
-	c.Assert(curve.isOnCurve(basePoint), Equals, true)
+	c.Assert(basePoint.OnCurve(), Equals, true)
 
-	p := basePoint.Double()
-	c.Assert(curve.isOnCurve(p), Equals, true)
+	p := basePoint.double()
+	c.Assert(p.OnCurve(), Equals, true)
 
-	q := basePoint.Add(basePoint)
-	c.Assert(curve.isOnCurve(q), Equals, true)
+	q := basePoint.add(basePoint)
+	c.Assert(q.OnCurve(), Equals, true)
 }
 
 func (s *Ed448Suite) TestMixedAddition(c *C) {

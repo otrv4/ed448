@@ -52,7 +52,7 @@ type dword_t uint64 //32-bits
 type radixCurve struct {
 	zero, one, two            *bigNumber
 	prime, primeOrder, edCons *bigNumber
-	basePoint                 Point
+	basePoint                 *homogeneousProjective
 }
 
 var rCurve radixCurve
@@ -69,7 +69,7 @@ var primeSerialized = serialized{
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 }
 
-func mustNewPoint(x, y serialized) Point {
+func mustNewPoint(x, y serialized) *homogeneousProjective {
 	p, err := NewPoint(x, y)
 	if err != nil {
 		panic("failed to create point")
@@ -122,14 +122,9 @@ func init() {
 
 //XXX We dont need an interface anymore
 type pointCurve interface {
-	BasePoint() Point
-	isOnCurve(p Point) bool
-	add(p1, p2 Point) (p3 Point)
-	double(p1 Point) (p2 Point)
-	multiplyRaw(n []byte, p Point) (p2 Point)
-	multiply(n []byte, p Point) (p2 Point)
-	multiplyByBase(scalar [scalarWords]word_t) *twExtensible
+	BasePoint() *homogeneousProjective
 
+	multiplyByBase(scalar [scalarWords]word_t) *twExtensible
 	generateKey(rand io.Reader) (k privateKey, err error)
 	sign(msg []byte, k *privateKey) ([signatureBytes]byte, error)
 	computeSecret(private []byte, public []byte) []byte
@@ -139,59 +134,13 @@ func newRadixCurve() pointCurve {
 	return &rCurve
 }
 
-func (c *radixCurve) BasePoint() Point {
+func (c *radixCurve) BasePoint() *homogeneousProjective {
 	return c.basePoint
-}
-
-func (c *radixCurve) isOnCurve(p Point) bool {
-	return p.OnCurve()
-}
-
-// Returns the sum of (x1,y1) and (x2,y2)
-func (c *radixCurve) add(p1, p2 Point) Point {
-	return p1.Add(p2)
-}
-
-//Returns 2*(x,y)
-func (c *radixCurve) double(p Point) Point {
-	return p.Double()
 }
 
 var (
 	primeOrder, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
 )
-
-// XXX Only for testing multiply
-func (c *radixCurve) multiplyRaw(n []byte, p Point) Point {
-	m := new(big.Int).SetBytes(n)
-	one := big.NewInt(1)
-
-	out := p
-
-	for i := big.NewInt(0); i.Cmp(m) == -1; i.Add(i, one) {
-		out.Add(p)
-	}
-
-	return out
-}
-
-//multiply is Montgomery Ladder Exp
-func (c *radixCurve) multiply(n []byte, p Point) Point {
-	// XXX remove big Int here
-	m := new(big.Int).SetBytes(n)
-	R0 := c.basePoint
-	R1 := p
-	for pos := m.BitLen() - 2; pos >= 0; pos-- {
-		if m.Bit(pos) == 0 {
-			R1 = c.add(R0, R1)
-			R0 = c.double(R0)
-		} else {
-			R0 = c.add(R0, R1)
-			R1 = c.double(R1)
-		}
-	}
-	return R0
-}
 
 func (c *radixCurve) multiplyMontgomery(in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) (*bigNumber, word_t) {
 	mont := new(montgomery)
@@ -353,13 +302,6 @@ func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
 	}
 
 	return c.derivePrivateKey(symKey)
-}
-
-func (c *radixCurve) deserializePoint(p []byte) Point {
-	var pk serialized
-	copy(pk[:], p[:])
-	ret, _ := mustDeserialize(pk).deserializeHomogeneousProjective()
-	return ret
 }
 
 func (c *radixCurve) computeSecret(private, public []byte) []byte {
