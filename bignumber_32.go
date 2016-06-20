@@ -6,8 +6,8 @@ const (
 	radixMask = limb(0xfffffff)
 )
 
-func deserialize(in serialized) (n *bigNumber, ok bool) {
-	n = &bigNumber{}
+func deserializeReturnMask(in serialized) (*bigNumber, word_t) {
+	n := &bigNumber{}
 
 	for i := uint(0); i < 8; i++ {
 		out := uint64(0)
@@ -19,7 +19,12 @@ func deserialize(in serialized) (n *bigNumber, ok bool) {
 		n[2*i+1] = limb(out >> 28)
 	}
 
-	ok = !constantTimeGreaterOrEqualP(n)
+	return n, constantTimeGreaterOrEqualP(n)
+}
+
+func deserialize(in serialized) (n *bigNumber, ok bool) {
+	n, mask := deserializeReturnMask(in)
+	ok = mask == 0xffffffff
 	return
 }
 

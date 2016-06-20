@@ -21,6 +21,10 @@ var curvePrimeOrder = barrettPrime{
 }
 
 func barrettDeserialize(dst []word_t, serial []byte, p *barrettPrime) bool {
+	return barrettDeserializeReturnMask(dst, serial, p) != 0
+}
+
+func barrettDeserializeReturnMask(dst []word_t, serial []byte, p *barrettPrime) word_t {
 	s := p.wordsInP * wordBits / 8
 	if p.pShift != 0 {
 		s -= (wordBits - p.pShift) / 8
@@ -48,7 +52,7 @@ func barrettDeserialize(dst []word_t, serial []byte, p *barrettPrime) bool {
 	scarry >>= wordBits
 	scarry >>= wordBits
 
-	return ^scarry != 0
+	return word_t(^scarry)
 }
 
 func barrettDeserializeAndReduce(dst []word_t, serial []byte, p *barrettPrime) {

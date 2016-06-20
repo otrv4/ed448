@@ -193,12 +193,13 @@ func (c *radixCurve) multiply(n []byte, p Point) Point {
 	return R0
 }
 
-func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) {
+func (c *radixCurve) multiplyMontgomery(in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) (*bigNumber, word_t) {
 	mont := new(montgomery)
 	mont.deserialize(in)
 	var i, j, n int
 	n = (nbits - 1) % wordBits
 	pflip := word_t(0)
+
 	for j = (nbits+wordBits-1)/wordBits - 1; j >= 0; j-- {
 		w := scalar[j]
 		for i = n; i >= 0; i-- {
@@ -219,11 +220,9 @@ func (c *radixCurve) multiplyMontgomery(out, in *bigNumber, scalar [fieldWords]w
 	for j = 0; j < n_extra_doubles; j++ {
 		mont.montgomeryStep()
 	}
+
 	out, ok := mont.serialize(in)
-	if ok != uint32(0) {
-		panic("serialize failure")
-	}
-	return
+	return out, word_t(ok)
 }
 
 func (c *radixCurve) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
@@ -367,25 +366,22 @@ func (c *radixCurve) computeSecret(private, public []byte) []byte {
 	var sk [fieldWords]word_t
 	var pub serialized
 	copy(pub[:], public)
-	pk := mustDeserialize(pub)
-	barrettDeserialize(sk[:], private, &curvePrimeOrder)
-	// succ &= montgomery_ladder(pk,pk,sk,GOLDI_SCALAR_BITS,1);
-	c.multiplyMontgomery(pk, pk, sk, scalarBits, 1)
+
+	msucc := word_t(0xffffffff)
+	pk, succ := deserializeReturnMask(pub)
+
+	msucc &= barrettDeserializeReturnMask(sk[:], private, &curvePrimeOrder)
+
+	ok := word_t(0)
+	pk, ok = c.multiplyMontgomery(pk, sk, scalarBits, 1)
+	succ &= ok
+
 	gxy := make([]byte, fieldBytes)
 	serialize(gxy, pk)
-	//
-	// /* obliterate records of our failure by adjusting with obliteration key */
-	// sha512_ctx_a_t ctx;
-	// sha512_init(ctx);
-	//
-	// /* stir in the shared key and finish */
-	// sha512_update(ctx, gxy, GOLDI_FIELD_BYTES);
-	// sha512_final(ctx, shared);
-	//
-	// return (GOLDI_ECORRUPT & ~msucc)
-	//     | (GOLDI_EINVAL & msucc &~ succ)
-	//     | (GOLDI_EOK & msucc & succ);
-	//
+
+	//XXX SECURITY should we wipe the temporary variables?
+
+	//XXX add error conditions based on succ and msucc
 	return gxy
 }
 

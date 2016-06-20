@@ -746,5 +746,4 @@ func (a *montgomery) deserialize(sz *bigNumber) {
 	a.zd = new(bigNumber).setUi(0)
 	a.xa = new(bigNumber).setUi(1)
 	a.za = a.z0.copy()
-	return
 }
