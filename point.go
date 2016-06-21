@@ -299,6 +299,25 @@ func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	return p.addTwNiels(a.n)
 }
 
+func (e *twExtensible) subTwPNiels(a *twPNiels) {
+	//field_a_t L0;
+	//field_mul ( L0, e->z, a->z );
+	L0 := new(bigNumber).mul(e.z, a.z)
+	//field_copy ( e->z, L0 );
+	e.z = L0.copy()
+	//sub_tw_niels_from_tw_extensible( e, a->n );
+	e.subTwNiels(a.n)
+}
+
+func (p *twExtensible) Double() Point {
+	p = p.double()
+	return p
+}
+
+func (p *twExtensible) Marshal() []byte {
+	return nil
+}
+
 func (a *twExtensible) twPNiels() *twPNiels {
 	// field_sub ( b->n->a, a->y, a->x );
 	na := new(bigNumber).sub(a.y, a.x)
@@ -318,6 +337,20 @@ func (a *twExtensible) twPNiels() *twPNiels {
 		},
 		z: z,
 	}
+}
+
+func (d *twPNiels) twExtensible() *twExtensible {
+	// field_add ( e->u, d->n->b, d->n->a );
+	u := new(bigNumber).add(d.n.b, d.n.a)
+	// field_sub ( e->t, d->n->b, d->n->a );
+	t := new(bigNumber).sub(d.n.b, d.n.a)
+	// field_mul ( e->x, d->z, e->t );
+	x := new(bigNumber).mul(d.z, t)
+	// field_mul ( e->y, d->z, e->u );
+	y := new(bigNumber).mul(d.z, u)
+	// field_sqr ( e->z, d->z );
+	z := new(bigNumber).square(d.z)
+	return &twExtensible{x, y, z, t, u}
 }
 
 func (p *twExtensible) OnCurve() bool {
@@ -452,7 +485,43 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	y = y.mul(l0, u)
 
 	//XXX PERF: should it be in-place?
-	return &twExtensible{x, y, z, t, u}
+	p.x = x
+	p.y = y
+	p.z = z
+	p.t = t
+	p.u = u
+	return p
+}
+
+func (d *twExtensible) subTwNiels(e *twNiels) {
+	// XXX ANALYZE_THIS_ROUTINE_CAREFULLY;
+	//field_a_t L0, L1;
+	//field_subx_nr ( L1, d->y, d->x );
+	L1 := new(bigNumber).subxRaw(d.y, d.x)
+	//    field_mul ( L0, e->b, L1 );
+	L0 := new(bigNumber).mul(e.b, L1)
+	// field_add_nr ( L1, d->x, d->y );
+	L1.addRaw(d.x, d.y)
+	// field_mul ( d->y, e->a, L1 );
+	d.y.mul(e.a, L1)
+	// field_mul ( L1, d->u, d->t );
+	L1.mul(d.u, d.t)
+	// field_mul ( d->x, e->c, L1 );
+	d.x.mul(e.c, L1)
+	// field_add_nr ( d->u, L0, d->y );
+	d.u.addRaw(L0, d.y)
+	// field_subx_nr ( d->t, d->y, L0 );
+	d.t.subxRaw(d.y, L0)
+	// field_add_nr ( d->y, d->x, d->z );
+	d.y.addRaw(d.x, d.z)
+	// field_subx_nr ( L0, d->z, d->x );
+	L0.subxRaw(d.z, d.x)
+	// field_mul ( d->z, L0, d->y );
+	d.z.mul(L0, d.y)
+	// field_mul ( d->x, d->y, d->t );
+	d.x.mul(d.y, d.t)
+	// field_mul ( d->y, L0, d->u );
+	d.y.mul(L0, d.u)
 }
 
 func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
@@ -697,4 +766,12 @@ func (a *montgomery) deserialize(sz *bigNumber) {
 	a.zd = new(bigNumber).setUi(0)
 	a.xa = new(bigNumber).setUi(1)
 	a.za = a.z0.copy()
+}
+
+func (p *twExtensible) setIdentity() {
+	p.x.setUi(0)
+	p.y.setUi(1)
+	p.z.setUi(1)
+	p.t.setUi(0)
+	p.u.setUi(0)
 }
