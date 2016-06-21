@@ -203,6 +203,51 @@ func (s *Ed448Suite) TestMontgomeryStep(c *C) {
 	c.Assert(mont.za.equals(exp.za), Equals, true)
 }
 
+func (s *Ed448Suite) TestAddTwNiels(c *C) {
+	na, _ := hex.DecodeString("33d7e1341e2291816fa27efbac283c2d0fae711d29b581200d215449fa64ef98a767887486155176a543fc08807a595766b7987e4b4c037f")
+	nb, _ := hex.DecodeString("4ad8ff3e6b86b69d349faa7cca6280ed8208997607ed60c842651c0ddac0754664433340bd3e4253dd8565c36713f7ca2c11023891708535")
+	nc, _ := hex.DecodeString("8bd294a6cfdee12764081c4e9acaab981fcf3b8bd422f683d37a175081eeaec3a1b5c42dc5b962e5a46a0959b1f725796637306f8723066c")
+	n := &twNiels{
+		new(bigNumber).setBytes(na),
+		new(bigNumber).setBytes(nb),
+		new(bigNumber).setBytes(nc),
+	}
+	ex, _ := hex.DecodeString("779f2f66bbb61f027dc9dcf8207caf539cae89a43499b0840c3fb1d6af841fb7b797642d822d49fb41d55aed37cec81e0aadff753c57ac5d")
+	ey, _ := hex.DecodeString("8a38832663ae92cff2a70d6b96af28f1a55460959db9286a5498b88cc153d843369fe02fa4848bc02b9d36dc572b3bf93ee75d50c053bc37")
+	ez, _ := hex.DecodeString("eb67f18c89fab163f7ca1396d67a9405f7a91bd6aa9858ac7b784ea82f2b41b255b46ebc4a152dd8eb69ca0250923da7e76cd5fd2360b8cc")
+	et, _ := hex.DecodeString("81e01268e0589b800037589f8d1298d039b9ddf57928b3333958ae0fa593e358e8a1df5a0e333a1c4e5976dd95ca3dff2293314e14c498cf")
+	eu, _ := hex.DecodeString("8da96259e6d38108ae8c007410371d933fd7209b36e910d47db044a444d61ac4df9649d12ffc3b3a9f6fa79dc7f1fa03e44d3073551d8442")
+	e := &twExtensible{
+		new(bigNumber).setBytes(ex),
+		new(bigNumber).setBytes(ey),
+		new(bigNumber).setBytes(ez),
+		new(bigNumber).setBytes(et),
+		new(bigNumber).setBytes(eu),
+	}
+
+	ex, _ = hex.DecodeString("f6e3e13f7662bdf0f468fe98062cf0152a02e35a4f49cb28debc24d2ce9eae08a2ce023c9df521faa06545490e14608a62e59dc5c1c9d3c7")
+	ey, _ = hex.DecodeString("a93634cd0770e1846d8280275b9dc0e2a7636eca8c8fbe50edda6fc8966fc26d63d8b2ead7df70e81fb30b2e36c1d0fb0541359bbf2d7b6b")
+	ez, _ = hex.DecodeString("567ce9ccf084022de2a1017524ff1dfe9cea601978db5d84e017b473bea82057ed0a58be4567c30fa649126c9dfcb3e083ea6bbe50e1b95c")
+	et, _ = hex.DecodeString("b9e37cdbd0622a8d3a0e2dc8bda3e014e7c4e6c159c18a7c25076f9aab26022340c228ff13c5f5be52cabfdeae1bfd4cc4b7be572253d0ad")
+	eu, _ = hex.DecodeString("0a789316f892f38685e32b8ee63fea3f5dc90459c6ea3557a88720772c752aba93652c500bee3e9651ed94437a5ba41eb5336e22f5a7a4c5")
+
+	exp := &twExtensible{
+		new(bigNumber).setBytes(ex),
+		new(bigNumber).setBytes(ey),
+		new(bigNumber).setBytes(ez),
+		new(bigNumber).setBytes(et),
+		new(bigNumber).setBytes(eu),
+	}
+
+	e.addTwNiels(n)
+
+	c.Assert(e.x.equals(exp.x), Equals, true)
+	c.Assert(e.y.equals(exp.y), Equals, true)
+	c.Assert(e.z.equals(exp.z), Equals, true)
+	c.Assert(e.t.equals(exp.t), Equals, true)
+	c.Assert(e.u.equals(exp.u), Equals, true)
+}
+
 func compareNumbers(label string, n *bigNumber, b *big.Int) {
 	s := [56]byte{}
 	serialize(s[:], n)
