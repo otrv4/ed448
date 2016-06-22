@@ -11,14 +11,13 @@ var (
 	curveDSigned        = int64(-39081)
 	twistedCurveDSigned = int64(-39082)
 	sqrtDminus1         = mustDeserialize(serialized{
-		0xd2, 0xe2, 0x18, 0x36, 0x74, 0x9f, 0x46,
-		0x88, 0x8d, 0xb4, 0x2b, 0x4f, 0x01, 0x79,
-		0x5a, 0x18, 0x9a, 0xab, 0xde, 0xea, 0x38,
-		0x51, 0xe6, 0x5c, 0xa6, 0xf1, 0x4c, 0x06,
-		0xa4, 0x9f, 0x7b, 0x42, 0x4d, 0x97, 0x70,
-		0xdc, 0xac, 0x46, 0x28, 0xc5, 0xf6, 0x56,
-		0x49, 0x44, 0x3b, 0x87, 0x48, 0x73, 0x4a,
-		0x12, 0xfe, 0xc0, 0xc0, 0xb2, 0x5b, 0x7a,
+		0x46, 0x9f, 0x74, 0x36, 0x18, 0xe2, 0xd2, 0x79,
+		0x01, 0x4f, 0x2b, 0xb4, 0x8d, 0x88, 0x38, 0xea,
+		0xde, 0xab, 0x9a, 0x18, 0x5a, 0x06, 0x4c, 0xf1,
+		0xa6, 0x5c, 0xe6, 0x51, 0x70, 0x97, 0x4d, 0x42,
+		0x7b, 0x9f, 0xa4, 0x56, 0xf6, 0xc5, 0x28, 0x46,
+		0xac, 0xdc, 0x4a, 0x73, 0x48, 0x87, 0x3b, 0x44,
+		0x49, 0x7a, 0x5b, 0xb2, 0xc0, 0xc0, 0xfe, 0x12,
 	})
 )
 
@@ -775,4 +774,95 @@ func (p *twExtensible) setIdentity() {
 	p.z.setUi(1)
 	p.t.setUi(0)
 	p.u.setUi(0)
+}
+
+//XXX Move: bigNumber should not know about points
+func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
+	a := &twExtensible{
+		x: new(bigNumber),
+		y: new(bigNumber),
+		z: new(bigNumber),
+		u: new(bigNumber),
+		t: new(bigNumber),
+	}
+
+	var L0, L1 *bigNumber
+	L0 = new(bigNumber)
+	L1 = new(bigNumber)
+	// field_sqr ( a->z, sz );
+	a.z.square(sz)
+	// field_copy ( a->y, a->z );
+	a.y = a.z.copy()
+	// field_addw ( a->y, 1 );
+	a.y.addW(1)
+	// field_sqr ( L0, a->y );
+	L0.square(a.y)
+	// field_mulw_scc ( a->x, L0, EDWARDS_D-1 );
+	a.x.mulWSignedCurveConstant(L0, curveDSigned-1)
+	// field_add ( a->y, a->z, a->z );
+	a.y.add(a.z, a.z)
+	// field_add ( a->u, a->y, a->y );
+	a.u.add(a.y, a.y)
+	// field_add ( a->y, a->u, a->x );
+	a.y.add(a.u, a.x)
+	// field_sqr ( a->x, a->z );
+	a.x.square(a.z)
+	// field_neg ( a->u, a->x );
+	a.u.neg(a.x)
+	// field_addw ( a->u, 1 );
+	a.u.addW(1)
+	// field_mul ( a->x, sqrt_d_minus_1, a->u );
+	a.x.mul(sqrtDminus1, a.u)
+	// field_mul ( L0, a->x, a->y );
+	L0.mul(a.x, a.y)
+	// field_mul ( a->t, L0, a->y );
+	a.t.mul(L0, a.y)
+	// field_mul ( a->u, a->x, a->t );
+	a.u.mul(a.x, a.t)
+	// field_mul ( a->t, a->u, L0 );
+	a.t.mul(a.u, L0)
+	// field_mul ( a->y, a->x, a->t );
+	a.y.mul(a.x, a.t)
+	// field_isr ( L0, a->y );
+	L0.isr(a.y)
+	// field_mul ( a->y, a->u, L0 );
+	a.y.mul(a.u, L0)
+	// field_sqr ( L1, L0 );
+	L1.square(L0)
+	// field_mul ( a->u, a->t, L1 );
+	a.u.mul(a.t, L1)
+	// field_mul ( a->t, a->x, a->u );
+	a.t.mul(a.x, a.u)
+	// field_add ( a->x, sz, sz );
+	a.x.add(sz, sz)
+	// field_mul ( L0, a->u, a->x );
+	L0.mul(a.u, a.x)
+	// field_copy ( a->x, a->z );
+	a.x = a.z.copy()
+	// field_neg ( L1, a->x );
+	L1.neg(a.x)
+	// field_addw ( L1, 1 );
+	L1.addW(1)
+	// field_mul ( a->x, L1, L0 );
+	a.x.mul(L1, L0)
+	// field_mul ( L0, a->u, a->y );
+	L0.mul(a.u, a.y)
+	// field_addw ( a->z, 1 );
+	a.z.addW(1)
+	// field_mul ( a->y, a->z, L0 );
+	a.y.mul(a.z, L0)
+	// field_subw( a->t, 1 );
+	a.t.subW(1)
+	// mask_t ret = field_is_zero( a->t );
+	// XXX maybe related with constant time
+	ret := a.t.zero()
+	// field_set_ui( a->z, 1 );
+	a.z.setUi(1)
+	// field_copy ( a->t, a->x );
+	a.t = a.x.copy()
+	// field_copy ( a->u, a->y );
+	a.u = a.y.copy()
+	// return ret;
+
+	return a, !ret
 }
