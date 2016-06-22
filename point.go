@@ -216,6 +216,19 @@ func newTwistedPNiels(a, b, c, z [56]byte) *twPNiels {
 	}
 }
 
+func (p *twPNiels) TwistedExtensible() *twExtensible {
+	u := new(bigNumber).add(p.n.b, p.n.a)
+	t := new(bigNumber).sub(p.n.b, p.n.a)
+
+	return &twExtensible{
+		x: new(bigNumber).mul(p.z, t),
+		y: new(bigNumber).mul(p.z, u),
+		z: new(bigNumber).square(p.z),
+		t: t,
+		u: u,
+	}
+}
+
 func (p *twPNiels) String() string {
 	return fmt.Sprintf("A: %s\nB: %s\nC: %s\nZ: %s\n", p.n.a, p.n.b, p.n.c, p.z)
 }
@@ -290,6 +303,24 @@ type twExtensible struct {
 	x, y, z, t, u *bigNumber
 }
 
+func (p *twExtensible) setIdentity() {
+	p.x = p.x.setUi(0)
+	p.y = p.y.setUi(1)
+	p.z = p.z.setUi(1)
+	p.t = p.t.setUi(0)
+	p.u = p.u.setUi(0)
+}
+
+func (p *twExtensible) copy() *twExtensible {
+	return &twExtensible{
+		x: p.x.copy(),
+		y: p.y.copy(),
+		z: p.z.copy(),
+		t: p.t.copy(),
+		u: p.u.copy(),
+	}
+}
+
 func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	// field_mul ( L0, e->z, a->z );
 	L0 := new(bigNumber).mul(p.z, a.z)
@@ -297,6 +328,14 @@ func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	p.z = L0.copy()
 	// add_tw_niels_to_tw_extensible( e, a->n );
 	return p.addTwNiels(a.n)
+}
+
+func (p *twExtensible) subTwPNiels(a *twPNiels) *twExtensible {
+	//XXX PERF: should it be in-place?
+	e := p.copy()
+	e.z = e.z.mul(e.z, a.z)
+
+	return e.subTwNiels(a.n)
 }
 
 func (a *twExtensible) twPNiels() *twPNiels {
@@ -453,6 +492,31 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 
 	//XXX PERF: should it be in-place?
 	return &twExtensible{x, y, z, t, u}
+}
+
+func (p *twExtensible) subTwNiels(e *twNiels) *twExtensible {
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+
+	//XXX PERF: should it be in-place?
+	d := p.copy()
+
+	l1 = l1.subxRaw(d.y, d.x)
+	l0 = l0.mul(e.b, l1)
+	l1 = l1.addRaw(d.x, d.y)
+	d.y = d.y.mul(e.a, l1)
+	l1 = l1.mul(d.u, d.t)
+	d.x = d.x.mul(e.c, l1)
+	d.u = d.u.addRaw(l0, d.y)
+	d.t = d.t.subxRaw(d.y, l0)
+	d.y = d.y.addRaw(d.x, d.z)
+	l0 = l0.subxRaw(d.z, d.x)
+
+	d.z = d.z.mul(l0, d.y)
+	d.x = d.x.mul(d.y, d.t)
+	d.y = d.y.mul(l0, d.u)
+
+	return d
 }
 
 func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {

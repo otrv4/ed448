@@ -214,7 +214,7 @@ func (c *radixCurve) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 			ni = baseTable.lookup(j, t, uint(tab))
 			ni.conditionalNegate(invert)
 
-			if i != 0 || j != 0 {
+			if (i | j) != 0 {
 				out = out.addTwNiels(ni)
 			} else {
 				out = ni.TwistedExtensible()

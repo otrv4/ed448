@@ -162,7 +162,6 @@ func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 }
 
 func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
-	c.Skip("not yet, hold your horses!")
 	px, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
 	py, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
 	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
