@@ -21,7 +21,8 @@ func (s *Ed448Suite) TestGenerateKeysProducesKeyPair(c *C) {
 }
 
 func (s *Ed448Suite) TestSignAndVerify(c *C) {
-	c.Skip("Public key is not being set yet.")
+	c.Skip("Not yet")
+
 	ed448 := NewEd448()
 	priv, pub, _ := ed448.GenerateKeys()
 	message := []byte("sign here.")
