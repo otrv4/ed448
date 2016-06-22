@@ -248,6 +248,33 @@ func (s *Ed448Suite) TestAddTwNiels(c *C) {
 	c.Assert(e.u.equals(exp.u), Equals, true)
 }
 
+func (s *Ed448Suite) TestDeserializeAndTwistAprox(c *C) {
+	b, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
+	n := new(bigNumber).setBytes(b)
+
+	ex, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
+	ey, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
+	ez, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
+	et, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
+	eu, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
+	exp := &twExtensible{
+		new(bigNumber).setBytes(ex),
+		new(bigNumber).setBytes(ey),
+		new(bigNumber).setBytes(ez),
+		new(bigNumber).setBytes(et),
+		new(bigNumber).setBytes(eu),
+	}
+
+	tw, ok := n.deserializeAndTwistApprox()
+
+	c.Assert(tw.x.equals(exp.x), Equals, true)
+	c.Assert(tw.y.equals(exp.y), Equals, true)
+	c.Assert(tw.z.equals(exp.z), Equals, true)
+	c.Assert(tw.t.equals(exp.t), Equals, true)
+	c.Assert(tw.u.equals(exp.u), Equals, true)
+	c.Assert(ok, Equals, true)
+}
+
 func compareNumbers(label string, n *bigNumber, b *big.Int) {
 	s := [56]byte{}
 	serialize(s[:], n)
