@@ -290,6 +290,16 @@ type twExtensible struct {
 	x, y, z, t, u *bigNumber
 }
 
+func (p *twExtensible) copy(e *twExtensible) *twExtensible {
+	p.x = e.x.copy()
+	p.y = e.y.copy()
+	p.z = e.z.copy()
+	p.t = e.t.copy()
+	p.u = e.u.copy()
+
+	return p
+}
+
 func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	// field_mul ( L0, e->z, a->z );
 	L0 := new(bigNumber).mul(p.z, a.z)
