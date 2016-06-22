@@ -336,24 +336,18 @@ func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e 
 		return
 	}
 
-	nonce := [fieldWords]word_t{}
-	deriveNonce(nonce[:], msg, k.symKey())
+	nonce := deriveNonce(msg, k.symKey())
+	tmpSig := c.deriveTemporarySignature(nonce) // 4 * nonce * G
+	challenge := deriveChallenge(k.publicKey(), tmpSig, msg)
 
-	// tmpSig = 4 * nonce * basePoint
-	tmpSig := [fieldBytes]byte{}
-	gsk := c.multiplyByBase(nonce).double().untwistAndDoubleAndSerialize()
-	serialize(tmpSig[:], gsk)
-
-	challenge := [fieldWords]word_t{}
-	deriveChallenge(challenge[:], k.publicKey(), tmpSig, msg)
-
+	//response = 2(nonce - sk*challenge)
 	barrettNegate(challenge[:], &curvePrimeOrder)
 	barrettMac(nonce[:], challenge[:], secretKeyWords[:], &curvePrimeOrder)
-
 	carry := addExtPacked(nonce[:], nonce[:], nonce[:], 0xffffffff)
 	barrettReduce(nonce[:], carry, &curvePrimeOrder)
 
-	copy(s[:], tmpSig[:fieldBytes])
+	// signature = tmpSignature || nonce
+	copy(s[:fieldBytes], tmpSig[:])
 	wordsToBytes(s[fieldBytes:], nonce[:])
 
 	//XXX SECURITY Should we wipe nonce, gsk, secretKeyWords, tmpSig, challenge?
@@ -367,26 +361,36 @@ func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e 
 	return
 }
 
+func (c *radixCurve) deriveTemporarySignature(nonce [fieldWords]word_t) (dst [fieldBytes]byte) {
+	// tmpSig = 4 * nonce * basePoint
+	fourTimesGTimesNonce := c.multiplyByBase(nonce).double().untwistAndDoubleAndSerialize()
+	serialize(dst[:], fourTimesGTimesNonce)
+	return
+}
+
 //XXX Should pubKey have a fixed size here?
-func deriveChallenge(dst []word_t, pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) {
+func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst [fieldWords]word_t) {
 	h := sha512.New()
 	h.Write(pubKey)
 	h.Write(tmpSignature[:])
 	h.Write(msg)
 
-	barrettDeserializeAndReduce(dst, h.Sum(nil), &curvePrimeOrder)
+	barrettDeserializeAndReduce(dst[:], h.Sum(nil), &curvePrimeOrder)
+
+	return
 }
 
-func deriveNonce(dst []word_t, msg []byte, symKey []byte) {
+func deriveNonce(msg []byte, symKey []byte) (dst [fieldWords]word_t) {
 	h := sha512.New()
 	h.Write([]byte("signonce"))
 	h.Write(symKey)
 	h.Write(msg)
 	h.Write(symKey)
 
-	barrettDeserializeAndReduce(dst, h.Sum(nil), &curvePrimeOrder)
+	barrettDeserializeAndReduce(dst[:], h.Sum(nil), &curvePrimeOrder)
 
 	//XXX SECURITY should we wipe r?
+	return
 }
 
 func (c *radixCurve) verify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
@@ -402,10 +406,9 @@ func (c *radixCurve) verify(signature [signatureBytes]byte, msg []byte, k *publi
 		return false
 	}
 
-	challenge := [fieldWords]word_t{}
 	tmpSig := [fieldBytes]byte{}
 	copy(tmpSig[:], signature[:])
-	deriveChallenge(challenge[:], serPubkey[:], tmpSig, msg)
+	challenge := deriveChallenge(serPubkey[:], tmpSig, msg)
 
 	eph, ok := deserialize(tmpSig)
 	if !ok {

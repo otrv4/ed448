@@ -80,11 +80,9 @@ func (s *Ed448Suite) TestDeriveNonce(c *C) {
 		0x1616d689, 0x17db93b0,
 	}
 
-	nonce := make([]word_t, fieldWords)
+	nonce := deriveNonce(msg, symKey[:])
 
-	deriveNonce(nonce, msg, symKey[:])
-
-	c.Assert(nonce, DeepEquals, expectedNonce[:])
+	c.Assert(nonce, DeepEquals, expectedNonce)
 }
 
 func (s *Ed448Suite) TestDeriveChallenge(c *C) {
@@ -118,11 +116,9 @@ func (s *Ed448Suite) TestDeriveChallenge(c *C) {
 		0x48ba4461, 0x34eb2031,
 	}
 
-	challenge := make([]word_t, fieldWords)
+	challenge := deriveChallenge(pubKey[:], tmpSignature, msg)
 
-	deriveChallenge(challenge, pubKey[:], tmpSignature, msg)
-
-	c.Assert(challenge, DeepEquals, expectedChallenge[:])
+	c.Assert(challenge, DeepEquals, expectedChallenge)
 }
 
 func (s *Ed448Suite) TestSign(c *C) {
