@@ -127,6 +127,7 @@ type pointCurve interface {
 	multiplyByBase(scalar [scalarWords]word_t) *twExtensible
 	generateKey(rand io.Reader) (k privateKey, err error)
 	sign(msg []byte, k *privateKey) ([signatureBytes]byte, error)
+	verify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool
 	computeSecret(private []byte, public []byte) []byte
 }
 
@@ -386,4 +387,9 @@ func deriveNonce(dst []word_t, msg []byte, symKey []byte) {
 	barrettDeserializeAndReduce(dst, h.Sum(nil), &curvePrimeOrder)
 
 	//XXX SECURITY should we wipe r?
+}
+
+func (c *radixCurve) verify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
+	//TODO
+	return false
 }
