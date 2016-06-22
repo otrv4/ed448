@@ -76,13 +76,8 @@ func linear_combo_var_fixed_vt(
 	nbits_pre := uint(446)
 	table_bits_pre := uint(5)
 
-	working := &twExtensible{
-		x: p.x.copy(),
-		y: p.y.copy(),
-		z: p.z.copy(),
-		t: p.t.copy(),
-		u: p.u.copy(),
-	}
+	//XXX PERFORMANCE this could be in-place if every point operation is in-place
+	working := new(twExtensible).copy(p)
 
 	control_var := make([]smvt_control, nbits_var/(table_bits_var+1)+3)
 	control_pre := make([]smvt_control, nbits_pre/(table_bits_pre+1)+3)
@@ -150,11 +145,8 @@ func linear_combo_var_fixed_vt(
 		}
 	}
 
-	p.x = working.x.copy()
-	p.y = working.y.copy()
-	p.z = working.z.copy()
-	p.t = working.t.copy()
-	p.u = working.u.copy()
+	//XXX PERFORMANCE copy back
+	p.copy(working)
 
 	//assert(contv == ncb_var);
 	//assert(contp == ncb_pre);
