@@ -275,6 +275,29 @@ func (s *Ed448Suite) TestDeserializeAndTwistAprox(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
+func (s *Ed448Suite) TestUntwistDoubleAndSerialize(c *C) {
+	ex, _ := hex.DecodeString("d902fadbeee8dd1ef391dcce59cc75d286c9efc7229dd919a35236a5447384e84617bf94d4129af02d7667fad1df88985132c1ce1b133428")
+	ey, _ := hex.DecodeString("ba1d18df944a527ec4ebad9c84cc32643064dcd26bf003a9763dad575104e1a3c9fbb02f971169c2736ed5d8812ad8eeedcfa8226977ddb4")
+	ez, _ := hex.DecodeString("2d35e8b251eb6b421291cf3a466597759059e01b7cc89f332f96f801ced244299f4da20b9fcedbaa66c5fd3508dcb61888e2b89bee4fea45")
+	et, _ := hex.DecodeString("8713cc3806a247771ae8567b3b73dd874a8261a610de7c34202fab877f15213120e2fd14e5b191663c1e62d404c54b9f63e1e2e3d98eafb2")
+	eu, _ := hex.DecodeString("eafb1cd470e2728ee254c7a312092e820656c14a993f2896479aa211b0a1bb515deee36d06acee20a40a1cad5dc5cc38072cdd63447587e9")
+
+	tw := &twExtensible{
+		new(bigNumber).setBytes(ex),
+		new(bigNumber).setBytes(ey),
+		new(bigNumber).setBytes(ez),
+		new(bigNumber).setBytes(et),
+		new(bigNumber).setBytes(eu),
+	}
+
+	b, _ := hex.DecodeString("47e65d055a310a0e094908bb39194bc7d18589a1c93d5a2560ab7d38f4557cabb54d23a0801fad7cdbafc7b6457b0142b9394c71a8048666")
+	expected := new(bigNumber).setBytes(b)
+
+	untw := tw.untwistAndDoubleAndSerialize()
+
+	c.Assert(untw.equals(expected), Equals, true)
+}
+
 func compareNumbers(label string, n *bigNumber, b *big.Int) {
 	s := [56]byte{}
 	serialize(s[:], n)
