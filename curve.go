@@ -400,8 +400,8 @@ func (c *radixCurve) verify(signature [signatureBytes]byte, msg []byte, k *publi
 		return false
 	}
 
-	s := [fieldWords]word_t{}
-	ok = barrettDeserialize(s[:], signature[fieldBytes:2*fieldBytes], &curvePrimeOrder)
+	nonce := [fieldWords]word_t{}
+	ok = barrettDeserialize(nonce[:], signature[fieldBytes:2*fieldBytes], &curvePrimeOrder)
 	if !ok {
 		return false
 	}
@@ -415,14 +415,19 @@ func (c *radixCurve) verify(signature [signatureBytes]byte, msg []byte, k *publi
 		return false
 	}
 
-	pk_text, ok := pk.deserializeAndTwistApprox()
+	//pubKeyBytes -> pubKeyWireFormat -> (DESERPT & twist) -> PK(X, y)
+	pkPoint, ok := pk.deserializeAndTwistApprox()
 	if !ok {
 		return false
 	}
 
-	linear_combo_var_fixed_vt(pk_text, challenge[:], s[:], wnfsTable[:])
+	//magic
+	//PK_2(X, Y) = PK(X,Y) * ????
+	linear_combo_var_fixed_vt(pkPoint, challenge[:], nonce[:], wnfsTable[:])
 
-	pk = pk_text.untwistAndDoubleAndSerialize()
+	//PK_2(X,Y) -> (untwist & double & SERPT) -> 2*pubKeyWireFormat
+	//In the end, this should be = 4 * nonce * G
+	pk = pkPoint.untwistAndDoubleAndSerialize()
 
 	return eph.equals(pk)
 }
