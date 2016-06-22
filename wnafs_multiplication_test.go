@@ -215,6 +215,99 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 	c.Assert(p.equals(expectedP), Equals, true)
 }
 
+func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
+	x := [scalarWords]word_t{
+		0x120854c7,
+		0x6a241ba0,
+		0x41468997,
+		0x11e8f8aa,
+		0x1c0815bf,
+		0xea9551e7,
+		0x71cfde7f,
+		0x462af8b2,
+		0x7a3ac97f,
+		0x6ae5489c,
+		0x7adb6891,
+		0x797f552,
+		0x738313e3,
+		0x12a2866a,
+	}
+
+	//This is tricky, because even if controlVar has too much space, it does
+	//not matter
+	controlVar := make([]smvt_control, 92)
+	pos := recodeWnaf(controlVar, x[:], scalarBits, 4)
+
+	c.Assert(controlVar[:pos], DeepEquals, []smvt_control{
+		smvt_control{440, 19},
+		smvt_control{434, -23},
+		smvt_control{431, -3},
+		smvt_control{423, 13},
+		smvt_control{417, -11},
+		smvt_control{410, 29},
+		smvt_control{402, -31},
+		smvt_control{396, -15},
+		smvt_control{389, 31},
+		smvt_control{384, 3},
+		smvt_control{375, 15},
+		smvt_control{371, 3},
+		smvt_control{359, -21},
+		smvt_control{353, -23},
+		smvt_control{346, 31},
+		smvt_control{341, -9},
+		smvt_control{335, -9},
+		smvt_control{328, -23},
+		smvt_control{324, -7},
+		smvt_control{316, 23},
+		smvt_control{312, -5},
+		smvt_control{304, -27},
+		smvt_control{299, 9},
+		smvt_control{293, 5},
+		smvt_control{287, -7},
+		smvt_control{278, -23},
+		smvt_control{270, -21},
+		smvt_control{263, 19},
+		smvt_control{251, -23},
+		smvt_control{244, -29},
+		smvt_control{240, -5},
+		smvt_control{230, -29},
+		smvt_control{223, -27},
+		smvt_control{217, -7},
+		smvt_control{212, -3},
+		smvt_control{201, -17},
+		smvt_control{199, 1},
+		smvt_control{184, -21},
+		smvt_control{178, -27},
+		smvt_control{172, 21},
+		smvt_control{165, 15},
+		smvt_control{160, 7},
+		smvt_control{154, 7},
+		smvt_control{147, 1},
+		smvt_control{137, 11},
+		smvt_control{134, -1},
+		smvt_control{124, -15},
+		smvt_control{116, 31},
+		smvt_control{112, -7},
+		smvt_control{102, -29},
+		smvt_control{97, -11},
+		smvt_control{94, 1},
+		smvt_control{86, 5},
+		smvt_control{79, 13},
+		smvt_control{71, 19},
+		smvt_control{64, 23},
+		smvt_control{58, 27},
+		smvt_control{53, -15},
+		smvt_control{50, 1},
+		smvt_control{42, 7},
+		smvt_control{37, -3},
+		smvt_control{25, 9},
+		smvt_control{15, 17},
+		smvt_control{10, -11},
+		smvt_control{3, 25},
+		smvt_control{0, -1},
+	})
+}
+
 func (s *Ed448Suite) TestRecodeWnafForS0(c *C) {
 	//nbits_var := 446
 	nbits_pre := 446
