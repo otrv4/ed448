@@ -70,11 +70,19 @@ func prepareWnafTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 }
 
 func linear_combo_var_fixed_vt(
-	working *twExtensible, scalar_var, scalar_pre []word_t, precmp []*twNiels) {
+	p *twExtensible, scalar_var, scalar_pre []word_t, precmp []*twNiels) {
 	table_bits_var := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
 	nbits_var := uint(446)
 	nbits_pre := uint(446)
 	table_bits_pre := uint(5)
+
+	working := &twExtensible{
+		x: p.x.copy(),
+		y: p.y.copy(),
+		z: p.z.copy(),
+		t: p.t.copy(),
+		u: p.u.copy(),
+	}
 
 	control_var := make([]smvt_control, nbits_var/(table_bits_var+1)+3)
 	control_pre := make([]smvt_control, nbits_pre/(table_bits_pre+1)+3)
@@ -97,7 +105,7 @@ func linear_combo_var_fixed_vt(
 		//convert_tw_pniels_to_tw_extensible(working, precmp_var[control_var[0].addend >> 1]);
 		working = precmp_var[control_var[0].addend>>1].twExtensible()
 		//add_tw_niels_to_tw_extensible(working, precmp[control_pre[0].addend >> 1]);
-		working.addTwNiels(precmp[control_pre[0].addend>>1])
+		working = working.addTwNiels(precmp[control_pre[0].addend>>1])
 		contv++
 		contp++
 	} else {
@@ -120,7 +128,7 @@ func linear_combo_var_fixed_vt(
 
 			if control_var[contv].addend > 0 {
 				// add_tw_pniels_to_tw_extensible(working, precmp_var[control_var[contv].addend >> 1]);
-				working.addTwPNiels(precmp_var[control_var[contv].addend>>1])
+				working = working.addTwPNiels(precmp_var[control_var[contv].addend>>1])
 			} else {
 				// sub_tw_pniels_from_tw_extensible(working, precmp_var[(-control_var[contv].addend) >> 1]);
 				working.subTwPNiels(precmp_var[(-control_var[contv].addend)>>1])
@@ -133,7 +141,7 @@ func linear_combo_var_fixed_vt(
 
 			if control_pre[contp].addend > 0 {
 				// add_tw_niels_to_tw_extensible(working, precmp[control_pre[contp].addend >> 1]);
-				working.addTwNiels(precmp[control_pre[contp].addend>>1])
+				working = working.addTwNiels(precmp[control_pre[contp].addend>>1])
 			} else {
 				// sub_tw_niels_from_tw_extensible(working, precmp[(-control_pre[contp].addend) >> 1]);
 				working.subTwNiels(precmp[(-control_pre[contp].addend)>>1])
@@ -141,6 +149,12 @@ func linear_combo_var_fixed_vt(
 			contp++
 		}
 	}
+
+	p.x = working.x.copy()
+	p.y = working.y.copy()
+	p.z = working.z.copy()
+	p.t = working.t.copy()
+	p.u = working.u.copy()
 
 	//assert(contv == ncb_var);
 	//assert(contp == ncb_pre);
