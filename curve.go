@@ -390,6 +390,36 @@ func deriveNonce(dst []word_t, msg []byte, symKey []byte) {
 }
 
 func (c *radixCurve) verify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
-	//TODO
-	return false
+	serPubkey := serialized(*k)
+	pk, ok := deserialize(serPubkey)
+	if !ok {
+		return false
+	}
+
+	s := [fieldWords]word_t{}
+	ok = barrettDeserialize(s[:], signature[fieldBytes:2*fieldBytes], &curvePrimeOrder)
+	if !ok {
+		return false
+	}
+
+	challenge := [fieldWords]word_t{}
+	tmpSig := [fieldBytes]byte{}
+	copy(tmpSig[:], signature[:])
+	deriveChallenge(challenge[:], serPubkey[:], tmpSig, msg)
+
+	eph, ok := deserialize(tmpSig)
+	if !ok {
+		return false
+	}
+
+	pk_text, ok := pk.deserializeAndTwistApprox()
+	if !ok {
+		return false
+	}
+
+	linear_combo_var_fixed_vt(pk_text, challenge[:], s[:], wnfsTable[:])
+
+	pk = pk_text.untwistAndDoubleAndSerialize()
+
+	return eph.equals(pk)
 }
