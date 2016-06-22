@@ -113,7 +113,7 @@ func linear_combo_var_fixed_vt(
 	}
 
 	for i--; i >= 0; i-- {
-		working.Double()
+		working = working.double()
 
 		if i == control_var[contv].power {
 			//assert(control_var[contv].addend);
