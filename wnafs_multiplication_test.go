@@ -162,7 +162,6 @@ func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 }
 
 func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
-	c.Skip("not yet, hold your horses!")
 	px, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
 	py, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
 	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
@@ -346,52 +345,4 @@ func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
 	c.Assert(position, Equals, uint32(67))
 	c.Assert(control[position].power, Equals, -1)
 	c.Assert(control[position].addend, Equals, 0)
-}
-
-func (s *Ed448Suite) TestVariableTimeCombsMultiplication(c *C) {
-	px, _ := hex.DecodeString("86a470db948365f0d1a1fc29396e7d8246e2aa69509ef5448e23a52095d774709aa4764605f2c92e8b84fa8f576e43e9873d88e733f8753d")
-	py, _ := hex.DecodeString("959c39939535453a464504b8d310a5dbb0532433757dabf9618d37599497c33ed1b3a4b118d335f30d0a47bc12e4eef33088245d5e7483cd")
-	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	pt, _ := hex.DecodeString("86a470db948365f0d1a1fc29396e7d8246e2aa69509ef5448e23a52095d774709aa4764605f2c92e8b84fa8f576e43e9873d88e733f8753d")
-	pu, _ := hex.DecodeString("959c39939535453a464504b8d310a5dbb0532433757dabf9618d37599497c33ed1b3a4b118d335f30d0a47bc12e4eef33088245d5e7483cd")
-
-	p := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
-	}
-
-	challenge := [scalarWords]word_t{
-		0x008b5cc2, 0xceebe347,
-		0x392203e6, 0x836d47e2,
-		0x4512d528, 0x8d39a184,
-		0x918c898a, 0xdc89207c,
-		0x15963760, 0xac2523c1,
-		0x94ad1dad, 0x24280bcb,
-		0xcb25a24a, 0x040f5aa5,
-	}
-
-	sig := [scalarWords]word_t{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	}
-
-	px, _ = hex.DecodeString("88fc2a941653f55c054f6b24024356ff9fb5aa6e88cd023c1f2a57413735dfffca2d3f03c45972a59800580593ba715d5ee1ea9809336726")
-	py, _ = hex.DecodeString("ab6f3edce37a4846e4ea8ead43695eacf06a02a4ef15f6a319baca0b12284cd1202725219a666975f07f35f1d9e0bb131eca32c0be593d7f")
-	pz, _ = hex.DecodeString("49acc45ec127d199b786782a19d38f50d0015122d5eba3921ee40bc22178eb122676a3cd4cc03dfe013533f075ee3262e4b6da387b8dad58")
-	pt, _ = hex.DecodeString("a97eae57d72bd7cfc06a959e8ad21a4ca227a41c86d698f462ac9a58535f5aa99d3ad4a46e64dd7a0b7dc1a5224e3d3e383ab0db3104e682")
-	pu, _ = hex.DecodeString("3bfb20be4c668cec0e11f120c4af4c44b1d53a688499e385be9b3b1b7a321bdf5925a98a6c7d11fc5b53140e7b031f338c3c086767752536")
-
-	expected := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
-	}
-
-	linear_combo_var_fixed_vt(p, challenge[:], sig[:], wnfsTable[:])
-
-	c.Assert(p, DeepEquals, expected)
 }
