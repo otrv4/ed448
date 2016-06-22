@@ -309,15 +309,6 @@ func (e *twExtensible) subTwPNiels(a *twPNiels) {
 	e.subTwNiels(a.n)
 }
 
-func (p *twExtensible) Double() Point {
-	p = p.double()
-	return p
-}
-
-func (p *twExtensible) Marshal() []byte {
-	return nil
-}
-
 func (a *twExtensible) twPNiels() *twPNiels {
 	// field_sub ( b->n->a, a->y, a->x );
 	na := new(bigNumber).sub(a.y, a.x)
