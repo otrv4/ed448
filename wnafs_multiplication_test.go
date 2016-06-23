@@ -214,6 +214,59 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 	c.Assert(p.equals(expectedP), Equals, true)
 }
 
+func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
+	px, _ := hex.DecodeString("3ad455b204ac920bddb750a6478ff733f487f45369770d989ad919944d8f1cb30a682d0d6e46892a94bc268688515d835e4d05a2697d78b6")
+	py, _ := hex.DecodeString("918bf9573f40be92567052b0c02fbf49cbfa43f68f5fcd7bdf44f877594eb6bfff690413befd9952d5710cefc1839771b9660f69b17790f5")
+	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
+	pt, _ := hex.DecodeString("3ad455b204ac920bddb750a6478ff733f487f45369770d989ad919944d8f1cb30a682d0d6e46892a94bc268688515d835e4d05a2697d78b6")
+	pu, _ := hex.DecodeString("918bf9573f40be92567052b0c02fbf49cbfa43f68f5fcd7bdf44f877594eb6bfff690413befd9952d5710cefc1839771b9660f69b17790f5")
+
+	p := &twExtensible{
+		new(bigNumber).setBytes(px),
+		new(bigNumber).setBytes(py),
+		new(bigNumber).setBytes(pz),
+		new(bigNumber).setBytes(pt),
+		new(bigNumber).setBytes(pu),
+	}
+
+	x := [fieldWords]word_t{
+		0x150252d4, 0x91f90541,
+		0xfbc32870, 0x5055d9f0,
+		0x3e5d3a5c, 0xec7fe32d,
+		0xd043954a, 0xd6038f2e,
+		0x41d8bc06, 0xff202e0e,
+		0xda461aa0, 0xf8e1491a,
+		0xf2ce123c, 0xfb54751,
+	}
+
+	y := [fieldWords]word_t{
+		0xc6a3102f, 0xe9e887ee,
+		0x393be2cb, 0xd6dbb642,
+		0x3a20bf34, 0x8a75ad11,
+		0x93a1124, 0x592da916,
+		0xaf4ef0b8, 0x92d3af99,
+		0xcd91dae6, 0xa55b2817,
+		0x5cbf02a2, 0x28bcd317,
+	}
+
+	px, _ = hex.DecodeString("6aa15c7918e4995298d1774924e4394788ef77a27a8a660ec971f16c337869011a19041bc52fdad9bd5e6aab5360c32d71a910cda93a8d02")
+	py, _ = hex.DecodeString("e0656f99c1a5774f5e8eda93b676d2673c55a7ec50057a3ee2a373deb4847020e7fa2b7e7c1e0bea4adf3004b474ff3c7a26f330a2a2565e")
+	pz, _ = hex.DecodeString("8365faf96687fb3419ed919ab8e995d3cf77b9dcec47bdc5b51d10f6110eb60c19be4daf24a1e0cdb0cef9f10b9bdbf19ae3d433a60c93a2")
+	pt, _ = hex.DecodeString("6221c6e5950a608b30063f8b83d7eef50ccc97fbf8b5c20de61eadebb734b10143965090f5cdbedea08afee791819a25269b63d764b29d89")
+	pu, _ = hex.DecodeString("8b8ee5a52914b36d6b04fc18bdb7dbd826efe424e074c2799e83e43ae3da3357df975d158228bfa5b52fdaac1f637c5cb1bb27bce0367f6f")
+	expectedP := &twExtensible{
+		new(bigNumber).setBytes(px),
+		new(bigNumber).setBytes(py),
+		new(bigNumber).setBytes(pz),
+		new(bigNumber).setBytes(pt),
+		new(bigNumber).setBytes(pu),
+	}
+
+	linear_combo_var_fixed_vt(p, x[:], y[:], wnfsTable[:])
+
+	c.Assert(p.equals(expectedP), Equals, true)
+}
+
 func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
 	x := [scalarWords]word_t{
 		0x120854c7,
