@@ -94,19 +94,15 @@ func linear_combo_var_fixed_vt(
 	i := control_var[0].power
 	if i > control_pre[0].power {
 		working = precmp_var[control_var[0].addend>>1].twExtensible()
-		//convert_tw_pniels_to_tw_extensible(working, precmp_var[control_var[0].addend >> 1]);
 		contv++
 	} else if i == control_pre[0].power && i >= 0 {
-		//convert_tw_pniels_to_tw_extensible(working, precmp_var[control_var[0].addend >> 1]);
 		working = precmp_var[control_var[0].addend>>1].twExtensible()
-		//add_tw_niels_to_tw_extensible(working, precmp[control_pre[0].addend >> 1]);
 		working = working.addTwNiels(precmp[control_pre[0].addend>>1])
 		contv++
 		contp++
 	} else {
 		i = control_pre[0].power
-		// convert_tw_niels_to_tw_extensible(working, precmp[control_pre[0].addend >> 1]);
-		working = precmp_var[control_var[0].addend>>1].twExtensible()
+		working = precmp[control_pre[0].addend>>1].TwistedExtensible()
 		contp++
 	}
 
@@ -119,26 +115,18 @@ func linear_combo_var_fixed_vt(
 		working = working.double()
 
 		if i == control_var[contv].power {
-			//assert(control_var[contv].addend);
-
 			if control_var[contv].addend > 0 {
-				// add_tw_pniels_to_tw_extensible(working, precmp_var[control_var[contv].addend >> 1]);
 				working = working.addTwPNiels(precmp_var[control_var[contv].addend>>1])
 			} else {
-				// sub_tw_pniels_from_tw_extensible(working, precmp_var[(-control_var[contv].addend) >> 1]);
 				working.subTwPNiels(precmp_var[(-control_var[contv].addend)>>1])
 			}
 			contv++
 		}
 
 		if i == control_pre[contp].power {
-			//assert(control_pre[contp].addend);
-
 			if control_pre[contp].addend > 0 {
-				// add_tw_niels_to_tw_extensible(working, precmp[control_pre[contp].addend >> 1]);
 				working = working.addTwNiels(precmp[control_pre[contp].addend>>1])
 			} else {
-				// sub_tw_niels_from_tw_extensible(working, precmp[(-control_pre[contp].addend) >> 1]);
 				working.subTwNiels(precmp[(-control_pre[contp].addend)>>1])
 			}
 			contp++
@@ -147,8 +135,4 @@ func linear_combo_var_fixed_vt(
 
 	//XXX PERFORMANCE copy back
 	p.copy(working)
-
-	//assert(contv == ncb_var);
-	//assert(contp == ncb_pre);
-	return
 }
