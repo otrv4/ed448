@@ -277,7 +277,7 @@ func (p *twNiels) TwistedExtensible() *twExtensible {
 
 	y = y.add(p.b, p.a)
 	x = x.sub(p.b, p.a)
-	z = &bigNumber{1}
+	z = z.setUi(1)
 	t = x.copy()
 	u = y.copy()
 
