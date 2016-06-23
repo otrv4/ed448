@@ -2,10 +2,14 @@ PROFILING_FOLDER = profiling
 
 default: test
 
-ci: get test bench
+ci: get lint test bench
 
 get:
 	go get -t -v ./...
+
+lint:
+	go get -u github.com/golang/lint/golint
+	golint
 
 test:
 	go test -check.vv -cover ./...
