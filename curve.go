@@ -259,6 +259,7 @@ func (c *curveT) generateKey(read io.Reader) (k privateKey, err error) {
 	return c.derivePrivateKey(symKey)
 }
 
+//XXX Is private only the secret part of the privateKey?
 func (c *curveT) computeSecret(private, public []byte) []byte {
 	var sk [fieldWords]word_t
 	var pub serialized

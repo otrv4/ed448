@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 )
 
+//XXX It would be better if they use privateKey and publicKey types
 type Curve interface {
 	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
 	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)
@@ -51,5 +52,6 @@ func (ed *curveT) Verify(signature [signatureBytes]byte, message []byte, pub [pu
 
 // ECDH Compute secret according to private key and peer's public key.
 func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [sha512.Size]byte) {
-	return //sha512.Sum512(ed.computeSecret(private, public))
+	k := privateKey(private)
+	return sha512.Sum512(ed.computeSecret(k.secretKey(), public[:]))
 }
