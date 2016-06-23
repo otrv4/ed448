@@ -45,10 +45,6 @@ const (
 )
 
 var (
-	zero = mustDeserialize(serialized{0x0})
-	one  = mustDeserialize(serialized{0x1})
-	two  = mustDeserialize(serialized{0x02})
-
 	//p = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 	prime, _ = deserialize(serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -90,8 +86,6 @@ var (
 	},
 		serialized{0x13},
 	)
-
-	//primeOrderB, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
 )
 
 func mustNewPoint(x, y serialized) *homogeneousProjective {
