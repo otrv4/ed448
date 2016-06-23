@@ -8,14 +8,10 @@ import (
 )
 
 func (s *Ed448Suite) TestRadixBasePointIsOnCurve(c *C) {
-	curve := newRadixCurve()
-	p := curve.BasePoint()
-
-	c.Assert(p.OnCurve(), Equals, true)
+	c.Assert(basePoint.OnCurve(), Equals, true)
 }
 
 func (s *Ed448Suite) TestRadixMultiplyByBase(c *C) {
-	curve := newRadixCurve()
 	scalar := [scalarWords]word_t{}
 	scalar[scalarWords-1] = 1000
 
@@ -29,7 +25,6 @@ func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
 	buffer[0] = 0x10
 	r := bytes.NewReader(buffer[:])
 
-	curve := newRadixCurve()
 	privKey, err := curve.generateKey(r)
 
 	expectedSymKey := make([]byte, symKeyBytes)
@@ -122,7 +117,6 @@ func (s *Ed448Suite) TestDeriveChallenge(c *C) {
 }
 
 func (s *Ed448Suite) TestSign(c *C) {
-	curve := newRadixCurve()
 	msg := []byte("hey there")
 	k := privateKey([privKeyBytes]byte{
 		//secret
@@ -173,7 +167,6 @@ func (s *Ed448Suite) TestSign(c *C) {
 }
 
 func (s *Ed448Suite) TestVerify(c *C) {
-	curve := newRadixCurve()
 	msg := []byte("hey there")
 	k := publicKey([pubKeyBytes]byte{
 		//public
@@ -232,7 +225,7 @@ func (s *Ed448Suite) TestMultiplyMontgomery(c *C) {
 	expectedPublic := new(bigNumber)
 	expectedPublic.setBytes(bs)
 
-	pk, ok := rCurve.multiplyMontgomery(pk, sk, scalarBits, 1)
+	pk, ok := curve.multiplyMontgomery(pk, sk, scalarBits, 1)
 
 	c.Assert(ok, Equals, word_t(0))
 	c.Assert(pk, DeepEquals, expectedPublic)
