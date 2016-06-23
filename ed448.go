@@ -5,24 +5,28 @@ import (
 	"crypto/sha512"
 )
 
-type Ed448 interface {
+type Curve interface {
 	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
 	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)
 	Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool)
 	ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [sha512.Size]byte)
 }
 
-type ed448 struct{}
+type curveT struct{}
 
-func NewEd448() Ed448 {
-	return &ed448{}
+var (
+	curve = &curveT{}
+)
+
+func NewCurve() Curve {
+	return curve
 }
 
 // Generates a private key and its correspondent public key.
 // XXX This is missing the symmetricKey
-func (ed *ed448) GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool) {
+func (ed *curveT) GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool) {
 	var err error
-	privKey, err := newRadixCurve().generateKey(rand.Reader)
+	privKey, err := ed.generateKey(rand.Reader)
 	ok = err == nil
 
 	copy(priv[:], privKey.secretKey())
@@ -32,21 +36,21 @@ func (ed *ed448) GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte,
 }
 
 // Signs a message using the provided private key and returns the signature.
-func (ed *ed448) Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool) {
+func (ed *curveT) Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool) {
 	pk := privateKey(priv)
-	signature, err := newRadixCurve().sign(message, &pk)
+	signature, err := ed.sign(message, &pk)
 	ok = err == nil
 	return
 }
 
 // Verify a signature does correspond a message by a public key.
-func (ed *ed448) Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool) {
+func (ed *curveT) Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool) {
 	pk := publicKey(pub)
-	valid = newRadixCurve().verify(signature, message, &pk)
+	valid = ed.verify(signature, message, &pk)
 	return
 }
 
 // ECDH Compute secret according to private key and peer's public key.
-func (ed *ed448) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [sha512.Size]byte) {
-	return //sha512.Sum512(newRadixCurve().computeSecret(private, public))
+func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [sha512.Size]byte) {
+	return //sha512.Sum512(ed.computeSecret(private, public))
 }

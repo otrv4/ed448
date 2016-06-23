@@ -13,7 +13,7 @@ type Ed448Suite struct{}
 var _ = Suite(&Ed448Suite{})
 
 func (s *Ed448Suite) TestGenerateKeysProducesKeyPair(c *C) {
-	ed448 := NewEd448()
+	ed448 := NewCurve()
 	priv, pub, ok := ed448.GenerateKeys()
 	c.Assert(ok, Equals, true)
 	c.Assert(priv, NotNil)
@@ -23,7 +23,7 @@ func (s *Ed448Suite) TestGenerateKeysProducesKeyPair(c *C) {
 func (s *Ed448Suite) TestSignAndVerify(c *C) {
 	c.Skip("Not yet")
 
-	ed448 := NewEd448()
+	ed448 := NewCurve()
 	priv, pub, _ := ed448.GenerateKeys()
 	message := []byte("sign here.")
 
@@ -38,7 +38,7 @@ func (s *Ed448Suite) TestSignAndVerify(c *C) {
 }
 
 func (s *Ed448Suite) TestComputeSecret(c *C) {
-	ed448 := NewEd448()
+	ed448 := NewCurve()
 	privA, pubA, _ := ed448.GenerateKeys()
 	privB, pubB, _ := ed448.GenerateKeys()
 	secretA := ed448.ComputeSecret(privA, pubB)

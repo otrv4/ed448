@@ -4,8 +4,10 @@ import (
 	"crypto/sha512"
 	"errors"
 	"io"
-	"math/big"
 )
+
+type word_t uint32
+type dword_t uint64
 
 const (
 	// The size of the Goldilocks field, in bits.
@@ -42,32 +44,55 @@ const (
 	combSpacing = uint(14) // 18 if 64-bit
 )
 
-type word_t uint32 //32-bits
-//type word_t uint64 //64-bits
+var (
+	zero = mustDeserialize(serialized{0x0})
+	one  = mustDeserialize(serialized{0x1})
+	two  = mustDeserialize(serialized{0x02})
 
-type dword_t uint64 //32-bits
-//type word_t uint128 //64-bits
+	//p = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	prime, _ = deserialize(serialized{
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	})
 
-//XXX Why having a class at all and not just exported methods?
-type radixCurve struct {
-	zero, one, two            *bigNumber
-	prime, primeOrder, edCons *bigNumber
-	basePoint                 *homogeneousProjective
-}
+	//primeOrder: 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3
+	primeOrder = mustDeserialize(serialized{
+		0xf3, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
+		0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x72, 0xc2,
+		0x6c, 0x21, 0x90, 0x36, 0xd6, 0xae, 0x49,
+		0xdb, 0x4e, 0xc4, 0xe9, 0x23, 0xca, 0x7c,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
+	})
 
-var rCurve radixCurve
+	//edCons: -39081
+	edCons = mustDeserialize(serialized{0xa9, 0x98}) // unsigned
 
-//p = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-var primeSerialized = serialized{
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-}
+	//gx: 0x297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f
+	//gy: 0x13
+	basePoint = mustNewPoint(serialized{
+		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
+		0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,
+		0x96, 0x3d, 0xc6, 0x94, 0x2d, 0x93, 0xf3,
+		0xaa, 0x7e, 0x14, 0x96, 0xfa, 0xec, 0x9c,
+		0x70, 0xd0, 0x59, 0x3c, 0x5c, 0x06, 0x5f,
+		0x24, 0x33, 0xf7, 0xad, 0x26, 0x6a, 0x3a,
+		0x45, 0x98, 0x60, 0xf4, 0xaf, 0x4f, 0x1b,
+		0xff, 0x92, 0x26, 0xea, 0xa0, 0x7e, 0x29,
+	},
+		serialized{0x13},
+	)
+
+	//primeOrderB, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
+)
 
 func mustNewPoint(x, y serialized) *homogeneousProjective {
 	p, err := NewPoint(x, y)
@@ -78,72 +103,7 @@ func mustNewPoint(x, y serialized) *homogeneousProjective {
 	return p
 }
 
-func init() {
-	p, _ := deserialize(primeSerialized)
-	rCurve = radixCurve{
-		//???
-		zero: mustDeserialize(serialized{0x0}),
-		one:  mustDeserialize(serialized{0x1}),
-		two:  mustDeserialize(serialized{0x02}),
-
-		prime: p,
-
-		//primeOrder: 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3
-		primeOrder: mustDeserialize(serialized{
-			0xf3, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
-			0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x72, 0xc2,
-			0x6c, 0x21, 0x90, 0x36, 0xd6, 0xae, 0x49,
-			0xdb, 0x4e, 0xc4, 0xe9, 0x23, 0xca, 0x7c,
-			0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-			0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-			0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-			0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
-		}),
-
-		//edCons: -39081
-		edCons: mustDeserialize(serialized{0xa9, 0x98}), // unsigned
-
-		//gx: 0x297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f
-		//gy: 0x13
-		basePoint: mustNewPoint(serialized{
-			0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
-			0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,
-			0x96, 0x3d, 0xc6, 0x94, 0x2d, 0x93, 0xf3,
-			0xaa, 0x7e, 0x14, 0x96, 0xfa, 0xec, 0x9c,
-			0x70, 0xd0, 0x59, 0x3c, 0x5c, 0x06, 0x5f,
-			0x24, 0x33, 0xf7, 0xad, 0x26, 0x6a, 0x3a,
-			0x45, 0x98, 0x60, 0xf4, 0xaf, 0x4f, 0x1b,
-			0xff, 0x92, 0x26, 0xea, 0xa0, 0x7e, 0x29,
-		},
-			serialized{0x13},
-		),
-	}
-}
-
-//XXX We dont need an interface anymore
-type pointCurve interface {
-	BasePoint() *homogeneousProjective
-
-	multiplyByBase(scalar [scalarWords]word_t) *twExtensible
-	generateKey(rand io.Reader) (k privateKey, err error)
-	sign(msg []byte, k *privateKey) ([signatureBytes]byte, error)
-	verify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool
-	computeSecret(private []byte, public []byte) []byte
-}
-
-func newRadixCurve() pointCurve {
-	return &rCurve
-}
-
-func (c *radixCurve) BasePoint() *homogeneousProjective {
-	return c.basePoint
-}
-
-var (
-	primeOrder, _ = new(big.Int).SetString("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab", 16)
-)
-
-func (c *radixCurve) multiplyMontgomery(in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) (*bigNumber, word_t) {
+func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) (*bigNumber, word_t) {
 	mont := new(montgomery)
 	mont.deserialize(in)
 	var i, j, n int
@@ -175,7 +135,7 @@ func (c *radixCurve) multiplyMontgomery(in *bigNumber, scalar [fieldWords]word_t
 	return out, word_t(ok)
 }
 
-func (c *radixCurve) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
+func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 	out := &twExtensible{
 		new(bigNumber),
 		new(bigNumber),
@@ -280,7 +240,7 @@ func generateSymmetricKey(read io.Reader) (symKey [symKeyBytes]byte, err error) 
 	return
 }
 
-func (c *radixCurve) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, error) {
+func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, error) {
 	k := privateKey{}
 	copy(k.symKey(), symmetricKey[:])
 
@@ -296,7 +256,7 @@ func (c *radixCurve) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKe
 	return k, nil
 }
 
-func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
+func (c *curveT) generateKey(read io.Reader) (k privateKey, err error) {
 	symKey, err := generateSymmetricKey(read)
 	if err != nil {
 		return
@@ -305,7 +265,7 @@ func (c *radixCurve) generateKey(read io.Reader) (k privateKey, err error) {
 	return c.derivePrivateKey(symKey)
 }
 
-func (c *radixCurve) computeSecret(private, public []byte) []byte {
+func (c *curveT) computeSecret(private, public []byte) []byte {
 	var sk [fieldWords]word_t
 	var pub serialized
 	copy(pub[:], public)
@@ -328,7 +288,7 @@ func (c *radixCurve) computeSecret(private, public []byte) []byte {
 	return gxy
 }
 
-func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {
+func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {
 	secretKeyWords := [fieldWords]word_t{}
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		//XXX SECURITY should we wipe secretKeyWords?
@@ -361,7 +321,7 @@ func (c *radixCurve) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e 
 	return
 }
 
-func (c *radixCurve) deriveTemporarySignature(nonce [fieldWords]word_t) (dst [fieldBytes]byte) {
+func (c *curveT) deriveTemporarySignature(nonce [fieldWords]word_t) (dst [fieldBytes]byte) {
 	// tmpSig = 4 * nonce * basePoint
 	fourTimesGTimesNonce := c.multiplyByBase(nonce).double().untwistAndDoubleAndSerialize()
 	serialize(dst[:], fourTimesGTimesNonce)
@@ -393,7 +353,7 @@ func deriveNonce(msg []byte, symKey []byte) (dst [fieldWords]word_t) {
 	return
 }
 
-func (c *radixCurve) verify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
+func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
 	serPubkey := serialized(*k)
 	pk, ok := deserialize(serPubkey)
 	if !ok {
