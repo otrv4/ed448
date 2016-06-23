@@ -21,8 +21,6 @@ func (s *Ed448Suite) TestGenerateKeysProducesKeyPair(c *C) {
 }
 
 func (s *Ed448Suite) TestSignAndVerify(c *C) {
-	c.Skip("Not yet")
-
 	ed448 := NewCurve()
 	priv, pub, _ := ed448.GenerateKeys()
 	message := []byte("sign here.")

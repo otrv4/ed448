@@ -23,13 +23,12 @@ func NewCurve() Curve {
 }
 
 // Generates a private key and its correspondent public key.
-// XXX This is missing the symmetricKey
 func (ed *curveT) GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool) {
 	var err error
 	privKey, err := ed.generateKey(rand.Reader)
 	ok = err == nil
 
-	copy(priv[:], privKey.secretKey())
+	copy(priv[:], privKey[:])
 	copy(pub[:], privKey.publicKey())
 
 	return
