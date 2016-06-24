@@ -154,13 +154,23 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 
 func (n *bigNumber) weakReduce() *bigNumber {
 	tmp := limb(uint64(n[Limbs-1]) >> Radix)
-
 	n[Limbs/2] += tmp
 
-	for i := Limbs - 1; i > 0; i-- {
-		n[i] = (n[i] & radixMask) + (n[i-1] >> Radix)
-	}
-
+	n[15] = (n[15] & radixMask) + (n[14] >> Radix)
+	n[14] = (n[14] & radixMask) + (n[13] >> Radix)
+	n[13] = (n[13] & radixMask) + (n[12] >> Radix)
+	n[12] = (n[12] & radixMask) + (n[11] >> Radix)
+	n[11] = (n[11] & radixMask) + (n[10] >> Radix)
+	n[10] = (n[10] & radixMask) + (n[9] >> Radix)
+	n[9] = (n[9] & radixMask) + (n[8] >> Radix)
+	n[8] = (n[8] & radixMask) + (n[7] >> Radix)
+	n[7] = (n[7] & radixMask) + (n[6] >> Radix)
+	n[6] = (n[6] & radixMask) + (n[5] >> Radix)
+	n[5] = (n[5] & radixMask) + (n[4] >> Radix)
+	n[4] = (n[4] & radixMask) + (n[3] >> Radix)
+	n[3] = (n[3] & radixMask) + (n[2] >> Radix)
+	n[2] = (n[2] & radixMask) + (n[1] >> Radix)
+	n[1] = (n[1] & radixMask) + (n[0] >> Radix)
 	n[0] = (n[0] & radixMask) + tmp
 
 	return n
