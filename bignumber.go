@@ -99,9 +99,22 @@ func (n *bigNumber) subW(w uint32) *bigNumber {
 }
 
 func (n *bigNumber) subRaw(x *bigNumber, y *bigNumber) *bigNumber {
-	for i := 0; i < len(n); i++ {
-		n[i] = x[i] - y[i]
-	}
+	n[0] = x[0] - y[0]
+	n[1] = x[1] - y[1]
+	n[2] = x[2] - y[2]
+	n[3] = x[3] - y[3]
+	n[4] = x[4] - y[4]
+	n[5] = x[5] - y[5]
+	n[6] = x[6] - y[6]
+	n[7] = x[7] - y[7]
+	n[8] = x[8] - y[8]
+	n[9] = x[9] - y[9]
+	n[10] = x[10] - y[10]
+	n[11] = x[11] - y[11]
+	n[12] = x[12] - y[12]
+	n[13] = x[13] - y[13]
+	n[14] = x[14] - y[14]
+	n[15] = x[15] - y[15]
 
 	return n
 }
