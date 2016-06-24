@@ -1,3 +1,7 @@
 language: go
 
+before_install: 
+  - sudo apt-get -qq update
+  - sudo apt-get install -y golang-go-linux-386
+
 script: make ci
