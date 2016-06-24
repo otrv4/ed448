@@ -70,10 +70,20 @@ func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 func (n *bigNumber) setUi(y uint64) *bigNumber {
 	n[0] = limb(y) & radixMask
 	n[1] = limb(y >> Radix)
-
-	for i := 2; i < Limbs; i++ {
-		n[i] = 0
-	}
+	n[2] = 0
+	n[3] = 0
+	n[4] = 0
+	n[5] = 0
+	n[6] = 0
+	n[7] = 0
+	n[8] = 0
+	n[9] = 0
+	n[10] = 0
+	n[11] = 0
+	n[12] = 0
+	n[13] = 0
+	n[14] = 0
+	n[15] = 0
 
 	return n
 }
