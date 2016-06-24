@@ -304,9 +304,22 @@ func (n *bigNumber) zeroMask() uint32 {
 	x := n.copy().strongReduce()
 	r := limb(0)
 
-	for _, ni := range x {
-		r |= ni ^ 0
-	}
+	r |= x[0] ^ 0
+	r |= x[1] ^ 0
+	r |= x[2] ^ 0
+	r |= x[3] ^ 0
+	r |= x[4] ^ 0
+	r |= x[5] ^ 0
+	r |= x[6] ^ 0
+	r |= x[7] ^ 0
+	r |= x[8] ^ 0
+	r |= x[9] ^ 0
+	r |= x[10] ^ 0
+	r |= x[11] ^ 0
+	r |= x[12] ^ 0
+	r |= x[13] ^ 0
+	r |= x[14] ^ 0
+	r |= x[15] ^ 0
 
 	return isZeroMask(uint32(r))
 }
