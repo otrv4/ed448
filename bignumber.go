@@ -280,9 +280,22 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	x := n.copy().strongReduce()
 	y := o.copy().strongReduce()
 
-	for i, yi := range y {
-		r |= x[i] ^ yi
-	}
+	r |= x[0] ^ y[0]
+	r |= x[1] ^ y[1]
+	r |= x[2] ^ y[2]
+	r |= x[3] ^ y[3]
+	r |= x[4] ^ y[4]
+	r |= x[5] ^ y[5]
+	r |= x[6] ^ y[6]
+	r |= x[7] ^ y[7]
+	r |= x[8] ^ y[8]
+	r |= x[9] ^ y[9]
+	r |= x[10] ^ y[10]
+	r |= x[11] ^ y[11]
+	r |= x[12] ^ y[12]
+	r |= x[13] ^ y[13]
+	r |= x[14] ^ y[14]
+	r |= x[15] ^ y[15]
 
 	return r == 0
 }
