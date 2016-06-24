@@ -71,39 +71,148 @@ func (n *bigNumber) bias(b uint32) *bigNumber {
 	return n
 }
 
-//TODO: double check if this can be used for both 32 and 64 bits
-//(at least before unrolling)
 func (n *bigNumber) strongReduce() *bigNumber {
 	// clear high
 	n[8] += n[15] >> 28
 	n[0] += n[15] >> 28
 	n[15] &= radixMask
 
+	//first for
+
 	scarry := int64(0)
-	for i := 0; i < 16; i++ {
-		m := limb(radixMask)
-		if i == 8 {
-			m = limb(0xffffffe)
-		}
+	scarry += int64(n[0]) - 0xfffffff
+	n[0] = limb(scarry) & radixMask
+	scarry >>= 28
 
-		scarry += int64(n[i]) - int64(m)
+	scarry += int64(n[1]) - 0xfffffff
+	n[1] = limb(scarry) & radixMask
+	scarry >>= 28
 
-		n[i] = limb(scarry) & radixMask
-		scarry >>= 28
-	}
+	scarry += int64(n[2]) - 0xfffffff
+	n[2] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[3]) - 0xfffffff
+	n[3] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[4]) - 0xfffffff
+	n[4] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[5]) - 0xfffffff
+	n[5] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[6]) - 0xfffffff
+	n[6] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[7]) - 0xfffffff
+	n[7] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[8]) - 0xffffffe
+	n[8] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[9]) - 0xfffffff
+	n[9] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[10]) - 0xfffffff
+	n[10] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[11]) - 0xfffffff
+	n[11] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[12]) - 0xfffffff
+	n[12] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[13]) - 0xfffffff
+	n[13] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[14]) - 0xfffffff
+	n[14] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	scarry += int64(n[15]) - 0xfffffff
+	n[15] = limb(scarry) & radixMask
+	scarry >>= 28
+
+	// second for
 
 	scarryMask := word_t(scarry) & word_t(radixMask)
 	carry := uint64(0)
-	for i := 0; i < 16; i++ {
-		m := uint64(scarryMask)
-		if i == 8 {
-			m &= uint64(0xfffffffffffffffe)
-		}
+	m := uint64(scarryMask)
 
-		carry += uint64(n[i]) + m
-		n[i] = limb(carry) & radixMask
-		carry >>= 28
-	}
+	carry += uint64(n[0]) + m
+	n[0] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[1]) + m
+	n[1] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[2]) + m
+	n[2] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[3]) + m
+	n[3] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[4]) + m
+	n[4] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[5]) + m
+	n[5] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[6]) + m
+	n[6] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[7]) + m
+	n[7] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[8]) + m&uint64(0xfffffffffffffffe)
+	n[8] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[9]) + m
+	n[9] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[10]) + m
+	n[10] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[11]) + m
+	n[11] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[12]) + m
+	n[12] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[13]) + m
+	n[13] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[14]) + m
+	n[14] = limb(carry) & radixMask
+	carry >>= 28
+
+	carry += uint64(n[15]) + m
+	n[15] = limb(carry) & radixMask
+	carry >>= 28
 
 	return n
 }
