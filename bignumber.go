@@ -249,9 +249,22 @@ func (n *bigNumber) conditionalSwap(x *bigNumber, swap word_t) *bigNumber {
 }
 
 func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
-	for i, xi := range x {
-		n[i] = limb(-xi)
-	}
+	n[0] = limb(-x[0])
+	n[1] = limb(-x[1])
+	n[2] = limb(-x[2])
+	n[3] = limb(-x[3])
+	n[4] = limb(-x[4])
+	n[5] = limb(-x[5])
+	n[6] = limb(-x[6])
+	n[7] = limb(-x[7])
+	n[8] = limb(-x[8])
+	n[9] = limb(-x[9])
+	n[10] = limb(-x[10])
+	n[11] = limb(-x[11])
+	n[12] = limb(-x[12])
+	n[13] = limb(-x[13])
+	n[14] = limb(-x[14])
+	n[15] = limb(-x[15])
 
 	return n
 }
