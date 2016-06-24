@@ -2,7 +2,7 @@ PROFILING_FOLDER = profiling
 
 default: test
 
-ci: get test bench
+ci: get test-32 bench-32
 
 get:
 	go get -t -v ./...
