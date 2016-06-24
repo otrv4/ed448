@@ -127,11 +127,7 @@ func (n *bigNumber) subxRaw(x *bigNumber, y *bigNumber) *bigNumber {
 //n = x * y
 func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 	//it does not work in place, that why the temporary bigNumber is necessary
-	for i, ni := range karatsubaMul(new(bigNumber), x, y) {
-		n[i] = ni
-	}
-
-	return n
+	return n.set(karatsubaMul(new(bigNumber), x, y))
 }
 
 func (n *bigNumber) isr(x *bigNumber) *bigNumber {
@@ -273,6 +269,11 @@ func (n *bigNumber) copy() *bigNumber {
 	c := &bigNumber{}
 	copy(c[:], n[:])
 	return c
+}
+
+func (n *bigNumber) set(x *bigNumber) *bigNumber {
+	copy(n[:], x[:])
+	return n
 }
 
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
