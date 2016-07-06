@@ -142,34 +142,30 @@ func (n *bigNumber) isr(x *bigNumber) *bigNumber {
 	l2 := new(bigNumber)
 
 	l1.square(x)
-	l2.mulCopy(x, l1)
+	l2.mul(x, l1)
 	l1.square(l2)
-	l2.mulCopy(x, l1)
+	l2.mul(x, l1)
 	l1.squareN(l2, 3)
-	l0.mulCopy(l2, l1)
+	l0.mul(l2, l1)
 	l1.squareN(l0, 3)
-	l0.mulCopy(l2, l1)
+	l0.mul(l2, l1)
 	l2.squareN(l0, 9)
-	l1.mulCopy(l0, l2)
+	l1.mul(l0, l2)
 	l0.square(l1)
-	l2.mulCopy(x, l0)
+	l2.mul(x, l0)
 	l0.squareN(l2, 18)
-	l2.mulCopy(l1, l0)
+	l2.mul(l1, l0)
 	l0.squareN(l2, 37)
-	l1.mulCopy(l2, l0)
+	l1.mul(l2, l0)
 	l0.squareN(l1, 37)
-	l1.mulCopy(l2, l0)
+	l1.mul(l2, l0)
 	l0.squareN(l1, 111)
-	l2.mulCopy(l1, l0)
+	l2.mul(l1, l0)
 	l0.square(l2)
-	l1.mulCopy(x, l0)
+	l1.mul(x, l0)
 	l0.squareN(l1, 223)
 
-	return n.mulCopy(l2, l0)
-}
-
-func (n *bigNumber) squareCopy(x *bigNumber) *bigNumber {
-	return n.set(karatsubaSquare(new(bigNumber), x))
+	return n.mul(l2, l0)
 }
 
 func (n *bigNumber) square(x *bigNumber) *bigNumber {

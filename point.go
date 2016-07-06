@@ -82,7 +82,7 @@ func (p *extensibleCoordinates) OnCurve() bool {
 	l2 = l2.add(l0, l1)
 	l3 = l3.square(u)
 	l0 = l0.square(t)
-	l1 = l1.mulCopy(l0, l3)
+	l1 = l1.mul(l0, l3)
 	l0 = l0.mulWSignedCurveConstant(l1, curveDSigned)
 	l1 = l1.add(l0, l2)
 	l0 = l0.square(x)
@@ -92,9 +92,9 @@ func (p *extensibleCoordinates) OnCurve() bool {
 
 	// Check invariant:
 	// 0 = -x*y + z*t*u
-	l1 = l1.mulCopy(t, u)
-	l2 = l2.mulCopy(z, l1)
-	l0 = l0.mulCopy(x, y)
+	l1 = l1.mul(t, u)
+	l2 = l2.mul(z, l1)
+	l0 = l0.mul(x, y)
 	l1 = l1.neg(l0)
 	l0 = l0.add(l1, l2)
 
@@ -109,13 +109,13 @@ func (p *extensibleCoordinates) equals(q *extensibleCoordinates) bool {
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
 
-	l2 = l2.mulCopy(q.z, p.x)
-	l1 = l1.mulCopy(p.z, q.x)
+	l2 = l2.mul(q.z, p.x)
+	l1 = l1.mul(p.z, q.x)
 	l0 = l0.sub(l2, l1)
 	l4 := l0.zeroMask()
 
-	l2 = l2.mulCopy(q.z, p.y)
-	l1 = l1.mulCopy(p.z, q.y)
+	l2 = l2.mul(q.z, p.y)
+	l1 = l1.mul(p.z, q.y)
 	l0 = l0.sub(l2, l1)
 	l3 := l0.zeroMask()
 
@@ -213,12 +213,12 @@ func (p *twExtensible) copy(e *twExtensible) *twExtensible {
 }
 
 func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
-	p.z = p.z.mulCopy(p.z, a.z)
+	p.z.mulCopy(p.z, a.z)
 	return p.addTwNiels(a.n)
 }
 
 func (e *twExtensible) subTwPNiels(a *twPNiels) {
-	e.z = e.z.mulCopy(e.z, a.z)
+	e.z.mulCopy(e.z, a.z)
 	e.subTwNiels(a.n)
 }
 
@@ -260,9 +260,9 @@ func (p *twExtensible) OnCurve() bool {
 
 	// Check invariant:
 	// 0 = -x*y + z*t*u
-	l1 = l1.mulCopy(p.t, p.u)
-	l2 = l2.mulCopy(p.z, l1)
-	l0 = l0.mulCopy(p.x, p.y)
+	l1 = l1.mul(p.t, p.u)
+	l2 = l2.mul(p.z, l1)
+	l0 = l0.mul(p.x, p.y)
 	l1 = l1.neg(l0)
 	l0 = l0.add(l1, l2)
 	l5 := l0.zeroMask()
@@ -276,7 +276,7 @@ func (p *twExtensible) OnCurve() bool {
 	l2 = l2.add(l0, l1)
 	l3 = l3.square(p.u)
 	l0 = l0.square(p.t)
-	l1 = l1.mulCopy(l0, l3)
+	l1 = l1.mul(l0, l3)
 	l3 = l3.mulWSignedCurveConstant(l1, curveDSigned)
 	l0 = l0.add(l3, l2)
 	l3 = l3.neg(l1)
@@ -312,14 +312,14 @@ func (p *twExtensible) equals(p2 *twExtensible) bool {
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
 
-	l2 = l2.mulCopy(p2.z, p.x)
-	l1 = l1.mulCopy(p.z, p2.x)
+	l2 = l2.mul(p2.z, p.x)
+	l1 = l1.mul(p.z, p2.x)
 	l0 = l0.sub(l2, l1)
 
 	l4 := l0.zeroMask()
 
-	l2 = l2.mulCopy(p2.z, p.y)
-	l1 = l1.mulCopy(p.z, p2.y)
+	l2 = l2.mul(p2.z, p.y)
+	l1 = l1.mul(p.z, p2.y)
 	l0 = l0.sub(l2, l1)
 
 	l3 := l0.zeroMask()
@@ -465,12 +465,12 @@ func (p *homogeneousProjective) OnCurve() bool {
 	y := p.y
 	z := p.z
 
-	x2 := new(bigNumber).mulCopy(x, x)
-	y2 := new(bigNumber).mulCopy(y, y)
-	z2 := new(bigNumber).mulCopy(z, z)
-	z4 := new(bigNumber).mulCopy(z2, z2)
+	x2 := new(bigNumber).mul(x, x)
+	y2 := new(bigNumber).mul(y, y)
+	z2 := new(bigNumber).mul(z, z)
+	z4 := new(bigNumber).mul(z2, z2)
 
-	x2y2 := new(bigNumber).mulCopy(x2, y2)
+	x2y2 := new(bigNumber).mul(x2, y2)
 	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
 	dx2y2.weakReduce()
 
@@ -542,10 +542,10 @@ func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProje
 	y2 := p2.y
 	z2 := p2.z
 
-	a := new(bigNumber).mulCopy(z1, z2)
+	a := new(bigNumber).mul(z1, z2)
 	b := new(bigNumber).square(a)
-	c := new(bigNumber).mulCopy(x1, x2)
-	d := new(bigNumber).mulCopy(y1, y2)
+	c := new(bigNumber).mul(x1, x2)
+	d := new(bigNumber).mul(y1, y2)
 
 	e := new(bigNumber).mulWSignedCurveConstant(c, curveDSigned)
 	e.mulCopy(e, d)
@@ -580,80 +580,45 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	var L0, L1 *bigNumber
 	L0 = new(bigNumber)
 	L1 = new(bigNumber)
-	// field_sqr ( a->z, sz );
 	a.z.square(sz)
-	// field_copy ( a->y, a->z );
 	a.y = a.z.copy()
-	// field_addw ( a->y, 1 );
 	a.y.addW(1)
-	// field_sqr ( L0, a->y );
 	L0.square(a.y)
-	// field_mulw_scc ( a->x, L0, EDWARDS_D-1 );
 	a.x.mulWSignedCurveConstant(L0, curveDSigned-1)
-	// field_add ( a->y, a->z, a->z );
 	a.y.add(a.z, a.z)
-	// field_add ( a->u, a->y, a->y );
 	a.u.add(a.y, a.y)
-	// field_add ( a->y, a->u, a->x );
 	a.y.add(a.u, a.x)
-	// field_sqr ( a->x, a->z );
 	a.x.square(a.z)
-	// field_neg ( a->u, a->x );
 	a.u.neg(a.x)
-	// field_addw ( a->u, 1 );
 	a.u.addW(1)
-	// field_mul ( a->x, sqrt_d_minus_1, a->u );
-	a.x.mulCopy(sqrtDminus1, a.u)
-	// field_mul ( L0, a->x, a->y );
-	L0.mulCopy(a.x, a.y)
-	// field_mul ( a->t, L0, a->y );
-	a.t.mulCopy(L0, a.y)
-	// field_mul ( a->u, a->x, a->t );
-	a.u.mulCopy(a.x, a.t)
-	// field_mul ( a->t, a->u, L0 );
-	a.t.mulCopy(a.u, L0)
-	// field_mul ( a->y, a->x, a->t );
-	a.y.mulCopy(a.x, a.t)
-	// field_isr ( L0, a->y );
+	a.x.mul(sqrtDminus1, a.u)
+	L0.mul(a.x, a.y)
+	a.t.mul(L0, a.y)
+	a.u.mul(a.x, a.t)
+	a.t.mul(a.u, L0)
+	a.y.mul(a.x, a.t)
 	L0.isr(a.y)
-	// field_mul ( a->y, a->u, L0 );
-	a.y.mulCopy(a.u, L0)
-	// field_sqr ( L1, L0 );
+	a.y.mul(a.u, L0)
 	L1.square(L0)
-	// field_mul ( a->u, a->t, L1 );
-	a.u.mulCopy(a.t, L1)
-	// field_mul ( a->t, a->x, a->u );
-	a.t.mulCopy(a.x, a.u)
-	// field_add ( a->x, sz, sz );
+	a.u.mul(a.t, L1)
+	a.t.mul(a.x, a.u)
 	a.x.add(sz, sz)
-	// field_mul ( L0, a->u, a->x );
-	L0.mulCopy(a.u, a.x)
-	// field_copy ( a->x, a->z );
+	L0.mul(a.u, a.x)
 	a.x = a.z.copy()
-	// field_neg ( L1, a->x );
 	L1.neg(a.x)
-	// field_addw ( L1, 1 );
 	L1.addW(1)
-	// field_mul ( a->x, L1, L0 );
-	a.x.mulCopy(L1, L0)
-	// field_mul ( L0, a->u, a->y );
-	L0.mulCopy(a.u, a.y)
-	// field_addw ( a->z, 1 );
+	a.x.mul(L1, L0)
+	L0.mul(a.u, a.y)
 	a.z.addW(1)
-	// field_mul ( a->y, a->z, L0 );
-	a.y.mulCopy(a.z, L0)
-	// field_subw( a->t, 1 );
+	a.y.mul(a.z, L0)
 	a.t.subW(1)
-	// mask_t ret = field_is_zero( a->t );
+
 	// XXX maybe related with constant time
 	ret := a.t.zero()
-	// field_set_ui( a->z, 1 );
+
 	a.z.setUi(1)
-	// field_copy ( a->t, a->x );
 	a.t = a.x.copy()
-	// field_copy ( a->u, a->y );
 	a.u = a.y.copy()
-	// return ret;
 
 	return a, !ret
 }
