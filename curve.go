@@ -149,7 +149,7 @@ func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 
 	for i := uint(0); i < s; i++ {
 		if i != 0 {
-			out = out.double()
+			out.double()
 		}
 
 		for j := uint(0); j < n; j++ {
@@ -170,9 +170,9 @@ func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 			ni.conditionalNegate(invert)
 
 			if i != 0 || j != 0 {
-				out = out.addTwNiels(ni)
+				out.addTwNiels(ni)
 			} else {
-				out = ni.TwistedExtensible()
+				convertTwNielsToTwExtensible(out, ni)
 			}
 		}
 	}

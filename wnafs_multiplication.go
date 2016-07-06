@@ -5,7 +5,6 @@ type smvt_control struct {
 }
 
 func recodeWnaf(control []smvt_control, scalar []word_t, nBits, tableBits uint) (position uint32) {
-
 	current := 0
 	var i, j int
 	position = 0
@@ -57,52 +56,49 @@ func prepareWnafTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 		return
 	}
 
-	p = p.double()
+	p.double()
 	twOp := p.twPNiels()
 
-	p = p.addTwPNiels(dst[0])
+	p.addTwPNiels(dst[0])
 	dst[1] = p.twPNiels()
 
 	for i := 2; i < 1<<tableSize; i++ {
-		p = p.addTwPNiels(twOp)
+		p.addTwPNiels(twOp)
 		dst[i] = p.twPNiels()
 	}
 }
 
 func linear_combo_var_fixed_vt(
-	p *twExtensible, scalar_var, scalar_pre []word_t, precmp []*twNiels) {
+	working *twExtensible, scalar_var, scalar_pre []word_t, precmp []*twNiels) {
 	table_bits_var := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
 	nbits_var := uint(446)
 	nbits_pre := uint(446)
 	table_bits_pre := uint(5)
 
-	//XXX PERFORMANCE this could be in-place if every point operation is in-place
-	working := new(twExtensible).copy(p)
+	var control_var [92]smvt_control // nbits_var/(table_bits_var+1)+3
+	var control_pre [77]smvt_control // nbits_pre/(table_bits_pre+1)+3
 
-	control_var := make([]smvt_control, nbits_var/(table_bits_var+1)+3)
-	control_pre := make([]smvt_control, nbits_pre/(table_bits_pre+1)+3)
+	recodeWnaf(control_var[:], scalar_var, nbits_var, table_bits_var)
+	recodeWnaf(control_pre[:], scalar_pre, nbits_pre, table_bits_pre)
 
-	recodeWnaf(control_var, scalar_var, nbits_var, table_bits_var)
-	recodeWnaf(control_pre, scalar_pre, nbits_pre, table_bits_pre)
-
-	precmp_var := make([]*twPNiels, (1 << table_bits_var))
-	prepareWnafTable(precmp_var, working, uint(table_bits_var))
+	var precmp_var [16]*twPNiels // 1 << table_bits_var
+	prepareWnafTable(precmp_var[:], working, uint(table_bits_var))
 
 	contp := 0
 	contv := 0
 
 	i := control_var[0].power
 	if i > control_pre[0].power {
-		working = precmp_var[control_var[0].addend>>1].twExtensible()
+		convertTwPnielsToTwExtensible(working, precmp_var[control_var[0].addend>>1])
 		contv++
 	} else if i == control_pre[0].power && i >= 0 {
-		working = precmp_var[control_var[0].addend>>1].twExtensible()
-		working = working.addTwNiels(precmp[control_pre[0].addend>>1])
+		convertTwPnielsToTwExtensible(working, precmp_var[control_var[0].addend>>1])
+		working.addTwNiels(precmp[control_pre[0].addend>>1])
 		contv++
 		contp++
 	} else {
 		i = control_pre[0].power
-		working = precmp[control_pre[0].addend>>1].TwistedExtensible()
+		convertTwNielsToTwExtensible(working, precmp[control_pre[0].addend>>1])
 		contp++
 	}
 
@@ -112,11 +108,11 @@ func linear_combo_var_fixed_vt(
 	}
 
 	for i--; i >= 0; i-- {
-		working = working.double()
+		working.double()
 
 		if i == control_var[contv].power {
 			if control_var[contv].addend > 0 {
-				working = working.addTwPNiels(precmp_var[control_var[contv].addend>>1])
+				working.addTwPNiels(precmp_var[control_var[contv].addend>>1])
 			} else {
 				working.subTwPNiels(precmp_var[(-control_var[contv].addend)>>1])
 			}
@@ -125,14 +121,11 @@ func linear_combo_var_fixed_vt(
 
 		if i == control_pre[contp].power {
 			if control_pre[contp].addend > 0 {
-				working = working.addTwNiels(precmp[control_pre[contp].addend>>1])
+				working.addTwNiels(precmp[control_pre[contp].addend>>1])
 			} else {
 				working.subTwNiels(precmp[(-control_pre[contp].addend)>>1])
 			}
 			contp++
 		}
 	}
-
-	//XXX PERFORMANCE copy back
-	p.copy(working)
 }
