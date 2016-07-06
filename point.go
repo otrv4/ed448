@@ -225,7 +225,7 @@ func (e *twExtensible) subTwPNiels(a *twPNiels) {
 func convertTwExtensibleToTwPNiels(dst *twPNiels, src *twExtensible) {
 	dst.n.a.sub(src.y, src.x)
 	dst.n.b.add(src.x, src.y)
-	karatsubaMul(dst.z, src.u, src.t)
+	dst.z.mul(src.u, src.t)
 	dst.n.c.mulWSignedCurveConstant(dst.z, curveDSigned*2-2)
 	dst.z.add(src.z, src.z)
 }
@@ -247,9 +247,9 @@ func (a *twExtensible) twPNiels() *twPNiels {
 func convertTwPnielsToTwExtensible(dst *twExtensible, src *twPNiels) {
 	dst.u.add(src.n.b, src.n.a)
 	dst.t.sub(src.n.b, src.n.a)
-	karatsubaMul(dst.x, src.z, dst.t)
-	karatsubaMul(dst.y, src.z, dst.u)
-	karatsubaSquare(dst.z, src.z)
+	dst.x.mul(src.z, dst.t)
+	dst.y.mul(src.z, dst.u)
+	dst.z.square(src.z)
 }
 
 func (p *twExtensible) OnCurve() bool {
@@ -338,26 +338,24 @@ func (p *twExtensible) double() *twExtensible {
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
 
-	//We use karatsubaSquare and karatsubaMul directly because we know it is safe
-	//to use them (and it's faster - it avoids creating one intermediate object)
-	karatsubaSquare(l2, x)
-	karatsubaSquare(l0, y)
+	l2.square(x)
+	l0.square(y)
 	u = u.addRaw(l2, l0)
 	t = t.addRaw(y, x)
-	karatsubaSquare(l1, t)
+	l1.square(t)
 	t = t.subRaw(l1, u)
 	t.bias(3)
 	t.weakReduce()
 	// This is equivalent do subx_nr in 32 bits. Change if using 64-bits
 	l1 = l1.sub(l0, l2)
-	karatsubaSquare(x, z)
+	x.square(z)
 	x.bias(1)
 	z = z.addRaw(x, x)
 	l0 = l0.subRaw(z, l1)
 	l0.weakReduce()
-	karatsubaMul(z, l1, l0)
-	karatsubaMul(x, l0, t)
-	karatsubaMul(y, l1, u)
+	z.mul(l1, l0)
+	x.mul(l0, t)
+	y.mul(l1, u)
 
 	return p
 }
@@ -373,11 +371,11 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	l1 := new(bigNumber)
 
 	l1 = l1.sub(y, x)
-	karatsubaMul(l0, p2.a, l1)
+	l0.mul(p2.a, l1)
 	l1 = l1.addRaw(x, y)
-	karatsubaMul(y, p2.b, l1)
-	karatsubaMul(l1, u, t)
-	karatsubaMul(x, p2.c, l1)
+	y.mul(p2.b, l1)
+	l1.mul(u, t)
+	x.mul(p2.c, l1)
 
 	u = u.addRaw(l0, y)
 	// This is equivalent do subx_nr in 32 bits. Change if using 64-bits
@@ -387,27 +385,27 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	y = y.sub(z, x)
 	l0 = l0.addRaw(x, z)
 
-	karatsubaMul(z, l0, y)
-	karatsubaMul(x, y, t)
-	karatsubaMul(y, l0, u)
+	z.mul(l0, y)
+	x.mul(y, t)
+	y.mul(l0, u)
 
 	return p
 }
 
 func (d *twExtensible) subTwNiels(e *twNiels) {
 	L1 := new(bigNumber).subxRaw(d.y, d.x)
-	L0 := karatsubaMul(new(bigNumber), e.b, L1)
+	L0 := new(bigNumber).mul(e.b, L1)
 	L1.addRaw(d.x, d.y)
-	karatsubaMul(d.y, e.a, L1)
-	karatsubaMul(L1, d.u, d.t)
-	karatsubaMul(d.x, e.c, L1)
+	d.y.mul(e.a, L1)
+	L1.mul(d.u, d.t)
+	d.x.mul(e.c, L1)
 	d.u.addRaw(L0, d.y)
 	d.t.subxRaw(d.y, L0)
 	d.y.addRaw(d.x, d.z)
 	L0.subxRaw(d.z, d.x)
-	karatsubaMul(d.z, L0, d.y)
-	karatsubaMul(d.x, d.y, d.t)
-	karatsubaMul(d.y, L0, d.u)
+	d.z.mul(L0, d.y)
+	d.x.mul(d.y, d.t)
+	d.y.mul(L0, d.u)
 }
 
 func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
@@ -417,26 +415,26 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 	l3 := new(bigNumber)
 	b := new(bigNumber)
 
-	karatsubaMul(l3, p.y, p.x)
+	l3.mul(p.y, p.x)
 	b.add(p.y, p.x)
-	karatsubaSquare(l1, b)
+	l1.square(b)
 	l2.add(l3, l3)
 	b.sub(l1, l2)
-	karatsubaSquare(l2, p.z)
-	karatsubaSquare(l1, l2)
+	l2.square(p.z)
+	l1.square(l2)
 	b.add(b, b)
 	l2.mulWSignedCurveConstant(b, curveDSigned-1)
 	b.mulWSignedCurveConstant(l2, curveDSigned-1)
-	karatsubaMul(l0, l2, l1)
-	karatsubaMul(l2, b, l0)
+	l0.mul(l2, l1)
+	l2.mul(b, l0)
 	l0.isr(l2)
-	karatsubaMul(l1, b, l0)
+	l1.mul(b, l0)
 
 	//XXX This is included in the original code, but it seems not to be used
 	//b = b.square(l0)
 	//l0 = l0.mul(l2, b)
 
-	return karatsubaMul(b, l1, l3)
+	return b.mul(l1, l3)
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0

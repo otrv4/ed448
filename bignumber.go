@@ -127,7 +127,7 @@ func (n *bigNumber) subxRaw(x *bigNumber, y *bigNumber) *bigNumber {
 //n = x * y
 func (n *bigNumber) mulCopy(x *bigNumber, y *bigNumber) *bigNumber {
 	//it does not work in place, that why the temporary bigNumber is necessary
-	return n.set(karatsubaMul(new(bigNumber), x, y))
+	return n.set(new(bigNumber).mul(x, y))
 }
 
 //n = x * y
