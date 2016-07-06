@@ -178,15 +178,15 @@ func (n *bigNumber) square(x *bigNumber) *bigNumber {
 
 func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	if y&1 != 0 {
-		n.squareCopy(x)
+		n.square(x)
 		y -= 1
 	} else {
-		n.squareCopy(x).squareCopy(n)
+		n.square(new(bigNumber).square(x))
 		y -= 2
 	}
 
 	for ; y > 0; y -= 2 {
-		n.squareCopy(n).squareCopy(n)
+		n.square(new(bigNumber).square(n))
 	}
 
 	return n
