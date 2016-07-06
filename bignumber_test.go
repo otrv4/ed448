@@ -174,7 +174,7 @@ func (s *Ed448Suite) TestSquareN(c *C) {
 
 	exp := gx.copy()
 	for i := 0; i < 5; i++ {
-		exp = exp.square(exp)
+		exp = exp.squareCopy(exp)
 	}
 
 	n := new(bigNumber).squareN(gx, 5)
@@ -183,7 +183,7 @@ func (s *Ed448Suite) TestSquareN(c *C) {
 
 	exp = gx.copy()
 	for i := 0; i < 6; i++ {
-		exp = exp.square(exp)
+		exp = exp.squareCopy(exp)
 	}
 
 	n = n.squareN(gx, 6)
