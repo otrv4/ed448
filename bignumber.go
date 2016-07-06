@@ -164,7 +164,7 @@ func (n *bigNumber) isr(x *bigNumber) *bigNumber {
 
 //XXX Is there any optimum way of squaring?
 func (n *bigNumber) square(x *bigNumber) *bigNumber {
-	return n.mul(x, x)
+	return n.set(karatsubaSquare(new(bigNumber), x))
 }
 
 func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {

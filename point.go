@@ -62,83 +62,6 @@ func newExtensible(px, py *bigNumber) *extensibleCoordinates {
 	}
 }
 
-func (p *extensibleCoordinates) twist() *twExtensible {
-	x := new(bigNumber)
-	y := new(bigNumber)
-	z := new(bigNumber)
-	t := new(bigNumber)
-	u := new(bigNumber)
-
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-
-	u.square(p.z)
-	y.square(p.x)
-	z.sub(u, y)
-	y.add(z, z)
-	u.add(y, y)
-	y.sub(p.z, p.x)
-	x.mul(y, p.y)
-	z.sub(p.z, p.y)
-	t.mul(z, x)
-	l1.mul(t, u)
-
-	x.mul(t, l1)
-	l0.isr(x)
-	u.mul(t, l0)
-	l1.square(l0)
-	t.mul(x, l1)
-	l1.add(p.x, p.y)
-	l0.sub(p.x, p.y)
-	x.mul(t, l0)
-	l0.add(x, l1)
-	t.sub(l1, x)
-	x.mul(l0, u)
-	x.addW(-y.zeroMask())
-	y.mul(t, u)
-	y.addW(-z.zeroMask())
-	z.setUi(1 + uint64(y.zeroMask()))
-	t = x.copy()
-	u = y.copy()
-
-	return &twExtensible{x, y, z, t, u}
-}
-
-//XXX unused
-func (p *extensibleCoordinates) double() *extensibleCoordinates {
-	x := p.x.copy()
-	y := p.y.copy()
-	z := p.z.copy()
-	t := p.t.copy()
-	u := p.u.copy()
-
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-	l2 := new(bigNumber)
-
-	l2 = l2.square(x)
-	l0 = l0.square(y)
-	l1 = l1.addRaw(l2, l0)
-	t = t.addRaw(y, x)
-	u = u.square(t)
-	t = t.subRaw(u, l1).bias(3).weakReduce()
-	u = u.sub(l0, l2) // equivalent to subx in 32-bits
-	x = x.square(z).bias(2)
-	z = z.addRaw(x, x)
-	l0 = l0.subRaw(z, l1).weakReduce()
-	z = z.mul(l1, l0)
-	x = x.mul(l0, t)
-	y = y.mul(l1, u)
-
-	return &extensibleCoordinates{
-		x: x,
-		y: y,
-		z: z,
-		t: t,
-		u: u,
-	}
-}
-
 func (p *extensibleCoordinates) OnCurve() bool {
 	x := p.x
 	y := p.y
@@ -240,7 +163,6 @@ func newNielsPoint(a, b, c [56]byte) *twNiels {
 	}
 }
 
-//XXX this may not always work
 func (p *twNiels) equals(p2 *twNiels) bool {
 	ok := true
 
@@ -268,21 +190,12 @@ func (nP *twNiels) conditionalNegate(neg word_t) {
 	nP.c = nP.c.conditionalNegate(neg)
 }
 
-func (p *twNiels) TwistedExtensible() *twExtensible {
-	x := new(bigNumber)
-	y := new(bigNumber)
-	z := new(bigNumber)
-	t := new(bigNumber)
-	u := new(bigNumber)
-
-	y = y.add(p.b, p.a)
-	x = x.sub(p.b, p.a)
-	z = z.setUi(1)
-	t = x.copy()
-	u = y.copy()
-
-	//XXX PERF: should it be in-place?
-	return &twExtensible{x, y, z, t, u}
+func convertTwNielsToTwExtensible(dst *twExtensible, src *twNiels) {
+	dst.y = dst.y.add(src.b, src.a)
+	dst.x = dst.x.sub(src.b, src.a)
+	dst.z = dst.z.setUi(1)
+	dst.t = dst.x.copy()
+	dst.u = dst.y.copy()
 }
 
 type twExtensible struct {
@@ -300,57 +213,43 @@ func (p *twExtensible) copy(e *twExtensible) *twExtensible {
 }
 
 func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
-	// field_mul ( L0, e->z, a->z );
-	L0 := new(bigNumber).mul(p.z, a.z)
-	// field_copy ( e->z, L0 );
-	p.z = L0.copy()
-	// add_tw_niels_to_tw_extensible( e, a->n );
+	p.z = p.z.mul(p.z, a.z)
 	return p.addTwNiels(a.n)
 }
 
 func (e *twExtensible) subTwPNiels(a *twPNiels) {
-	//field_a_t L0;
-	//field_mul ( L0, e->z, a->z );
-	L0 := new(bigNumber).mul(e.z, a.z)
-	//field_copy ( e->z, L0 );
-	e.z = L0.copy()
-	//sub_tw_niels_from_tw_extensible( e, a->n );
+	e.z = e.z.mul(e.z, a.z)
 	e.subTwNiels(a.n)
 }
 
-func (a *twExtensible) twPNiels() *twPNiels {
-	// field_sub ( b->n->a, a->y, a->x );
-	na := new(bigNumber).sub(a.y, a.x)
-	// field_add ( b->n->b, a->x, a->y );
-	nb := new(bigNumber).add(a.x, a.y)
-	// field_mul ( b->z, a->u, a->t );
-	z := new(bigNumber).mul(a.u, a.t)
-	// field_mulw_scc_wr ( b->n->c, b->z, 2*EDWARDS_D-2 );
-	nc := new(bigNumber).mulWSignedCurveConstant(z, curveDSigned*2-2)
-	// field_add ( b->z, a->z, a->z );
-	z.add(a.z, a.z)
-	return &twPNiels{
-		n: &twNiels{
-			a: na,
-			b: nb,
-			c: nc,
-		},
-		z: z,
-	}
+func convertTwExtensibleToTwPNiels(dst *twPNiels, src *twExtensible) {
+	dst.n.a.sub(src.y, src.x)
+	dst.n.b.add(src.x, src.y)
+	dst.z.mul(src.u, src.t)
+	dst.n.c.mulWSignedCurveConstant(dst.z, curveDSigned*2-2)
+	dst.z.add(src.z, src.z)
 }
 
-func (d *twPNiels) twExtensible() *twExtensible {
-	// field_add ( e->u, d->n->b, d->n->a );
-	u := new(bigNumber).add(d.n.b, d.n.a)
-	// field_sub ( e->t, d->n->b, d->n->a );
-	t := new(bigNumber).sub(d.n.b, d.n.a)
-	// field_mul ( e->x, d->z, e->t );
-	x := new(bigNumber).mul(d.z, t)
-	// field_mul ( e->y, d->z, e->u );
-	y := new(bigNumber).mul(d.z, u)
-	// field_sqr ( e->z, d->z );
-	z := new(bigNumber).square(d.z)
-	return &twExtensible{x, y, z, t, u}
+func (a *twExtensible) twPNiels() *twPNiels {
+	ret := &twPNiels{
+		n: &twNiels{
+			a: new(bigNumber),
+			b: new(bigNumber),
+			c: new(bigNumber),
+		},
+		z: new(bigNumber),
+	}
+
+	convertTwExtensibleToTwPNiels(ret, a)
+	return ret
+}
+
+func convertTwPnielsToTwExtensible(dst *twExtensible, src *twPNiels) {
+	dst.u.add(src.n.b, src.n.a)
+	dst.t.sub(src.n.b, src.n.a)
+	dst.x.mul(src.z, dst.t)
+	dst.y.mul(src.z, dst.u)
+	dst.z.square(src.z)
 }
 
 func (p *twExtensible) OnCurve() bool {
@@ -421,46 +320,46 @@ func (p *twExtensible) equals(p2 *twExtensible) bool {
 }
 
 func (p *twExtensible) double() *twExtensible {
-
-	x := p.x.copy()
-	y := p.y.copy()
-	z := p.z.copy()
-	t := p.t.copy()
-	u := p.u.copy()
+	x := p.x
+	y := p.y
+	z := p.z
+	t := p.t
+	u := p.u
 
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
 
-	l2 = l2.square(x)
-	l0 = l0.square(y)
+	//We use karatsubaSquare and karatsubaMul directly because we know it is safe
+	//to use them (and it's faster - it avoids creating one intermediate object)
+	karatsubaSquare(l2, x)
+	karatsubaSquare(l0, y)
 	u = u.addRaw(l2, l0)
 	t = t.addRaw(y, x)
-	l1 = l1.square(t)
+	karatsubaSquare(l1, t)
 	t = t.subRaw(l1, u)
 	t.bias(3)
 	t.weakReduce()
 	// This is equivalent do subx_nr in 32 bits. Change if using 64-bits
 	l1 = l1.sub(l0, l2)
-	x = x.square(z)
+	karatsubaSquare(x, z)
 	x.bias(1)
 	z = z.addRaw(x, x)
 	l0 = l0.subRaw(z, l1)
 	l0.weakReduce()
-	z = z.mul(l1, l0)
-	x = x.mul(l0, t)
-	y = y.mul(l1, u)
+	karatsubaMul(z, l1, l0)
+	karatsubaMul(x, l0, t)
+	karatsubaMul(y, l1, u)
 
-	//XXX PERF: should it be in-place?
-	return &twExtensible{x, y, z, t, u}
+	return p
 }
 
 func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
-	x := p.x.copy()
-	y := p.y.copy()
-	z := p.z.copy()
-	t := p.t.copy()
-	u := p.u.copy()
+	x := p.x
+	y := p.y
+	z := p.z
+	t := p.t
+	u := p.u
 
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
@@ -484,12 +383,6 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	x = x.mul(y, t)
 	y = y.mul(l0, u)
 
-	//XXX PERF: should it be in-place?
-	p.x = x
-	p.y = y
-	p.z = z
-	p.t = t
-	p.u = u
 	return p
 }
 
