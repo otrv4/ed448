@@ -48,7 +48,7 @@ func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
 	L3.mulCopy(L1, L2)
 	L2 = a.z0.copy()
 	L2.addW(1)
-	L0.squareCopy(L2)
+	L0.square(L2)
 	L1.mulWSignedCurveConstant(L0, curveDSigned-1)
 	L2.add(a.z0, a.z0)
 	L0.add(L2, L2)
@@ -69,7 +69,7 @@ func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
 	L3.mulCopy(L1, L2)
 	L0.isr(L3)
 	L2.mulCopy(L1, L0)
-	L1.squareCopy(L0)
+	L1.square(L0)
 	L0.mulCopy(L3, L1)
 
 	// constant_time_mask ( b, L2, sizeof(L1), L4 );
@@ -82,7 +82,7 @@ func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
 }
 
 func (a *montgomery) deserialize(sz *bigNumber) {
-	a.z0 = new(bigNumber).squareCopy(sz)
+	a.z0 = new(bigNumber).square(sz)
 	a.xd = new(bigNumber).setUi(1)
 	a.zd = new(bigNumber).setUi(0)
 	a.xa = new(bigNumber).setUi(1)
