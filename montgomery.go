@@ -10,24 +10,24 @@ func (a *montgomery) montgomeryStep() {
 	L0.addRaw(a.zd, a.xd)
 	L1.subxRaw(a.xd, a.zd)
 	a.zd.subxRaw(a.xa, a.za)
-	karatsubaMul(a.xd, L0, a.zd)
+	a.xd.mul(L0, a.zd)
 	a.zd.addRaw(a.za, a.xa)
-	karatsubaMul(a.za, L1, a.zd)
+	a.za.mul(L1, a.zd)
 	a.xa.addRaw(a.za, a.xd)
-	karatsubaSquare(a.zd, a.xa)
-	karatsubaMul(a.xa, a.z0, a.zd)
+	a.zd.square(a.xa)
+	a.xa.mul(a.z0, a.zd)
 	a.zd.subxRaw(a.xd, a.za)
-	karatsubaSquare(a.za, a.zd)
-	karatsubaSquare(a.xd, L0)
-	karatsubaSquare(L0, L1)
+	a.za.square(a.zd)
+	a.xd.square(L0)
+	L0.square(L1)
 	a.zd.mulWSignedCurveConstant(a.xd, 1-curveDSigned) /* FIXME PERF MULW */
 	L1.subxRaw(a.xd, L0)
-	karatsubaMul(a.xd, L0, a.zd)
+	a.xd.mul(L0, a.zd)
 	L0.subRaw(a.zd, L1)
 	L0.bias(4 - 2*1 /*is32 ? 2 : 4*/)
 	//XXX 64bits don't need this reduce
 	L0.weakReduce()
-	karatsubaMul(a.zd, L0, L1)
+	a.zd.mul(L0, L1)
 }
 
 func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
