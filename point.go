@@ -76,16 +76,16 @@ func (p *extensibleCoordinates) OnCurve() bool {
 
 	// Check invariant:
 	// 0 = d*t^2*u^2 - x^2 - y^2 + z^2
-	l2 = l2.squareCopy(y)
+	l2 = l2.square(y)
 	l1 = l1.neg(l2)
-	l0 = l0.squareCopy(z)
+	l0 = l0.square(z)
 	l2 = l2.add(l0, l1)
-	l3 = l3.squareCopy(u)
-	l0 = l0.squareCopy(t)
+	l3 = l3.square(u)
+	l0 = l0.square(t)
 	l1 = l1.mulCopy(l0, l3)
 	l0 = l0.mulWSignedCurveConstant(l1, curveDSigned)
 	l1 = l1.add(l0, l2)
-	l0 = l0.squareCopy(x)
+	l0 = l0.square(x)
 	l2 = l2.neg(l0)
 	l0 = l0.add(l2, l1)
 	l5 := l0.zeroMask()
@@ -270,18 +270,18 @@ func (p *twExtensible) OnCurve() bool {
 	// Check invariant:
 	// 0 = d*t^2*u^2 + x^2 - y^2 + z^2 - t^2*u^2
 
-	l2 = l2.squareCopy(p.y)
+	l2 = l2.square(p.y)
 	l1 = l1.neg(l2)
-	l0 = l0.squareCopy(p.x)
+	l0 = l0.square(p.x)
 	l2 = l2.add(l0, l1)
-	l3 = l3.squareCopy(p.u)
-	l0 = l0.squareCopy(p.t)
+	l3 = l3.square(p.u)
+	l0 = l0.square(p.t)
 	l1 = l1.mulCopy(l0, l3)
 	l3 = l3.mulWSignedCurveConstant(l1, curveDSigned)
 	l0 = l0.add(l3, l2)
 	l3 = l3.neg(l1)
 	l2 = l2.add(l3, l0)
-	l1 = l1.squareCopy(p.z)
+	l1 = l1.square(p.z)
 	l0 = l0.add(l1, l2)
 	l4 := l0.zeroMask()
 
@@ -500,12 +500,11 @@ func (p *homogeneousProjective) double() *homogeneousProjective {
 	y1 := p.y
 	z1 := p.z
 
-	b := new(bigNumber).add(x1, y1)
-	b.squareCopy(b)
-	c := new(bigNumber).squareCopy(x1)
-	d := new(bigNumber).squareCopy(y1)
+	b := new(bigNumber).square(new(bigNumber).add(x1, y1))
+	c := new(bigNumber).square(x1)
+	d := new(bigNumber).square(y1)
 	e := new(bigNumber).add(c, d)
-	h := new(bigNumber).squareCopy(z1)
+	h := new(bigNumber).square(z1)
 	//j := h.mulW(h, 2) // This is slower than adding
 	j := h.add(h, h)
 	j.sub(e, j)
@@ -544,7 +543,7 @@ func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProje
 	z2 := p2.z
 
 	a := new(bigNumber).mulCopy(z1, z2)
-	b := new(bigNumber).squareCopy(a)
+	b := new(bigNumber).square(a)
 	c := new(bigNumber).mulCopy(x1, x2)
 	d := new(bigNumber).mulCopy(y1, y2)
 
@@ -582,13 +581,13 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	L0 = new(bigNumber)
 	L1 = new(bigNumber)
 	// field_sqr ( a->z, sz );
-	a.z.squareCopy(sz)
+	a.z.square(sz)
 	// field_copy ( a->y, a->z );
 	a.y = a.z.copy()
 	// field_addw ( a->y, 1 );
 	a.y.addW(1)
 	// field_sqr ( L0, a->y );
-	L0.squareCopy(a.y)
+	L0.square(a.y)
 	// field_mulw_scc ( a->x, L0, EDWARDS_D-1 );
 	a.x.mulWSignedCurveConstant(L0, curveDSigned-1)
 	// field_add ( a->y, a->z, a->z );
@@ -598,7 +597,7 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	// field_add ( a->y, a->u, a->x );
 	a.y.add(a.u, a.x)
 	// field_sqr ( a->x, a->z );
-	a.x.squareCopy(a.z)
+	a.x.square(a.z)
 	// field_neg ( a->u, a->x );
 	a.u.neg(a.x)
 	// field_addw ( a->u, 1 );
@@ -620,7 +619,7 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	// field_mul ( a->y, a->u, L0 );
 	a.y.mulCopy(a.u, L0)
 	// field_sqr ( L1, L0 );
-	L1.squareCopy(L0)
+	L1.square(L0)
 	// field_mul ( a->u, a->t, L1 );
 	a.u.mulCopy(a.t, L1)
 	// field_mul ( a->t, a->x, a->u );
