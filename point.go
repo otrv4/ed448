@@ -225,7 +225,7 @@ func (e *twExtensible) subTwPNiels(a *twPNiels) {
 func convertTwExtensibleToTwPNiels(dst *twPNiels, src *twExtensible) {
 	dst.n.a.sub(src.y, src.x)
 	dst.n.b.add(src.x, src.y)
-	dst.z.mul(src.u, src.t)
+	karatsubaMul(dst.z, src.u, src.t)
 	dst.n.c.mulWSignedCurveConstant(dst.z, curveDSigned*2-2)
 	dst.z.add(src.z, src.z)
 }
@@ -247,9 +247,9 @@ func (a *twExtensible) twPNiels() *twPNiels {
 func convertTwPnielsToTwExtensible(dst *twExtensible, src *twPNiels) {
 	dst.u.add(src.n.b, src.n.a)
 	dst.t.sub(src.n.b, src.n.a)
-	dst.x.mul(src.z, dst.t)
-	dst.y.mul(src.z, dst.u)
-	dst.z.square(src.z)
+	karatsubaMul(dst.x, src.z, dst.t)
+	karatsubaMul(dst.y, src.z, dst.u)
+	karatsubaSquare(dst.z, src.z)
 }
 
 func (p *twExtensible) OnCurve() bool {
@@ -287,6 +287,14 @@ func (p *twExtensible) OnCurve() bool {
 
 	ret := l4 & l5 & (^p.z.zeroMask())
 	return maskToBoolean(ret)
+}
+
+func (p *twExtensible) setIdentity() {
+	p.x.setUi(0)
+	p.y.setUi(1)
+	p.z.setUi(1)
+	p.t.setUi(0)
+	p.u.setUi(0)
 }
 
 func (p *twExtensible) String() string {
@@ -365,11 +373,11 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	l1 := new(bigNumber)
 
 	l1 = l1.sub(y, x)
-	l0 = l0.mul(p2.a, l1)
+	karatsubaMul(l0, p2.a, l1)
 	l1 = l1.addRaw(x, y)
-	y = y.mul(p2.b, l1)
-	l1 = l1.mul(u, t)
-	x = x.mul(p2.c, l1)
+	karatsubaMul(y, p2.b, l1)
+	karatsubaMul(l1, u, t)
+	karatsubaMul(x, p2.c, l1)
 
 	u = u.addRaw(l0, y)
 	// This is equivalent do subx_nr in 32 bits. Change if using 64-bits
@@ -379,42 +387,27 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	y = y.sub(z, x)
 	l0 = l0.addRaw(x, z)
 
-	z = z.mul(l0, y)
-	x = x.mul(y, t)
-	y = y.mul(l0, u)
+	karatsubaMul(z, l0, y)
+	karatsubaMul(x, y, t)
+	karatsubaMul(y, l0, u)
 
 	return p
 }
 
 func (d *twExtensible) subTwNiels(e *twNiels) {
-	// XXX ANALYZE_THIS_ROUTINE_CAREFULLY;
-	//field_a_t L0, L1;
-	//field_subx_nr ( L1, d->y, d->x );
 	L1 := new(bigNumber).subxRaw(d.y, d.x)
-	//    field_mul ( L0, e->b, L1 );
-	L0 := new(bigNumber).mul(e.b, L1)
-	// field_add_nr ( L1, d->x, d->y );
+	L0 := karatsubaMul(new(bigNumber), e.b, L1)
 	L1.addRaw(d.x, d.y)
-	// field_mul ( d->y, e->a, L1 );
-	d.y.mul(e.a, L1)
-	// field_mul ( L1, d->u, d->t );
-	L1.mul(d.u, d.t)
-	// field_mul ( d->x, e->c, L1 );
-	d.x.mul(e.c, L1)
-	// field_add_nr ( d->u, L0, d->y );
+	karatsubaMul(d.y, e.a, L1)
+	karatsubaMul(L1, d.u, d.t)
+	karatsubaMul(d.x, e.c, L1)
 	d.u.addRaw(L0, d.y)
-	// field_subx_nr ( d->t, d->y, L0 );
 	d.t.subxRaw(d.y, L0)
-	// field_add_nr ( d->y, d->x, d->z );
 	d.y.addRaw(d.x, d.z)
-	// field_subx_nr ( L0, d->z, d->x );
 	L0.subxRaw(d.z, d.x)
-	// field_mul ( d->z, L0, d->y );
-	d.z.mul(L0, d.y)
-	// field_mul ( d->x, d->y, d->t );
-	d.x.mul(d.y, d.t)
-	// field_mul ( d->y, L0, d->u );
-	d.y.mul(L0, d.u)
+	karatsubaMul(d.z, L0, d.y)
+	karatsubaMul(d.x, d.y, d.t)
+	karatsubaMul(d.y, L0, d.u)
 }
 
 func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
@@ -424,26 +417,26 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 	l3 := new(bigNumber)
 	b := new(bigNumber)
 
-	l3.mul(p.y, p.x)
+	karatsubaMul(l3, p.y, p.x)
 	b.add(p.y, p.x)
-	l1.square(b)
+	karatsubaSquare(l1, b)
 	l2.add(l3, l3)
 	b.sub(l1, l2)
-	l2.square(p.z)
-	l1.square(l2)
+	karatsubaSquare(l2, p.z)
+	karatsubaSquare(l1, l2)
 	b.add(b, b)
 	l2.mulWSignedCurveConstant(b, curveDSigned-1)
 	b.mulWSignedCurveConstant(l2, curveDSigned-1)
-	l0.mul(l2, l1)
-	l2.mul(b, l0)
+	karatsubaMul(l0, l2, l1)
+	karatsubaMul(l2, b, l0)
 	l0.isr(l2)
-	l1.mul(b, l0)
+	karatsubaMul(l1, b, l0)
 
 	//XXX This is included in the original code, but it seems not to be used
 	//b = b.square(l0)
 	//l0 = l0.mul(l2, b)
 
-	return b.mul(l1, l3)
+	return karatsubaMul(b, l1, l3)
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
@@ -501,6 +494,7 @@ func rev(in []byte) []byte {
 }
 
 // See Hisil, formula 5.1
+//XXX Used only for testing
 func (p *homogeneousProjective) double() *homogeneousProjective {
 	x1 := p.x
 	y1 := p.y
@@ -572,101 +566,6 @@ func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProje
 	return &homogeneousProjective{
 		x3, y3, z3,
 	}
-}
-
-type montgomery struct {
-	z0, xd, zd, xa, za *bigNumber
-}
-
-func (a *montgomery) montgomeryStep() {
-	L0 := new(bigNumber)
-	L1 := new(bigNumber)
-	L0.addRaw(a.zd, a.xd)
-	L1.subxRaw(a.xd, a.zd)
-	a.zd.subxRaw(a.xa, a.za)
-	a.xd.mul(L0, a.zd)
-	a.zd.addRaw(a.za, a.xa)
-	a.za.mul(L1, a.zd)
-	a.xa.addRaw(a.za, a.xd)
-	a.zd.square(a.xa)
-	a.xa.mul(a.z0, a.zd)
-	a.zd.subxRaw(a.xd, a.za)
-	a.za.square(a.zd)
-	a.xd.square(L0)
-	L0.square(L1)
-	a.zd.mulWSignedCurveConstant(a.xd, 1-curveDSigned) /* FIXME PERF MULW */
-	L1.subxRaw(a.xd, L0)
-	a.xd.mul(L0, a.zd)
-	L0.subRaw(a.zd, L1)
-	L0.bias(4 - 2*1 /*is32 ? 2 : 4*/)
-	//XXX 64bits don't need this reduce
-	L0.weakReduce()
-	a.zd.mul(L0, L1)
-}
-
-func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
-	L0 := new(bigNumber)
-	L1 := new(bigNumber)
-	L2 := new(bigNumber)
-	L3 := new(bigNumber)
-	b = new(bigNumber)
-
-	L3.mul(a.z0, a.zd)
-	L1.sub(L3, a.xd)
-	L3.mul(a.za, L1)
-	L2.mul(a.z0, a.xd)
-	L1.sub(L2, a.zd)
-	L0.mul(a.xa, L1)
-	L2.add(L0, L3)
-	L1.sub(L3, L0)
-	L3.mul(L1, L2)
-	L2 = a.z0.copy()
-	L2.addW(1)
-	L0.square(L2)
-	L1.mulWSignedCurveConstant(L0, curveDSigned-1)
-	L2.add(a.z0, a.z0)
-	L0.add(L2, L2)
-	L2.add(L0, L1)
-	L0.mul(a.xd, L2)
-	L5 := a.zd.zeroMask()
-	L6 := -L5
-	// constant_time_mask ( L1, L0, sizeof(L1), L5 );
-	mask(L1, L0, L5)
-	L2.add(L1, a.zd)
-	L4 := ^L5
-	L1.mul(sbz, L3)
-	L1.addW(L6)
-	L3.mul(L2, L1)
-	L1.mul(L3, L2)
-	L2.mul(L3, a.xd)
-	L3.mul(L1, L2)
-	L0.isr(L3)
-	L2.mul(L1, L0)
-	L1.square(L0)
-	L0.mul(L3, L1)
-	// constant_time_mask ( b, L2, sizeof(L1), L4 );
-	mask(b, L2, L4)
-	L0.subW(1)
-	L5 = L0.zeroMask()
-	L4 = sbz.zeroMask()
-
-	return b, L5 | L4
-}
-
-func (a *montgomery) deserialize(sz *bigNumber) {
-	a.z0 = new(bigNumber).square(sz)
-	a.xd = new(bigNumber).setUi(1)
-	a.zd = new(bigNumber).setUi(0)
-	a.xa = new(bigNumber).setUi(1)
-	a.za = a.z0.copy()
-}
-
-func (p *twExtensible) setIdentity() {
-	p.x.setUi(0)
-	p.y.setUi(1)
-	p.z.setUi(1)
-	p.t.setUi(0)
-	p.u.setUi(0)
 }
 
 //XXX Move: bigNumber should not know about points
