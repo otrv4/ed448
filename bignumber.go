@@ -125,9 +125,15 @@ func (n *bigNumber) subxRaw(x *bigNumber, y *bigNumber) *bigNumber {
 }
 
 //n = x * y
-func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
+func (n *bigNumber) mulCopy(x *bigNumber, y *bigNumber) *bigNumber {
 	//it does not work in place, that why the temporary bigNumber is necessary
 	return n.set(karatsubaMul(new(bigNumber), x, y))
+}
+
+//n = x * y
+func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
+	//it does not work in place, that why the temporary bigNumber is necessary
+	return karatsubaMul(n, x, y)
 }
 
 func (n *bigNumber) isr(x *bigNumber) *bigNumber {
@@ -135,49 +141,52 @@ func (n *bigNumber) isr(x *bigNumber) *bigNumber {
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
 
-	l1.square(x)
-	l2.mul(x, l1)
-	l1.square(l2)
-	l2.mul(x, l1)
+	l1.squareCopy(x)
+	l2.mulCopy(x, l1)
+	l1.squareCopy(l2)
+	l2.mulCopy(x, l1)
 	l1.squareN(l2, 3)
-	l0.mul(l2, l1)
+	l0.mulCopy(l2, l1)
 	l1.squareN(l0, 3)
-	l0.mul(l2, l1)
+	l0.mulCopy(l2, l1)
 	l2.squareN(l0, 9)
-	l1.mul(l0, l2)
-	l0.square(l1)
-	l2.mul(x, l0)
+	l1.mulCopy(l0, l2)
+	l0.squareCopy(l1)
+	l2.mulCopy(x, l0)
 	l0.squareN(l2, 18)
-	l2.mul(l1, l0)
+	l2.mulCopy(l1, l0)
 	l0.squareN(l2, 37)
-	l1.mul(l2, l0)
+	l1.mulCopy(l2, l0)
 	l0.squareN(l1, 37)
-	l1.mul(l2, l0)
+	l1.mulCopy(l2, l0)
 	l0.squareN(l1, 111)
-	l2.mul(l1, l0)
-	l0.square(l2)
-	l1.mul(x, l0)
+	l2.mulCopy(l1, l0)
+	l0.squareCopy(l2)
+	l1.mulCopy(x, l0)
 	l0.squareN(l1, 223)
 
-	return n.mul(l2, l0)
+	return n.mulCopy(l2, l0)
 }
 
-//XXX Is there any optimum way of squaring?
-func (n *bigNumber) square(x *bigNumber) *bigNumber {
+func (n *bigNumber) squareCopy(x *bigNumber) *bigNumber {
 	return n.set(karatsubaSquare(new(bigNumber), x))
+}
+
+func (n *bigNumber) square(x *bigNumber) *bigNumber {
+	return karatsubaSquare(n, x)
 }
 
 func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	if y&1 != 0 {
-		n.square(x)
+		n.squareCopy(x)
 		y -= 1
 	} else {
-		n.square(x).square(n)
+		n.squareCopy(x).squareCopy(n)
 		y -= 2
 	}
 
 	for ; y > 0; y -= 2 {
-		n.square(n).square(n)
+		n.squareCopy(n).squareCopy(n)
 	}
 
 	return n
