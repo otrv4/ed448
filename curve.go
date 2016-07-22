@@ -57,6 +57,7 @@ var (
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	})
 
+	//This is the prime order of the curve E
 	//primeOrder: 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3
 	primeOrder = mustDeserialize(serialized{
 		0xf3, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
@@ -72,6 +73,7 @@ var (
 	//edCons: -39081
 	edCons = mustDeserialize(serialized{0xa9, 0x98}) // unsigned
 
+	//This is the base point in the curve 4E
 	//gx: 0x297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f
 	//gy: 0x13
 	basePoint = mustNewPoint(serialized{
