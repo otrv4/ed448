@@ -2,7 +2,7 @@ package ed448
 
 import (
 	"crypto/rand"
-	"crypto/sha512"
+	"golang.org/x/crypto/sha3"
 )
 
 //XXX It would be better if they use privateKey and publicKey types
@@ -10,7 +10,7 @@ type Curve interface {
 	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
 	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)
 	Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool)
-	ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [sha512.Size]byte)
+	ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [64]byte)
 }
 
 type curveT struct{}
@@ -51,7 +51,7 @@ func (ed *curveT) Verify(signature [signatureBytes]byte, message []byte, pub [pu
 }
 
 // ECDH Compute secret according to private key and peer's public key.
-func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [sha512.Size]byte) {
+func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [64]byte) {
 	k := privateKey(private)
-	return sha512.Sum512(ed.computeSecret(k.secretKey(), public[:]))
+	return sha3.Sum512(ed.computeSecret(k.secretKey(), public[:]))
 }
