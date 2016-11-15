@@ -1,8 +1,8 @@
 package ed448
 
 import (
-	"crypto/sha512"
 	"errors"
+	"golang.org/x/crypto/sha3"
 	"io"
 )
 
@@ -219,7 +219,7 @@ func wordsToBytes(dst []byte, src []word_t) {
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to PRF(k)
 func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
-	h := sha512.New()
+	h := sha3.New512()
 	h.Write([]byte("derivepk"))
 	h.Write(k[:])
 	return h.Sum(nil)
@@ -327,7 +327,7 @@ func (c *curveT) deriveTemporarySignature(nonce [fieldWords]word_t) (dst [fieldB
 
 //XXX Should pubKey have a fixed size here?
 func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst [fieldWords]word_t) {
-	h := sha512.New()
+	h := sha3.New512()
 	h.Write(pubKey)
 	h.Write(tmpSignature[:])
 	h.Write(msg)
@@ -338,7 +338,7 @@ func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (
 }
 
 func deriveNonce(msg []byte, symKey []byte) (dst [fieldWords]word_t) {
-	h := sha512.New()
+	h := sha3.New512()
 	h.Write([]byte("signonce"))
 	h.Write(symKey)
 	h.Write(msg)
