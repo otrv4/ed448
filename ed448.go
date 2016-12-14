@@ -5,12 +5,18 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-//XXX It would be better if they use privateKey and publicKey types
+// The size of a SHA3-512 checksum in bytes.
+const (
+	Size512 = 64
+)
+
+// Curve is the interface that wraps the basic curve methods.
+//XXX It would be better with the use of privateKey and publicKey types.
 type Curve interface {
 	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
 	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)
 	Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool)
-	ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [64]byte)
+	ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [Size512]byte)
 }
 
 type curveT struct{}
@@ -19,6 +25,7 @@ var (
 	curve = &curveT{}
 )
 
+// NewCurve returns a Curve.
 func NewCurve() Curve {
 	return curve
 }
@@ -51,7 +58,7 @@ func (ed *curveT) Verify(signature [signatureBytes]byte, message []byte, pub [pu
 }
 
 // ECDH Compute secret according to private key and peer's public key.
-func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [64]byte) {
+func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]byte) (secret [Size512]byte) {
 	k := privateKey(private)
 	return sha3.Sum512(ed.computeSecret(k.secretKey(), public[:]))
 }
