@@ -21,7 +21,7 @@ func (s *Ed448Suite) TestStrongReduce(c *C) {
 	//p = p mod p = 0
 	p.strongReduce()
 
-	c.Assert(p, DeepEquals, &bigNumber{})
+	c.Assert(p, DeepEquals, &BigNumber{})
 
 	n := mustDeserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
@@ -52,12 +52,12 @@ func (s *Ed448Suite) TestSumRadix(c *C) {
 	x := mustDeserialize(serialized{0x57})
 	y := mustDeserialize(serialized{0x83})
 	z := mustDeserialize(serialized{0xda})
-	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
+	c.Assert(new(BigNumber).add(x, y), DeepEquals, z)
 
 	x = mustDeserialize(serialized{0xff, 0xff, 0xff, 0xf0})
 	y = mustDeserialize(serialized{0x01})
 	z = mustDeserialize(serialized{0x00, 0x00, 0x00, 0xf1})
-	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
+	c.Assert(new(BigNumber).add(x, y), DeepEquals, z)
 }
 
 //XXX This is broken in 64-bits, but everything else works
@@ -102,21 +102,21 @@ func (s *Ed448Suite) TestZero(c *C) {
 
 func (s *Ed448Suite) TestNegate(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
-	n := new(bigNumber).setBytes(bs)
-	out := new(bigNumber).neg(n)
+	n := new(BigNumber).setBytes(bs)
+	out := new(BigNumber).neg(n)
 
 	bs, _ = hex.DecodeString("190a4751b63108861a8823d67db100bac0e3bef9fcff77eea15b64b017b58483201f91f29dd03aa383aa654e093c15cda83f86867f6fd921")
-	expected := new(bigNumber).setBytes(bs)
+	expected := new(BigNumber).setBytes(bs)
 
 	c.Assert(out, DeepEquals, expected)
 }
 
 func (s *Ed448Suite) TestConditionalSelect(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
-	x := new(bigNumber).setBytes(bs)
+	x := new(BigNumber).setBytes(bs)
 
 	bs, _ = hex.DecodeString("190a4751b63108861a8823d67db100bac0e3bef9fcff77eea15b64b017b58483201f91f29dd03aa383aa654e093c15cda83f86867f6fd921")
-	y := new(bigNumber).setBytes(bs)
+	y := new(BigNumber).setBytes(bs)
 
 	c.Assert(constantTimeSelect(x, y, 0xffffffff), DeepEquals, x)
 	c.Assert(constantTimeSelect(x, y, 0), DeepEquals, y)
@@ -124,10 +124,10 @@ func (s *Ed448Suite) TestConditionalSelect(c *C) {
 
 func (s *Ed448Suite) TestConditionalSwap(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
-	x := new(bigNumber).setBytes(bs)
+	x := new(BigNumber).setBytes(bs)
 
 	bs, _ = hex.DecodeString("190a4751b63108861a8823d67db100bac0e3bef9fcff77eea15b64b017b58483201f91f29dd03aa383aa654e093c15cda83f86867f6fd921")
-	y := new(bigNumber).setBytes(bs)
+	y := new(BigNumber).setBytes(bs)
 
 	a := x.copy()
 	b := y.copy()
@@ -143,18 +143,18 @@ func (s *Ed448Suite) TestConditionalSwap(c *C) {
 
 func (s *Ed448Suite) TestConditionalNegateNumber(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
-	n := new(bigNumber).setBytes(bs)
+	n := new(BigNumber).setBytes(bs)
 
 	bs, _ = hex.DecodeString("190a4751b63108861a8823d67db100bac0e3bef9fcff77eea15b64b017b58483201f91f29dd03aa383aa654e093c15cda83f86867f6fd921")
-	negated := new(bigNumber).setBytes(bs)
+	negated := new(BigNumber).setBytes(bs)
 
 	c.Assert(n.copy().conditionalNegate(0xffffffff), DeepEquals, negated)
 	c.Assert(n.copy().conditionalNegate(0), DeepEquals, n)
 }
 
 func (s *Ed448Suite) TestZeroMask(c *C) {
-	zero := &bigNumber{}
-	one := &bigNumber{1}
+	zero := &BigNumber{}
+	one := &BigNumber{1}
 
 	c.Assert(zero.zeroMask(), Equals, uint32(0xffffffff))
 	c.Assert(one.zeroMask(), Equals, uint32(0))
@@ -174,16 +174,16 @@ func (s *Ed448Suite) TestSquareN(c *C) {
 
 	exp := gx.copy()
 	for i := 0; i < 5; i++ {
-		exp = new(bigNumber).square(exp)
+		exp = new(BigNumber).square(exp)
 	}
 
-	n := new(bigNumber).squareN(gx, 5)
+	n := new(BigNumber).squareN(gx, 5)
 
 	c.Assert(n.equals(exp), Equals, true)
 
 	exp = gx.copy()
 	for i := 0; i < 6; i++ {
-		exp = new(bigNumber).square(exp)
+		exp = new(BigNumber).square(exp)
 	}
 
 	n = n.squareN(gx, 6)
@@ -206,7 +206,7 @@ func (s *Ed448Suite) TestISR(c *C) {
 	gx.isr(gx)
 
 	bs, _ := hex.DecodeString("04027d13a34bbe052fdf4247b02a4a3406268203a09076e56dee9dc2b699c4abc66f2832a677dfd0bf7e70ee72f01db170839717d1c64f02")
-	exp := new(bigNumber).setBytes(bs)
+	exp := new(BigNumber).setBytes(bs)
 
 	c.Assert(gx.equals(exp), Equals, true)
 }

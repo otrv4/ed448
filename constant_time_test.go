@@ -3,7 +3,7 @@ package ed448
 import . "gopkg.in/check.v1"
 
 func (s *Ed448Suite) TestConstantTimeMask(c *C) {
-	a := new(bigNumber)
+	a := new(BigNumber)
 	b := mustDeserialize(serialized{
 		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
 		0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,

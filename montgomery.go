@@ -1,12 +1,12 @@
 package ed448
 
 type montgomery struct {
-	z0, xd, zd, xa, za *bigNumber
+	z0, xd, zd, xa, za *BigNumber
 }
 
 func (a *montgomery) montgomeryStep() {
-	L0 := new(bigNumber)
-	L1 := new(bigNumber)
+	L0 := new(BigNumber)
+	L1 := new(BigNumber)
 	L0.addRaw(a.zd, a.xd)
 	L1.subxRaw(a.xd, a.zd)
 	a.zd.subxRaw(a.xa, a.za)
@@ -30,12 +30,12 @@ func (a *montgomery) montgomeryStep() {
 	a.zd.mul(L0, L1)
 }
 
-func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
-	L0 := new(bigNumber)
-	L1 := new(bigNumber)
-	L2 := new(bigNumber)
-	L3 := new(bigNumber)
-	b = new(bigNumber)
+func (a *montgomery) serialize(sbz *BigNumber) (b *BigNumber, ok uint32) {
+	L0 := new(BigNumber)
+	L1 := new(BigNumber)
+	L2 := new(BigNumber)
+	L3 := new(BigNumber)
+	b = new(BigNumber)
 
 	L3.mul(a.z0, a.zd)
 	L1.sub(L3, a.xd)
@@ -81,10 +81,10 @@ func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
 	return b, L5 | L4
 }
 
-func (a *montgomery) deserialize(sz *bigNumber) {
-	a.z0 = new(bigNumber).square(sz)
-	a.xd = new(bigNumber).setUi(1)
-	a.zd = new(bigNumber).setUi(0)
-	a.xa = new(bigNumber).setUi(1)
+func (a *montgomery) deserialize(sz *BigNumber) {
+	a.z0 = new(BigNumber).square(sz)
+	a.xd = new(BigNumber).setUi(1)
+	a.zd = new(BigNumber).setUi(0)
+	a.xa = new(BigNumber).setUi(1)
 	a.za = a.z0.copy()
 }

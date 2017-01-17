@@ -161,7 +161,7 @@ func (s *Ed448Suite) BenchmarkKaratsuba(c *C) {
 		0x72, 0x33, 0x7a, 0xd5, 0x74, 0x81, 0xf5,
 	})
 
-	result := new(bigNumber)
+	result := new(BigNumber)
 
 	c.ResetTimer()
 	for i := 0; i < c.N; i++ {
@@ -181,7 +181,7 @@ func (s *Ed448Suite) BenchmarkKaratsubaSquare(c *C) {
 		0xd2, 0x75, 0x4b, 0x39, 0xbc, 0xa8, 0x74,
 	})
 
-	result := new(bigNumber)
+	result := new(BigNumber)
 
 	c.ResetTimer()
 	for i := 0; i < c.N; i++ {

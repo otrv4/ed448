@@ -6,8 +6,8 @@ const (
 	radixMask = word_t(0xfffffff)
 )
 
-func deserializeReturnMask(in serialized) (*bigNumber, word_t) {
-	n := &bigNumber{}
+func deserializeReturnMask(in serialized) (*BigNumber, word_t) {
+	n := &BigNumber{}
 
 	for i := uint(0); i < 8; i++ {
 		out := uint64(0)
@@ -22,14 +22,14 @@ func deserializeReturnMask(in serialized) (*bigNumber, word_t) {
 	return n, constantTimeGreaterOrEqualP(n)
 }
 
-func deserialize(in serialized) (n *bigNumber, ok bool) {
+func deserialize(in serialized) (n *BigNumber, ok bool) {
 	n, mask := deserializeReturnMask(in)
 	ok = mask == 0xffffffff
 	return
 }
 
 //XXX dst should have fieldBytes size
-func serialize(dst []byte, n *bigNumber) {
+func serialize(dst []byte, n *BigNumber) {
 	src := n.copy()
 	src.strongReduce()
 
@@ -42,7 +42,7 @@ func serialize(dst []byte, n *bigNumber) {
 	}
 }
 
-func (n *bigNumber) bias(b uint32) *bigNumber {
+func (n *BigNumber) bias(b uint32) *BigNumber {
 	var co1 word_t = radixMask * word_t(b)
 	var co2 word_t = co1 - word_t(b)
 	lo := [4]word_t{co1, co1, co1, co1}
@@ -71,7 +71,7 @@ func (n *bigNumber) bias(b uint32) *bigNumber {
 	return n
 }
 
-func (n *bigNumber) strongReduce() *bigNumber {
+func (n *BigNumber) strongReduce() *BigNumber {
 	// clear high
 	n[8] += n[15] >> 28
 	n[0] += n[15] >> 28
@@ -217,7 +217,7 @@ func (n *bigNumber) strongReduce() *bigNumber {
 	return n
 }
 
-func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
+func (n *BigNumber) mulW(x *BigNumber, w uint64) *BigNumber {
 	whi := uint32(w >> Radix)
 	wlo := uint32(w & uint64(radixMask))
 

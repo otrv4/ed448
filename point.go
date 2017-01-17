@@ -42,14 +42,14 @@ func NewPoint(x serialized, y serialized) (p *homogeneousProjective, e error) {
 }
 
 type extensibleCoordinates struct {
-	x, y, z, t, u *bigNumber
+	x, y, z, t, u *BigNumber
 }
 
 //Affina(x,y) => extensible(X, Y, Z, T, U)
-func newExtensible(px, py *bigNumber) *extensibleCoordinates {
+func newExtensible(px, py *BigNumber) *extensibleCoordinates {
 	x := px.copy()
 	y := py.copy()
-	z := &bigNumber{1}
+	z := &BigNumber{1}
 	t := x.copy()
 	u := y.copy()
 
@@ -69,10 +69,10 @@ func (p *extensibleCoordinates) OnCurve() bool {
 	t := p.t
 	u := p.u
 
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-	l2 := new(bigNumber)
-	l3 := new(bigNumber)
+	l0 := new(BigNumber)
+	l1 := new(BigNumber)
+	l2 := new(BigNumber)
+	l3 := new(BigNumber)
 
 	// Check invariant:
 	// 0 = d*t^2*u^2 - x^2 - y^2 + z^2
@@ -105,9 +105,9 @@ func (p *extensibleCoordinates) OnCurve() bool {
 }
 
 func (p *extensibleCoordinates) equals(q *extensibleCoordinates) bool {
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-	l2 := new(bigNumber)
+	l0 := new(BigNumber)
+	l1 := new(BigNumber)
+	l2 := new(BigNumber)
 
 	l2 = l2.mul(q.z, p.x)
 	l1 = l1.mul(p.z, q.x)
@@ -124,7 +124,7 @@ func (p *extensibleCoordinates) equals(q *extensibleCoordinates) bool {
 
 type twPNiels struct {
 	n *twNiels
-	z *bigNumber
+	z *BigNumber
 }
 
 func newTwistedPNiels(a, b, c, z [56]byte) *twPNiels {
@@ -152,7 +152,7 @@ func (p *twPNiels) equals(p2 *twPNiels) bool {
 }
 
 type twNiels struct {
-	a, b, c *bigNumber
+	a, b, c *BigNumber
 }
 
 func newNielsPoint(a, b, c [56]byte) *twNiels {
@@ -199,7 +199,7 @@ func convertTwNielsToTwExtensible(dst *twExtensible, src *twNiels) {
 }
 
 type twExtensible struct {
-	x, y, z, t, u *bigNumber
+	x, y, z, t, u *BigNumber
 }
 
 func (p *twExtensible) copy(e *twExtensible) *twExtensible {
@@ -233,11 +233,11 @@ func convertTwExtensibleToTwPNiels(dst *twPNiels, src *twExtensible) {
 func (a *twExtensible) twPNiels() *twPNiels {
 	ret := &twPNiels{
 		n: &twNiels{
-			a: new(bigNumber),
-			b: new(bigNumber),
-			c: new(bigNumber),
+			a: new(BigNumber),
+			b: new(BigNumber),
+			c: new(BigNumber),
 		},
-		z: new(bigNumber),
+		z: new(BigNumber),
 	}
 
 	convertTwExtensibleToTwPNiels(ret, a)
@@ -253,10 +253,10 @@ func convertTwPnielsToTwExtensible(dst *twExtensible, src *twPNiels) {
 }
 
 func (p *twExtensible) OnCurve() bool {
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-	l2 := new(bigNumber)
-	l3 := new(bigNumber)
+	l0 := new(BigNumber)
+	l1 := new(BigNumber)
+	l2 := new(BigNumber)
+	l3 := new(BigNumber)
 
 	// Check invariant:
 	// 0 = -x*y + z*t*u
@@ -308,9 +308,9 @@ func (p *twExtensible) String() string {
 }
 
 func (p *twExtensible) equals(p2 *twExtensible) bool {
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-	l2 := new(bigNumber)
+	l0 := new(BigNumber)
+	l1 := new(BigNumber)
+	l2 := new(BigNumber)
 
 	l2 = l2.mul(p2.z, p.x)
 	l1 = l1.mul(p.z, p2.x)
@@ -334,9 +334,9 @@ func (p *twExtensible) double() *twExtensible {
 	t := p.t
 	u := p.u
 
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-	l2 := new(bigNumber)
+	l0 := new(BigNumber)
+	l1 := new(BigNumber)
+	l2 := new(BigNumber)
 
 	l2.square(x)
 	l0.square(y)
@@ -367,8 +367,8 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	t := p.t
 	u := p.u
 
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
+	l0 := new(BigNumber)
+	l1 := new(BigNumber)
 
 	l1 = l1.sub(y, x)
 	l0.mul(p2.a, l1)
@@ -393,8 +393,8 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 }
 
 func (d *twExtensible) subTwNiels(e *twNiels) {
-	L1 := new(bigNumber).subxRaw(d.y, d.x)
-	L0 := new(bigNumber).mul(e.b, L1)
+	L1 := new(BigNumber).subxRaw(d.y, d.x)
+	L0 := new(BigNumber).mul(e.b, L1)
 	L1.addRaw(d.x, d.y)
 	d.y.mul(e.a, L1)
 	L1.mul(d.u, d.t)
@@ -408,12 +408,12 @@ func (d *twExtensible) subTwNiels(e *twNiels) {
 	d.y.mul(L0, d.u)
 }
 
-func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
-	l0 := new(bigNumber)
-	l1 := new(bigNumber)
-	l2 := new(bigNumber)
-	l3 := new(bigNumber)
-	b := new(bigNumber)
+func (p *twExtensible) untwistAndDoubleAndSerialize() *BigNumber {
+	l0 := new(BigNumber)
+	l1 := new(BigNumber)
+	l2 := new(BigNumber)
+	l3 := new(BigNumber)
+	b := new(BigNumber)
 
 	l3.mul(p.y, p.x)
 	b.add(p.y, p.x)
@@ -441,11 +441,11 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 //XXX This can be replaced by extensible for simplicity if we neither use ADD
 //on the basePoint in test and benchmark (it is not used elsewhere)
 type homogeneousProjective struct {
-	x, y, z *bigNumber
+	x, y, z *BigNumber
 }
 
 //Affine to Homogeneous Projective
-func newHomogeneousProjective(x *bigNumber, y *bigNumber) *homogeneousProjective {
+func newHomogeneousProjective(x *BigNumber, y *BigNumber) *homogeneousProjective {
 	return &homogeneousProjective{
 		x: x.copy(),
 		y: y.copy(),
@@ -463,16 +463,16 @@ func (p *homogeneousProjective) OnCurve() bool {
 	y := p.y
 	z := p.z
 
-	x2 := new(bigNumber).mul(x, x)
-	y2 := new(bigNumber).mul(y, y)
-	z2 := new(bigNumber).mul(z, z)
-	z4 := new(bigNumber).mul(z2, z2)
+	x2 := new(BigNumber).mul(x, x)
+	y2 := new(BigNumber).mul(y, y)
+	z2 := new(BigNumber).mul(z, z)
+	z4 := new(BigNumber).mul(z2, z2)
 
-	x2y2 := new(bigNumber).mul(x2, y2)
+	x2y2 := new(BigNumber).mul(x2, y2)
 	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
 	dx2y2.weakReduce()
 
-	r := new(bigNumber).add(x2, y2)
+	r := new(BigNumber).add(x2, y2)
 	r.mulCopy(r, z2)
 	r.sub(r, z4)
 	r.sub(r, dx2y2)
@@ -498,11 +498,11 @@ func (p *homogeneousProjective) double() *homogeneousProjective {
 	y1 := p.y
 	z1 := p.z
 
-	b := new(bigNumber).square(new(bigNumber).add(x1, y1))
-	c := new(bigNumber).square(x1)
-	d := new(bigNumber).square(y1)
-	e := new(bigNumber).add(c, d)
-	h := new(bigNumber).square(z1)
+	b := new(BigNumber).square(new(BigNumber).add(x1, y1))
+	c := new(BigNumber).square(x1)
+	d := new(BigNumber).square(y1)
+	e := new(BigNumber).add(c, d)
+	h := new(BigNumber).square(z1)
 	//j := h.mulW(h, 2) // This is slower than adding
 	j := h.add(h, h)
 	j.sub(e, j)
@@ -540,15 +540,15 @@ func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProje
 	y2 := p2.y
 	z2 := p2.z
 
-	a := new(bigNumber).mul(z1, z2)
-	b := new(bigNumber).square(a)
-	c := new(bigNumber).mul(x1, x2)
-	d := new(bigNumber).mul(y1, y2)
+	a := new(BigNumber).mul(z1, z2)
+	b := new(BigNumber).square(a)
+	c := new(BigNumber).mul(x1, x2)
+	d := new(BigNumber).mul(y1, y2)
 
-	e := new(bigNumber).mulWSignedCurveConstant(c, curveDSigned)
+	e := new(BigNumber).mulWSignedCurveConstant(c, curveDSigned)
 	e.mulCopy(e, d)
-	f := new(bigNumber).sub(b, e)
-	g := new(bigNumber).add(b, e)
+	f := new(BigNumber).sub(b, e)
+	g := new(BigNumber).add(b, e)
 
 	//Just reusing e and b (unused) memory
 	x3 := e.mulCopy(b.add(x1, y1), e.add(x2, y2))
@@ -565,19 +565,19 @@ func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProje
 	}
 }
 
-//XXX Move: bigNumber should not know about points
-func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
+//XXX Move: BigNumber should not know about points
+func (sz *BigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	a := &twExtensible{
-		x: new(bigNumber),
-		y: new(bigNumber),
-		z: new(bigNumber),
-		u: new(bigNumber),
-		t: new(bigNumber),
+		x: new(BigNumber),
+		y: new(BigNumber),
+		z: new(BigNumber),
+		u: new(BigNumber),
+		t: new(BigNumber),
 	}
 
-	var L0, L1 *bigNumber
-	L0 = new(bigNumber)
-	L1 = new(bigNumber)
+	var L0, L1 *BigNumber
+	L0 = new(BigNumber)
+	L1 = new(BigNumber)
 	a.z.square(sz)
 	a.y = a.z.copy()
 	a.y.addW(1)

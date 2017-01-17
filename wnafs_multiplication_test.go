@@ -147,11 +147,11 @@ func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 	pu, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
 
 	p := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
+		new(BigNumber).setBytes(px),
+		new(BigNumber).setBytes(py),
+		new(BigNumber).setBytes(pz),
+		new(BigNumber).setBytes(pt),
+		new(BigNumber).setBytes(pu),
 	}
 
 	prepareWnafTable(dst, p, tableSize)
@@ -169,11 +169,11 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 	pu, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
 
 	p := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
+		new(BigNumber).setBytes(px),
+		new(BigNumber).setBytes(py),
+		new(BigNumber).setBytes(pz),
+		new(BigNumber).setBytes(pt),
+		new(BigNumber).setBytes(pu),
 	}
 
 	x := [fieldWords]word_t{
@@ -202,11 +202,11 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 	pt, _ = hex.DecodeString("8713cc3806a247771ae8567b3b73dd874a8261a610de7c34202fab877f15213120e2fd14e5b191663c1e62d404c54b9f63e1e2e3d98eafb2")
 	pu, _ = hex.DecodeString("eafb1cd470e2728ee254c7a312092e820656c14a993f2896479aa211b0a1bb515deee36d06acee20a40a1cad5dc5cc38072cdd63447587e9")
 	expectedP := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
+		new(BigNumber).setBytes(px),
+		new(BigNumber).setBytes(py),
+		new(BigNumber).setBytes(pz),
+		new(BigNumber).setBytes(pt),
+		new(BigNumber).setBytes(pu),
 	}
 
 	linear_combo_var_fixed_vt(p, x[:], y[:], wnfsTable[:])
@@ -222,11 +222,11 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 	pu, _ := hex.DecodeString("918bf9573f40be92567052b0c02fbf49cbfa43f68f5fcd7bdf44f877594eb6bfff690413befd9952d5710cefc1839771b9660f69b17790f5")
 
 	p := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
+		new(BigNumber).setBytes(px),
+		new(BigNumber).setBytes(py),
+		new(BigNumber).setBytes(pz),
+		new(BigNumber).setBytes(pt),
+		new(BigNumber).setBytes(pu),
 	}
 
 	x := [fieldWords]word_t{
@@ -255,11 +255,11 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 	pt, _ = hex.DecodeString("6221c6e5950a608b30063f8b83d7eef50ccc97fbf8b5c20de61eadebb734b10143965090f5cdbedea08afee791819a25269b63d764b29d89")
 	pu, _ = hex.DecodeString("8b8ee5a52914b36d6b04fc18bdb7dbd826efe424e074c2799e83e43ae3da3357df975d158228bfa5b52fdaac1f637c5cb1bb27bce0367f6f")
 	expectedP := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
+		new(BigNumber).setBytes(px),
+		new(BigNumber).setBytes(py),
+		new(BigNumber).setBytes(pz),
+		new(BigNumber).setBytes(pt),
+		new(BigNumber).setBytes(pu),
 	}
 
 	linear_combo_var_fixed_vt(p, x[:], y[:], wnfsTable[:])

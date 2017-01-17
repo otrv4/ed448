@@ -222,7 +222,7 @@ func (s *Ed448Suite) TestMultiplyMontgomery(c *C) {
 	}
 
 	bs, _ := hex.DecodeString("322d71661943b5e080abed64d9ed331874a975329aaf9b42815e793ac08691e478fe559b29593a5413d5a4475e3ae0735a6d9bc1dc192b7d")
-	expectedPublic := new(bigNumber)
+	expectedPublic := new(BigNumber)
 	expectedPublic.setBytes(bs)
 
 	pk, ok := curve.multiplyMontgomery(pk, sk, scalarBits, 1)

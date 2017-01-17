@@ -64,8 +64,8 @@ func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]
 }
 
 // Exported function for deserialising byte array then mod Q
-func DeserialiseModQ(serial []byte) bigNumber {
+func DeserialiseModQ(serial []byte) BigNumber {
 	dst := [16]word_t{}
 	deserializeModQ(dst[:], serial)
-	return bigNumber(dst)
+	return BigNumber(dst)
 }
