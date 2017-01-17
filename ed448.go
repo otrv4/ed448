@@ -62,3 +62,10 @@ func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]
 	k := privateKey(private)
 	return sha3.Sum512(ed.computeSecret(k.secretKey(), public[:]))
 }
+
+// Exported function for deserialising byte array then mod Q
+func DeserialiseModQ(serial []byte) bigNumber {
+	dst := [16]word_t{}
+	deserializeModQ(dst[:], serial)
+	return bigNumber(dst)
+}
