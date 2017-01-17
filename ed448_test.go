@@ -46,7 +46,7 @@ func (s *Ed448Suite) TestComputeSecret(c *C) {
 	c.Assert(secretA, DeepEquals, secretB)
 }
 
-func (s *Ed448Suite) TestDeserialiseModQ(c *C) {
+func (s *Ed448Suite) TestDeserializeModQ(c *C) {
 	serial := []byte{
 		0xb3, 0xa4, 0x53, 0x31, 0xb1, 0x2b, 0x41, 0x1a,
 		0xda, 0x51, 0xcf, 0xba, 0x0d, 0xea, 0x65, 0xb3,
@@ -64,6 +64,6 @@ func (s *Ed448Suite) TestDeserialiseModQ(c *C) {
 		3640155835, 740717630, 0, 0,
 	}
 
-	output := DeserialiseModQ(serial)
+	output := DeserializeModQ(serial)
 	c.Assert(output, DeepEquals, exp)
 }
