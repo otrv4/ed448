@@ -2,8 +2,7 @@ package ed448
 
 import "fmt"
 
-type limb word_t
-type bigNumber [Limbs]limb
+type bigNumber [Limbs]word_t
 type serialized [56]byte
 
 func mustDeserialize(in serialized) *bigNumber {
@@ -22,13 +21,13 @@ func isZeroMask(n uint32) uint32 {
 }
 
 func constantTimeGreaterOrEqualP(n *bigNumber) word_t {
-	ge := limb(0xffffffff)
+	ge := word_t(0xffffffff)
 
 	for i := 0; i < 4; i++ {
 		ge &= n[i]
 	}
 
-	ge = (ge & (n[4] + 1)) | limb(isZeroMask(uint32(n[4]^radixMask)))
+	ge = (ge & (n[4] + 1)) | word_t(isZeroMask(uint32(n[4]^radixMask)))
 
 	for i := 5; i < 8; i++ {
 		ge &= n[i]
@@ -43,7 +42,7 @@ func (n *bigNumber) add(x *bigNumber, y *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) addW(w uint32) *bigNumber {
-	n[0] += limb(w)
+	n[0] += word_t(w)
 	return n
 }
 
@@ -68,8 +67,8 @@ func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) setUi(y uint64) *bigNumber {
-	n[0] = limb(y) & radixMask
-	n[1] = limb(y >> Radix)
+	n[0] = word_t(y) & radixMask
+	n[1] = word_t(y >> Radix)
 	n[2] = 0
 	n[3] = 0
 	n[4] = 0
@@ -94,7 +93,7 @@ func (n *bigNumber) sub(x *bigNumber, y *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) subW(w uint32) *bigNumber {
-	n[0] -= limb(w)
+	n[0] -= word_t(w)
 	return n
 }
 
@@ -189,7 +188,7 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 }
 
 func (n *bigNumber) weakReduce() *bigNumber {
-	tmp := limb(uint64(n[Limbs-1]) >> Radix)
+	tmp := word_t(uint64(n[Limbs-1]) >> Radix)
 	n[Limbs/2] += tmp
 
 	n[15] = (n[15] & radixMask) + (n[14] >> Radix)
@@ -241,7 +240,7 @@ func constantTimeSelect(x, y *bigNumber, first word_t) *bigNumber {
 //if swap == 0xffffffff => n = x, x = n
 func (n *bigNumber) conditionalSwap(x *bigNumber, swap word_t) *bigNumber {
 	for i, xv := range x {
-		s := (xv ^ n[i]) & limb(swap)
+		s := (xv ^ n[i]) & word_t(swap)
 		x[i] ^= s
 		n[i] ^= s
 	}
@@ -250,22 +249,22 @@ func (n *bigNumber) conditionalSwap(x *bigNumber, swap word_t) *bigNumber {
 }
 
 func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
-	n[0] = limb(-x[0])
-	n[1] = limb(-x[1])
-	n[2] = limb(-x[2])
-	n[3] = limb(-x[3])
-	n[4] = limb(-x[4])
-	n[5] = limb(-x[5])
-	n[6] = limb(-x[6])
-	n[7] = limb(-x[7])
-	n[8] = limb(-x[8])
-	n[9] = limb(-x[9])
-	n[10] = limb(-x[10])
-	n[11] = limb(-x[11])
-	n[12] = limb(-x[12])
-	n[13] = limb(-x[13])
-	n[14] = limb(-x[14])
-	n[15] = limb(-x[15])
+	n[0] = word_t(-x[0])
+	n[1] = word_t(-x[1])
+	n[2] = word_t(-x[2])
+	n[3] = word_t(-x[3])
+	n[4] = word_t(-x[4])
+	n[5] = word_t(-x[5])
+	n[6] = word_t(-x[6])
+	n[7] = word_t(-x[7])
+	n[8] = word_t(-x[8])
+	n[9] = word_t(-x[9])
+	n[10] = word_t(-x[10])
+	n[11] = word_t(-x[11])
+	n[12] = word_t(-x[12])
+	n[13] = word_t(-x[13])
+	n[14] = word_t(-x[14])
+	n[15] = word_t(-x[15])
 
 	return n
 }
@@ -282,7 +281,7 @@ func (n *bigNumber) set(x *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
-	r := limb(0)
+	r := word_t(0)
 	x := n.copy().strongReduce()
 	y := o.copy().strongReduce()
 
@@ -308,7 +307,7 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 
 func (n *bigNumber) zeroMask() uint32 {
 	x := n.copy().strongReduce()
-	r := limb(0)
+	r := word_t(0)
 
 	r |= x[0] ^ 0
 	r |= x[1] ^ 0
@@ -364,6 +363,6 @@ func (n *bigNumber) String() string {
 	//return fmt.Sprintf("0x%s", new(big.Int).SetBytes(rev(dst)).Text(16))
 }
 
-func (n *bigNumber) limbs() []limb {
+func (n *bigNumber) limbs() []word_t {
 	return n[:]
 }

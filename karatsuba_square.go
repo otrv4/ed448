@@ -41,8 +41,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z0 -= uint64(a[4]) * uint64(a[4])
 	z0 += z2
 
-	c[0] = limb(z0) & radixMask
-	c[8] = limb(z1) & radixMask
+	c[0] = word_t(z0) & radixMask
+	c[8] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -72,8 +72,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z0 -= (uint64(a[5]) * uint64(a[4])) << 1
 	z0 += z2
 
-	c[1] = limb(z0) & radixMask
-	c[9] = limb(z1) & radixMask
+	c[1] = word_t(z0) & radixMask
+	c[9] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -107,8 +107,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z0 -= uint64(a[5]) * uint64(a[5])
 	z0 += z2
 
-	c[2] = limb(z0) & radixMask
-	c[10] = limb(z1) & radixMask
+	c[2] = word_t(z0) & radixMask
+	c[10] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -139,8 +139,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z1 += (uint64(a[14]) * uint64(a[13])) << 1
 	z1 += z2
 
-	c[3] = limb(z0) & radixMask
-	c[11] = limb(z1) & radixMask
+	c[3] = word_t(z0) & radixMask
+	c[11] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -173,8 +173,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z0 -= uint64(a[6]) * uint64(a[6])
 	z0 += z2
 
-	c[4] = limb(z0) & radixMask
-	c[12] = limb(z1) & radixMask
+	c[4] = word_t(z0) & radixMask
+	c[12] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -204,8 +204,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z0 -= (uint64(a[7]) * uint64(a[6])) << 1
 	z0 += z2
 
-	c[5] = limb(z0) & radixMask
-	c[13] = limb(z1) & radixMask
+	c[5] = word_t(z0) & radixMask
+	c[13] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -236,8 +236,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z0 -= uint64(a[7]) * uint64(a[7])
 	z0 += z2
 
-	c[6] = limb(z0) & radixMask
-	c[14] = limb(z1) & radixMask
+	c[6] = word_t(z0) & radixMask
+	c[14] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -265,8 +265,8 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z1 += z2
 	z0 += z2
 
-	c[7] = limb(z0) & radixMask
-	c[15] = limb(z1) & radixMask
+	c[7] = word_t(z0) & radixMask
+	c[15] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
@@ -277,14 +277,14 @@ func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	z0 += uint64(c[8])
 	z1 += uint64(c[0])
 
-	c[8] = limb(z0) & radixMask
-	c[0] = limb(z1) & radixMask
+	c[8] = word_t(z0) & radixMask
+	c[0] = word_t(z1) & radixMask
 
 	z0 >>= 28
 	z1 >>= 28
 
-	c[9] += limb(z0)
-	c[1] += limb(z1)
+	c[9] += word_t(z0)
+	c[1] += word_t(z1)
 
 	return c
 }
