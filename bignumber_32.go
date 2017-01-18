@@ -1,7 +1,7 @@
 package ed448
 
-func deserializeReturnMask(in serialized) (*BigNumber, word_t) {
-	n := &BigNumber{}
+func deserializeReturnMask(in serialized) (*bigNumber, word_t) {
+	n := &bigNumber{}
 
 	for i := uint(0); i < 8; i++ {
 		out := uint64(0)
@@ -16,14 +16,14 @@ func deserializeReturnMask(in serialized) (*BigNumber, word_t) {
 	return n, constantTimeGreaterOrEqualP(n)
 }
 
-func deserialize(in serialized) (n *BigNumber, ok bool) {
+func deserialize(in serialized) (n *bigNumber, ok bool) {
 	n, mask := deserializeReturnMask(in)
 	ok = mask == lmask
 	return
 }
 
 //XXX dst should have fieldBytes size
-func serialize(dst []byte, n *BigNumber) {
+func serialize(dst []byte, n *bigNumber) {
 	src := n.copy()
 	src.strongReduce()
 
@@ -36,7 +36,7 @@ func serialize(dst []byte, n *BigNumber) {
 	}
 }
 
-func (n *BigNumber) bias(b uint32) *BigNumber {
+func (n *bigNumber) bias(b uint32) *bigNumber {
 	var co1 word_t = radixMask * word_t(b)
 	var co2 word_t = co1 - word_t(b)
 	lo := [4]word_t{co1, co1, co1, co1}
@@ -65,7 +65,7 @@ func (n *BigNumber) bias(b uint32) *BigNumber {
 	return n
 }
 
-func (n *BigNumber) strongReduce() *BigNumber {
+func (n *bigNumber) strongReduce() *bigNumber {
 	// clear high
 	n[8] += n[15] >> 28
 	n[0] += n[15] >> 28
@@ -211,7 +211,7 @@ func (n *BigNumber) strongReduce() *BigNumber {
 	return n
 }
 
-func (n *BigNumber) mulW(x *BigNumber, w uint64) *BigNumber {
+func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
 	whi := uint32(w >> radix)
 	wlo := uint32(w & uint64(radixMask))
 

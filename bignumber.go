@@ -2,10 +2,10 @@ package ed448
 
 import "fmt"
 
-type BigNumber [limbs]word_t
+type bigNumber [limbs]word_t
 type serialized [56]byte
 
-func mustDeserialize(in serialized) *BigNumber {
+func mustDeserialize(in serialized) *bigNumber {
 	n, ok := deserialize(in)
 	if !ok {
 		panic("Failed to deserialize")
@@ -20,7 +20,7 @@ func isZeroMask(n uint32) uint32 {
 	return uint32(nn >> wordBits)
 }
 
-func constantTimeGreaterOrEqualP(n *BigNumber) word_t {
+func constantTimeGreaterOrEqualP(n *bigNumber) word_t {
 	ge := word_t(lmask)
 
 	for i := 0; i < 4; i++ {
@@ -37,16 +37,16 @@ func constantTimeGreaterOrEqualP(n *BigNumber) word_t {
 }
 
 //n = x + y
-func (n *BigNumber) add(x *BigNumber, y *BigNumber) *BigNumber {
+func (n *bigNumber) add(x *bigNumber, y *bigNumber) *bigNumber {
 	return n.addRaw(x, y).weakReduce()
 }
 
-func (n *BigNumber) addW(w uint32) *BigNumber {
+func (n *bigNumber) addW(w uint32) *bigNumber {
 	n[0] += word_t(w)
 	return n
 }
 
-func (n *BigNumber) addRaw(x *BigNumber, y *BigNumber) *BigNumber {
+func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	n[0] = x[0] + y[0]
 	n[1] = x[1] + y[1]
 	n[2] = x[2] + y[2]
@@ -66,7 +66,7 @@ func (n *BigNumber) addRaw(x *BigNumber, y *BigNumber) *BigNumber {
 	return n
 }
 
-func (n *BigNumber) setUi(y uint64) *BigNumber {
+func (n *bigNumber) setUi(y uint64) *bigNumber {
 	n[0] = word_t(y) & radixMask
 	n[1] = word_t(y >> radix)
 	n[2] = 0
@@ -88,16 +88,16 @@ func (n *BigNumber) setUi(y uint64) *BigNumber {
 }
 
 //n = x - y
-func (n *BigNumber) sub(x *BigNumber, y *BigNumber) *BigNumber {
+func (n *bigNumber) sub(x *bigNumber, y *bigNumber) *bigNumber {
 	return n.subRaw(x, y).bias(2).weakReduce()
 }
 
-func (n *BigNumber) subW(w uint32) *BigNumber {
+func (n *bigNumber) subW(w uint32) *bigNumber {
 	n[0] -= word_t(w)
 	return n
 }
 
-func (n *BigNumber) subRaw(x *BigNumber, y *BigNumber) *BigNumber {
+func (n *bigNumber) subRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	n[0] = x[0] - y[0]
 	n[1] = x[1] - y[1]
 	n[2] = x[2] - y[2]
@@ -118,27 +118,27 @@ func (n *BigNumber) subRaw(x *BigNumber, y *BigNumber) *BigNumber {
 	return n
 }
 
-func (n *BigNumber) subxRaw(x *BigNumber, y *BigNumber) *BigNumber {
+func (n *bigNumber) subxRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	// XXX Only weakReduce when 32bits
 	return n.subRaw(x, y).bias(2).weakReduce()
 }
 
 //n = x * y
-func (n *BigNumber) mulCopy(x *BigNumber, y *BigNumber) *BigNumber {
-	//it does not work in place, that why the temporary BigNumber is necessary
-	return n.set(new(BigNumber).mul(x, y))
+func (n *bigNumber) mulCopy(x *bigNumber, y *bigNumber) *bigNumber {
+	//it does not work in place, that why the temporary bigNumber is necessary
+	return n.set(new(bigNumber).mul(x, y))
 }
 
 //n = x * y
-func (n *BigNumber) mul(x *BigNumber, y *BigNumber) *BigNumber {
-	//it does not work in place, that why the temporary BigNumber is necessary
+func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
+	//it does not work in place, that why the temporary bigNumber is necessary
 	return karatsubaMul(n, x, y)
 }
 
-func (n *BigNumber) isr(x *BigNumber) *BigNumber {
-	l0 := new(BigNumber)
-	l1 := new(BigNumber)
-	l2 := new(BigNumber)
+func (n *bigNumber) isr(x *bigNumber) *bigNumber {
+	l0 := new(bigNumber)
+	l1 := new(bigNumber)
+	l2 := new(bigNumber)
 
 	l1.square(x)
 	l2.mul(x, l1)
@@ -167,27 +167,27 @@ func (n *BigNumber) isr(x *BigNumber) *BigNumber {
 	return n.mul(l2, l0)
 }
 
-func (n *BigNumber) square(x *BigNumber) *BigNumber {
+func (n *bigNumber) square(x *bigNumber) *bigNumber {
 	return karatsubaSquare(n, x)
 }
 
-func (n *BigNumber) squareN(x *BigNumber, y uint) *BigNumber {
+func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	if y&1 != 0 {
 		n.square(x)
 		y -= 1
 	} else {
-		n.square(new(BigNumber).square(x))
+		n.square(new(bigNumber).square(x))
 		y -= 2
 	}
 
 	for ; y > 0; y -= 2 {
-		n.square(new(BigNumber).square(n))
+		n.square(new(bigNumber).square(n))
 	}
 
 	return n
 }
 
-func (n *BigNumber) weakReduce() *BigNumber {
+func (n *bigNumber) weakReduce() *bigNumber {
 	tmp := word_t(uint64(n[limbs-1]) >> radix)
 	n[limbs/2] += tmp
 
@@ -212,7 +212,7 @@ func (n *BigNumber) weakReduce() *BigNumber {
 }
 
 //XXX Security this should be constant time
-func (n *BigNumber) mulWSignedCurveConstant(x *BigNumber, c int64) *BigNumber {
+func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {
 	if c >= 0 {
 		return n.mulW(x, uint64(c))
 	}
@@ -224,21 +224,21 @@ func (n *BigNumber) mulWSignedCurveConstant(x *BigNumber, c int64) *BigNumber {
 	return r
 }
 
-func (n *BigNumber) neg(x *BigNumber) *BigNumber {
+func (n *bigNumber) neg(x *bigNumber) *bigNumber {
 	return n.negRaw(x).bias(2).weakReduce()
 }
 
-func (n *BigNumber) conditionalNegate(neg word_t) *BigNumber {
-	return constantTimeSelect(new(BigNumber).neg(n), n, neg)
+func (n *bigNumber) conditionalNegate(neg word_t) *bigNumber {
+	return constantTimeSelect(new(bigNumber).neg(n), n, neg)
 }
 
-func constantTimeSelect(x, y *BigNumber, first word_t) *BigNumber {
+func constantTimeSelect(x, y *bigNumber, first word_t) *bigNumber {
 	//XXX this is probably more complicate than it should
 	return y.copy().conditionalSwap(x.copy(), first)
 }
 
 //if swap == 0xffffffff => n = x, x = n
-func (n *BigNumber) conditionalSwap(x *BigNumber, swap word_t) *BigNumber {
+func (n *bigNumber) conditionalSwap(x *bigNumber, swap word_t) *bigNumber {
 	for i, xv := range x {
 		s := (xv ^ n[i]) & swap
 		x[i] ^= s
@@ -248,13 +248,13 @@ func (n *BigNumber) conditionalSwap(x *BigNumber, swap word_t) *BigNumber {
 	return n
 }
 
-func (n *BigNumber) decafCondNegate(neg dword_t) {
-	y := &BigNumber{}
-	y.sub(&BigNumber{0}, n)
+func (n *bigNumber) decafCondNegate(neg dword_t) {
+	y := &bigNumber{}
+	y.sub(&bigNumber{0}, n)
 	n.decafConstTimeSel(n, y, neg)
 }
 
-func (n *BigNumber) decafConstTimeSel(x, y *BigNumber, neg dword_t) {
+func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg dword_t) {
 	n[0] = (x[0] & word_t(^neg)) | (y[0] & word_t(neg))
 	n[1] = (x[1] & word_t(^neg)) | (y[1] & word_t(neg))
 	n[2] = (x[2] & word_t(^neg)) | (y[2] & word_t(neg))
@@ -273,7 +273,7 @@ func (n *BigNumber) decafConstTimeSel(x, y *BigNumber, neg dword_t) {
 	n[15] = (x[15] & word_t(^neg)) | (y[15] & word_t(neg))
 }
 
-func (n *BigNumber) negRaw(x *BigNumber) *BigNumber {
+func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
 	n[0] = word_t(-x[0])
 	n[1] = word_t(-x[1])
 	n[2] = word_t(-x[2])
@@ -294,18 +294,18 @@ func (n *BigNumber) negRaw(x *BigNumber) *BigNumber {
 	return n
 }
 
-func (n *BigNumber) copy() *BigNumber {
-	c := &BigNumber{}
+func (n *bigNumber) copy() *bigNumber {
+	c := &bigNumber{}
 	copy(c[:], n[:])
 	return c
 }
 
-func (n *BigNumber) set(x *BigNumber) *BigNumber {
+func (n *bigNumber) set(x *bigNumber) *bigNumber {
 	copy(n[:], x[:])
 	return n
 }
 
-func (n *BigNumber) equals(o *BigNumber) (eq bool) {
+func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	r := word_t(0)
 	x := n.copy().strongReduce()
 	y := o.copy().strongReduce()
@@ -330,7 +330,7 @@ func (n *BigNumber) equals(o *BigNumber) (eq bool) {
 	return r == 0
 }
 
-func (n *BigNumber) zeroMask() uint32 {
+func (n *bigNumber) zeroMask() uint32 {
 	x := n.copy().strongReduce()
 	r := word_t(0)
 
@@ -354,12 +354,12 @@ func (n *BigNumber) zeroMask() uint32 {
 	return isZeroMask(uint32(r))
 }
 
-func (n *BigNumber) zero() (eq bool) {
+func (n *bigNumber) zero() (eq bool) {
 	return n.zeroMask() == lmask
 }
 
 //in is big endian
-func (n *BigNumber) setBytes(in []byte) *BigNumber {
+func (n *bigNumber) setBytes(in []byte) *bigNumber {
 	if len(in) != 56 {
 		return nil
 	}
@@ -381,13 +381,13 @@ func (n *BigNumber) setBytes(in []byte) *BigNumber {
 	return n
 }
 
-func (n *BigNumber) String() string {
+func (n *bigNumber) String() string {
 	dst := make([]byte, 56)
 	serialize(dst[:], n)
 	return fmt.Sprintf("%#v", dst)
 	//return fmt.Sprintf("0x%s", new(big.Int).SetBytes(rev(dst)).Text(16))
 }
 
-func (n *BigNumber) limbs() []word_t {
+func (n *bigNumber) limbs() []word_t {
 	return n[:]
 }

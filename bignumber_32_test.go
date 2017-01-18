@@ -8,7 +8,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 	ser := serialized{0x1}
 	n, ok := deserialize(ser)
 
-	c.Assert(n, DeepEquals, &BigNumber{1})
+	c.Assert(n, DeepEquals, &bigNumber{1})
 	c.Assert(ok, Equals, true)
 
 	ser = serialized{
@@ -24,7 +24,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 
 	n, ok = deserialize(ser)
 
-	c.Assert(n, DeepEquals, &BigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0x57481f5, 0x72337ad,
 		0xf0d3c36, 0x3daacf9,
 		0xf1e8bc1, 0xbf897ef,
@@ -48,7 +48,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 	}
 
 	n, ok = deserialize(ser)
-	c.Assert(n, DeepEquals, &BigNumber{
+	c.Assert(n, DeepEquals, &bigNumber{
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
@@ -64,11 +64,11 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 func (s *Ed448Suite) TestSerialize(c *C) {
 	dst := [56]byte{}
 
-	one := &BigNumber{0x01}
+	one := &bigNumber{0x01}
 	serialize(dst[:], one)
 	c.Assert(dst, DeepEquals, [56]byte{1})
 
-	p := &BigNumber{
+	p := &bigNumber{
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,

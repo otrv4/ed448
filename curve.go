@@ -65,7 +65,7 @@ func mustNewPoint(x, y serialized) *homogeneousProjective {
 	return p
 }
 
-func (c *curveT) multiplyMontgomery(in *BigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) (*BigNumber, word_t) {
+func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [fieldWords]word_t, nbits, n_extra_doubles int) (*bigNumber, word_t) {
 	mont := new(montgomery)
 	mont.deserialize(in)
 	var i, j, n int
@@ -99,11 +99,11 @@ func (c *curveT) multiplyMontgomery(in *BigNumber, scalar [fieldWords]word_t, nb
 
 func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 	out := &twExtensible{
-		new(BigNumber),
-		new(BigNumber),
-		new(BigNumber),
-		new(BigNumber),
-		new(BigNumber),
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
 	}
 
 	n := combNumber

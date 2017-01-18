@@ -1,7 +1,7 @@
 package ed448
 
 //c = a * a
-func karatsubaSquare(c, a *BigNumber) *BigNumber {
+func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	aa := [8]uint64{
 		uint64(a[0]) + uint64(a[8]), // 0 - 8
 		uint64(a[1]) + uint64(a[9]), // 1 - 9

@@ -1,7 +1,7 @@
 package ed448
 
 //c = a * b
-func karatsubaMul(c, a, b *BigNumber) *BigNumber {
+func karatsubaMul(c, a, b *bigNumber) *bigNumber {
 	var aa, bb [8]uint64
 	for i := 0; i < 8; i++ {
 		aa[i] = uint64(a[i]) + uint64(a[i+8])
