@@ -663,3 +663,42 @@ func (p *extPoint) deisogenize(t, overT dword_t) *bigNumber {
 
 	return s
 }
+
+func decafDecode(ser serialized, identity dword_t) (*extPoint, dword_t) {
+	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	p := &extPoint{
+		x: &bigNumber{},
+		y: &bigNumber{},
+		z: &bigNumber{},
+		t: &bigNumber{},
+	}
+
+	n, succ := deserializeReturnMask(ser)
+	ok := dword_t(succ)
+
+	zero := decafEq(n, bigZero)
+	ok &= identity | ^zero
+	ok &= ^highBit(n)
+	a.square(n)
+	p.z.sub(bigOne, a)
+	b.square(p.z)
+	c.mulWSignedCurveConstant(a, 4-4*(D))
+	c.add(c, b)
+	b.mul(c, a)
+	d.isr(b)
+	e.square(d)
+	a.mul(e, b)
+	a.add(a, bigOne)
+	ok &= ^decafEq(a, bigZero)
+	b.mul(c, d)
+	d.decafCondNegate(highBit(b))
+	p.x.add(n, n)
+	c.mul(d, n)
+	b.sub(bigTwo, p.z)
+	a.mul(b, c)
+	p.y.mul(a, p.z)
+	p.t.mul(p.x, a)
+	p.y[0] -= word_t(zero)
+
+	return p, ok
+}

@@ -330,6 +330,19 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	return r == 0
 }
 
+func decafEq(x, y *bigNumber) dword_t {
+	n := &bigNumber{}
+	n.sub(x, y)
+	n.strongReduce()
+
+	var ret word_t
+
+	for i := 0; i < limbs; i++ {
+		ret |= n[i]
+	}
+	return ((dword_t(ret) - 1) >> 32)
+}
+
 func (n *bigNumber) zeroMask() uint32 {
 	x := n.copy().strongReduce()
 	r := word_t(0)

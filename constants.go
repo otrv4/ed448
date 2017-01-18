@@ -45,3 +45,9 @@ const (
 	// The size of a SHA3-512 checksum in bytes
 	Size512 = 64
 )
+
+var (
+	bigZero = &bigNumber{0}
+	bigOne  = &bigNumber{1}
+	bigTwo  = &bigNumber{2}
+)
