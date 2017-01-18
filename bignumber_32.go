@@ -228,7 +228,7 @@ func (n *BigNumber) mulW(x *BigNumber, w uint64) *BigNumber {
 	n[8] = word_t(accum8 & uint64(radixMask))
 	accum8 >>= radix
 
-	for i := 1; i < limbs/2; i++ {
+	for i := 1; i < Limbs/2; i++ {
 		accum0 += uint64(wlo) * uint64(x[i])
 		accum8 += uint64(wlo) * uint64(x[i+8])
 		accum0 += uint64(whi) * uint64(x[i-1])
