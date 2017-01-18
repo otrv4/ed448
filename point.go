@@ -620,3 +620,46 @@ func (sz *BigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 
 	return a, !ret
 }
+
+func highBit(x *BigNumber) dword_t {
+	y := &BigNumber{}
+	y.add(x, x)
+	y.strongReduce()
+	return dword_t(-(y[0] & 1))
+}
+
+// Extended Coordinate
+type extPoint struct {
+	x, y, z, t *BigNumber
+}
+
+func (p *extPoint) decafEncode(dst []byte) {
+	t := dword_t(0)
+	overT := dword_t(0)
+	serialize(dst, p.deisogenize(t, overT))
+}
+
+func (p *extPoint) deisogenize(t, overT dword_t) *BigNumber {
+	a, b, c, d, s := &BigNumber{}, &BigNumber{}, &BigNumber{}, &BigNumber{}, &BigNumber{}
+	a.mulWSignedCurveConstant(p.y, 1-(D))
+	c.mul(a, p.t)
+	a.mul(p.x, p.z)
+	d.sub(c, a)
+	a.add(p.z, p.y)
+	b.sub(p.z, p.y)
+	c.mul(b, a)
+	b.mulWSignedCurveConstant(c, (-(D)))
+	a.isr(b)
+	b.mulWSignedCurveConstant(a, (-(D)))
+	c.mul(b, a)
+	a.mul(c, d)
+	d.add(b, b)
+	c.mul(d, p.z)
+	b.decafCondNegate(overT ^ (^(highBit(c))))
+	c.decafCondNegate(overT ^ (^(highBit(c))))
+	d.mul(b, p.y)
+	s.add(a, d)
+	s.decafCondNegate(overT ^ highBit(s))
+
+	return s
+}

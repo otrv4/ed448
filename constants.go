@@ -10,6 +10,7 @@ const (
 
 	// The size of the Goldilocks field, in bits.
 	fieldBits = 448
+	D         = -39081
 
 	// The size of the Goldilocks field, in bytes.
 	fieldBytes = (fieldBits + 7) / 8 // 56
