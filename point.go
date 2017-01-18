@@ -22,7 +22,7 @@ var (
 )
 
 func maskToBoolean(m uint32) bool {
-	return m == 0xffffffff
+	return m == lmask
 }
 
 // NewPoint instantiates a new point in a suitable coordinate system.
@@ -324,7 +324,7 @@ func (p *twExtensible) equals(p2 *twExtensible) bool {
 
 	l3 := l0.zeroMask()
 
-	return (l4 & l3) == 0xffffffff
+	return (l4 & l3) == lmask
 }
 
 func (p *twExtensible) double() *twExtensible {

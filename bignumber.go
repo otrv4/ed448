@@ -2,7 +2,7 @@ package ed448
 
 import "fmt"
 
-type BigNumber [Limbs]word_t
+type BigNumber [limbs]word_t
 type serialized [56]byte
 
 func mustDeserialize(in serialized) *BigNumber {
@@ -21,7 +21,7 @@ func isZeroMask(n uint32) uint32 {
 }
 
 func constantTimeGreaterOrEqualP(n *BigNumber) word_t {
-	ge := word_t(0xffffffff)
+	ge := word_t(lmask)
 
 	for i := 0; i < 4; i++ {
 		ge &= n[i]
@@ -68,7 +68,7 @@ func (n *BigNumber) addRaw(x *BigNumber, y *BigNumber) *BigNumber {
 
 func (n *BigNumber) setUi(y uint64) *BigNumber {
 	n[0] = word_t(y) & radixMask
-	n[1] = word_t(y >> Radix)
+	n[1] = word_t(y >> radix)
 	n[2] = 0
 	n[3] = 0
 	n[4] = 0
@@ -188,24 +188,24 @@ func (n *BigNumber) squareN(x *BigNumber, y uint) *BigNumber {
 }
 
 func (n *BigNumber) weakReduce() *BigNumber {
-	tmp := word_t(uint64(n[Limbs-1]) >> Radix)
-	n[Limbs/2] += tmp
+	tmp := word_t(uint64(n[limbs-1]) >> radix)
+	n[limbs/2] += tmp
 
-	n[15] = (n[15] & radixMask) + (n[14] >> Radix)
-	n[14] = (n[14] & radixMask) + (n[13] >> Radix)
-	n[13] = (n[13] & radixMask) + (n[12] >> Radix)
-	n[12] = (n[12] & radixMask) + (n[11] >> Radix)
-	n[11] = (n[11] & radixMask) + (n[10] >> Radix)
-	n[10] = (n[10] & radixMask) + (n[9] >> Radix)
-	n[9] = (n[9] & radixMask) + (n[8] >> Radix)
-	n[8] = (n[8] & radixMask) + (n[7] >> Radix)
-	n[7] = (n[7] & radixMask) + (n[6] >> Radix)
-	n[6] = (n[6] & radixMask) + (n[5] >> Radix)
-	n[5] = (n[5] & radixMask) + (n[4] >> Radix)
-	n[4] = (n[4] & radixMask) + (n[3] >> Radix)
-	n[3] = (n[3] & radixMask) + (n[2] >> Radix)
-	n[2] = (n[2] & radixMask) + (n[1] >> Radix)
-	n[1] = (n[1] & radixMask) + (n[0] >> Radix)
+	n[15] = (n[15] & radixMask) + (n[14] >> radix)
+	n[14] = (n[14] & radixMask) + (n[13] >> radix)
+	n[13] = (n[13] & radixMask) + (n[12] >> radix)
+	n[12] = (n[12] & radixMask) + (n[11] >> radix)
+	n[11] = (n[11] & radixMask) + (n[10] >> radix)
+	n[10] = (n[10] & radixMask) + (n[9] >> radix)
+	n[9] = (n[9] & radixMask) + (n[8] >> radix)
+	n[8] = (n[8] & radixMask) + (n[7] >> radix)
+	n[7] = (n[7] & radixMask) + (n[6] >> radix)
+	n[6] = (n[6] & radixMask) + (n[5] >> radix)
+	n[5] = (n[5] & radixMask) + (n[4] >> radix)
+	n[4] = (n[4] & radixMask) + (n[3] >> radix)
+	n[3] = (n[3] & radixMask) + (n[2] >> radix)
+	n[2] = (n[2] & radixMask) + (n[1] >> radix)
+	n[1] = (n[1] & radixMask) + (n[0] >> radix)
 	n[0] = (n[0] & radixMask) + tmp
 
 	return n
@@ -250,7 +250,7 @@ func (n *BigNumber) conditionalSwap(x *BigNumber, swap word_t) *BigNumber {
 
 func (n *BigNumber) decafCondNegate(neg dword_t) {
 	y := &BigNumber{}
-	y.sub(&BigNumber{0}, n) // why is this not a constant
+	y.sub(&BigNumber{0}, n)
 	n.decafConstTimeSel(n, y, neg)
 }
 
@@ -355,7 +355,7 @@ func (n *BigNumber) zeroMask() uint32 {
 }
 
 func (n *BigNumber) zero() (eq bool) {
-	return n.zeroMask() == 0xffffffff
+	return n.zeroMask() == lmask
 }
 
 //in is big endian

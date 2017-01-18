@@ -119,7 +119,7 @@ func (s *Ed448Suite) TestConditionalNegate(c *C) {
 	}
 
 	x := n.copy()
-	x.conditionalNegate(0xffffffff)
+	x.conditionalNegate(lmask)
 	c.Assert(x, DeepEquals, negN)
 }
 func (s *Ed448Suite) TestMontgomerySerialize(c *C) {

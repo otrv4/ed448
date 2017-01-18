@@ -2,12 +2,8 @@ package ed448
 
 import (
 	"crypto/rand"
-	"golang.org/x/crypto/sha3"
-)
 
-// The size of a SHA3-512 checksum in bytes.
-const (
-	Size512 = 64
+	"golang.org/x/crypto/sha3"
 )
 
 // Curve is the interface that wraps the basic curve methods.

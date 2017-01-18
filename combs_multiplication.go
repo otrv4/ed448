@@ -11,7 +11,7 @@ func scheduleScalarForCombs(schedule []word_t, scalar [scalarWords]word_t) {
 }
 
 func convertToSignedWindowForm(out []word_t, scalar []word_t, preparedData []word_t) {
-	mask := word_t(dword_t(-(scalar[0] & 1)) & 0xffffffff)
+	mask := word_t(dword_t(-(scalar[0] & 1)) & lmask)
 
 	carry := addExtPacked(out, scalar, preparedData[:scalarWords], word_t(^mask))
 	carry += addExtPacked(out, out, preparedData[scalarWords:], word_t(mask))

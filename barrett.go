@@ -93,7 +93,7 @@ func barrettReduce(dst []word_t, carry word_t, p *barrettPrime) {
 		}
 	}
 
-	cout := addExtPacked(dst, dst[:p.wordsInP], p.lowWords, 0xffffffff)
+	cout := addExtPacked(dst, dst[:p.wordsInP], p.lowWords, lmask)
 
 	if p.pShift != 0 {
 		cout = (cout << (wordBits - p.pShift)) + (dst[p.wordsInP-1] >> p.pShift)

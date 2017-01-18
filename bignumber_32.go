@@ -1,11 +1,5 @@
 package ed448
 
-const (
-	Limbs     = 16
-	Radix     = 28
-	radixMask = word_t(0xfffffff)
-)
-
 func deserializeReturnMask(in serialized) (*BigNumber, word_t) {
 	n := &BigNumber{}
 
@@ -24,7 +18,7 @@ func deserializeReturnMask(in serialized) (*BigNumber, word_t) {
 
 func deserialize(in serialized) (n *BigNumber, ok bool) {
 	n, mask := deserializeReturnMask(in)
-	ok = mask == 0xffffffff
+	ok = mask == lmask
 	return
 }
 
@@ -218,7 +212,7 @@ func (n *BigNumber) strongReduce() *BigNumber {
 }
 
 func (n *BigNumber) mulW(x *BigNumber, w uint64) *BigNumber {
-	whi := uint32(w >> Radix)
+	whi := uint32(w >> radix)
 	wlo := uint32(w & uint64(radixMask))
 
 	var accum0, accum8 uint64
@@ -229,31 +223,31 @@ func (n *BigNumber) mulW(x *BigNumber, w uint64) *BigNumber {
 	accum8 += uint64(whi) * uint64(x[15]+x[7])
 
 	n[0] = word_t(accum0 & uint64(radixMask))
-	accum0 >>= Radix
+	accum0 >>= radix
 
 	n[8] = word_t(accum8 & uint64(radixMask))
-	accum8 >>= Radix
+	accum8 >>= radix
 
-	for i := 1; i < Limbs/2; i++ {
+	for i := 1; i < limbs/2; i++ {
 		accum0 += uint64(wlo) * uint64(x[i])
 		accum8 += uint64(wlo) * uint64(x[i+8])
 		accum0 += uint64(whi) * uint64(x[i-1])
 		accum8 += uint64(whi) * uint64(x[i+7])
 
 		n[i] = word_t(accum0 & uint64(radixMask))
-		accum0 >>= Radix
+		accum0 >>= radix
 
 		n[i+8] = word_t(accum8 & uint64(radixMask))
-		accum8 >>= Radix
+		accum8 >>= radix
 	}
 
 	accum0 += accum8 + uint64(n[8])
 	n[8] = word_t(accum0 & uint64(radixMask))
-	n[9] += word_t(accum0 >> Radix)
+	n[9] += word_t(accum0 >> radix)
 
 	accum8 += uint64(n[0])
 	n[0] = word_t(accum8 & uint64(radixMask))
-	n[1] += word_t(accum8 >> Radix)
+	n[1] += word_t(accum8 >> radix)
 
 	return n
 }

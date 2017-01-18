@@ -118,7 +118,7 @@ func (s *Ed448Suite) TestConditionalSelect(c *C) {
 	bs, _ = hex.DecodeString("190a4751b63108861a8823d67db100bac0e3bef9fcff77eea15b64b017b58483201f91f29dd03aa383aa654e093c15cda83f86867f6fd921")
 	y := new(BigNumber).setBytes(bs)
 
-	c.Assert(constantTimeSelect(x, y, 0xffffffff), DeepEquals, x)
+	c.Assert(constantTimeSelect(x, y, lmask), DeepEquals, x)
 	c.Assert(constantTimeSelect(x, y, 0), DeepEquals, y)
 }
 
@@ -131,7 +131,7 @@ func (s *Ed448Suite) TestConditionalSwap(c *C) {
 
 	a := x.copy()
 	b := y.copy()
-	a.conditionalSwap(b, 0xffffffff)
+	a.conditionalSwap(b, lmask)
 
 	c.Assert(a, DeepEquals, y)
 	c.Assert(b, DeepEquals, x)
@@ -148,7 +148,7 @@ func (s *Ed448Suite) TestConditionalNegateNumber(c *C) {
 	bs, _ = hex.DecodeString("190a4751b63108861a8823d67db100bac0e3bef9fcff77eea15b64b017b58483201f91f29dd03aa383aa654e093c15cda83f86867f6fd921")
 	negated := new(BigNumber).setBytes(bs)
 
-	c.Assert(n.copy().conditionalNegate(0xffffffff), DeepEquals, negated)
+	c.Assert(n.copy().conditionalNegate(lmask), DeepEquals, negated)
 	c.Assert(n.copy().conditionalNegate(0), DeepEquals, n)
 }
 
@@ -171,7 +171,7 @@ func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
 		0x072318d2, 0x0fff8007,
 	}
 
-	n.decafCondNegate(dword_t(0xffffffff))
+	n.decafCondNegate(dword_t(lmask))
 
 	c.Assert(n, DeepEquals, expected)
 }
@@ -206,7 +206,7 @@ func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
 		0x072318d2, 0x0fff8007,
 	}
 
-	neg := dword_t(0x0ffffffff)
+	neg := dword_t(lmask)
 
 	n.decafConstTimeSel(n, y, neg)
 
@@ -217,7 +217,7 @@ func (s *Ed448Suite) TestZeroMask(c *C) {
 	zero := &BigNumber{}
 	one := &BigNumber{1}
 
-	c.Assert(zero.zeroMask(), Equals, uint32(0xffffffff))
+	c.Assert(zero.zeroMask(), Equals, uint32(lmask))
 	c.Assert(one.zeroMask(), Equals, uint32(0))
 }
 
