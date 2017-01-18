@@ -2,7 +2,7 @@ package ed448
 
 import "fmt"
 
-type BigNumber [Limbs]word_t
+type BigNumber [limbs]word_t
 type serialized [56]byte
 
 func mustDeserialize(in serialized) *BigNumber {
@@ -188,8 +188,8 @@ func (n *BigNumber) squareN(x *BigNumber, y uint) *BigNumber {
 }
 
 func (n *BigNumber) weakReduce() *BigNumber {
-	tmp := word_t(uint64(n[Limbs-1]) >> radix)
-	n[Limbs/2] += tmp
+	tmp := word_t(uint64(n[limbs-1]) >> radix)
+	n[limbs/2] += tmp
 
 	n[15] = (n[15] & radixMask) + (n[14] >> radix)
 	n[14] = (n[14] & radixMask) + (n[13] >> radix)
