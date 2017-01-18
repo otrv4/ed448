@@ -240,12 +240,37 @@ func constantTimeSelect(x, y *BigNumber, first word_t) *BigNumber {
 //if swap == 0xffffffff => n = x, x = n
 func (n *BigNumber) conditionalSwap(x *BigNumber, swap word_t) *BigNumber {
 	for i, xv := range x {
-		s := (xv ^ n[i]) & word_t(swap)
+		s := (xv ^ n[i]) & swap
 		x[i] ^= s
 		n[i] ^= s
 	}
 
 	return n
+}
+
+func (n *BigNumber) decafCondNegate(neg dword_t) {
+	y := &BigNumber{}
+	y.sub(&BigNumber{0}, n) // why is this not a constant
+	n.decafConstTimeSel(n, y, neg)
+}
+
+func (n *BigNumber) decafConstTimeSel(x, y *BigNumber, neg dword_t) {
+	n[0] = (x[0] & word_t(^neg)) | (y[0] & word_t(neg))
+	n[1] = (x[1] & word_t(^neg)) | (y[1] & word_t(neg))
+	n[2] = (x[2] & word_t(^neg)) | (y[2] & word_t(neg))
+	n[3] = (x[3] & word_t(^neg)) | (y[3] & word_t(neg))
+	n[4] = (x[4] & word_t(^neg)) | (y[4] & word_t(neg))
+	n[5] = (x[5] & word_t(^neg)) | (y[5] & word_t(neg))
+	n[6] = (x[6] & word_t(^neg)) | (y[6] & word_t(neg))
+	n[7] = (x[7] & word_t(^neg)) | (y[7] & word_t(neg))
+	n[8] = (x[8] & word_t(^neg)) | (y[8] & word_t(neg))
+	n[9] = (x[9] & word_t(^neg)) | (y[9] & word_t(neg))
+	n[10] = (x[10] & word_t(^neg)) | (y[10] & word_t(neg))
+	n[11] = (x[11] & word_t(^neg)) | (y[11] & word_t(neg))
+	n[12] = (x[12] & word_t(^neg)) | (y[12] & word_t(neg))
+	n[13] = (x[13] & word_t(^neg)) | (y[13] & word_t(neg))
+	n[14] = (x[14] & word_t(^neg)) | (y[14] & word_t(neg))
+	n[15] = (x[15] & word_t(^neg)) | (y[15] & word_t(neg))
 }
 
 func (n *BigNumber) negRaw(x *BigNumber) *BigNumber {

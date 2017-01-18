@@ -152,6 +152,67 @@ func (s *Ed448Suite) TestConditionalNegateNumber(c *C) {
 	c.Assert(n.copy().conditionalNegate(0), DeepEquals, n)
 }
 
+func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
+	n := &BigNumber{0x08db85c2, 0x0fd2361e,
+		0x0ce2105d, 0x06a17729,
+		0x0a137aa5, 0x0e3ca84d,
+		0x0985ee61, 0x05a26d64,
+		0x0734c5f3, 0x0da853af,
+		0x01d955b7, 0x03160ecd,
+		0x0a59046d, 0x0c32cf71,
+		0x98dce72d, 0x00007fff}
+	expected := &BigNumber{0x07247a3d, 0x002dc9e1,
+		0x031defa2, 0x095e88d6,
+		0x05ec855a, 0x01c357b2,
+		0x067a119e, 0x0a5d929b,
+		0x08cb3a0b, 0x0257ac50,
+		0x0e26aa48, 0x0ce9f132,
+		0x05a6fb92, 0x03cd308e,
+		0x072318d2, 0x0fff8007,
+	}
+
+	n.decafCondNegate(dword_t(0xffffffff))
+
+	c.Assert(n, DeepEquals, expected)
+}
+
+func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
+	n := &BigNumber{0x08db85c2, 0x0fd2361e,
+		0x0ce2105d, 0x06a17729,
+		0x0e3ca84d, 0x0a137aa5,
+		0x0985ee61, 0x05a26d64,
+		0x0734c5f3, 0x0da853af,
+		0x01d955b7, 0x03160ecd,
+		0x0a59046d, 0x0c32cf71,
+		0x98dce72d, 0x00007fff,
+	}
+
+	y := &BigNumber{0x07247a3d, 0x002dc9e1,
+		0x031defa2, 0x095e88d6,
+		0x01c357b2, 0x05ec855a,
+		0x067a119e, 0x0a5d929b,
+		0x08cb3a0b, 0x0257ac50,
+		0x0e26aa48, 0x0ce9f132,
+		0x05a6fb92, 0x03cd308e,
+		0x072318d2, 0x0fff8007,
+	}
+	expected := &BigNumber{0x07247a3d, 0x002dc9e1,
+		0x031defa2, 0x095e88d6,
+		0x01c357b2, 0x05ec855a,
+		0x067a119e, 0x0a5d929b,
+		0x08cb3a0b, 0x0257ac50,
+		0x0e26aa48, 0x0ce9f132,
+		0x05a6fb92, 0x03cd308e,
+		0x072318d2, 0x0fff8007,
+	}
+
+	neg := dword_t(0x0ffffffff)
+
+	n.decafConstTimeSel(n, y, neg)
+
+	c.Assert(n, DeepEquals, expected)
+}
+
 func (s *Ed448Suite) TestZeroMask(c *C) {
 	zero := &BigNumber{}
 	one := &BigNumber{1}
