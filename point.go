@@ -377,16 +377,16 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 }
 
 func (d *twExtensible) subTwNiels(e *twNiels) {
-	L1 := new(bigNumber).subxRaw(d.y, d.x)
+	L1 := new(bigNumber).sub(d.y, d.x)
 	L0 := new(bigNumber).mul(e.b, L1)
 	L1.addRaw(d.x, d.y)
 	d.y.mul(e.a, L1)
 	L1.mul(d.u, d.t)
 	d.x.mul(e.c, L1)
 	d.u.addRaw(L0, d.y)
-	d.t.subxRaw(d.y, L0)
+	d.t.sub(d.y, L0)
 	d.y.addRaw(d.x, d.z)
-	L0.subxRaw(d.z, d.x)
+	L0.sub(d.z, d.x)
 	d.z.mul(L0, d.y)
 	d.x.mul(d.y, d.t)
 	d.y.mul(L0, d.u)
@@ -605,84 +605,10 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	return a, !ret
 }
 
+//TODO: MOVE ME TO BIGNUM
 func highBit(x *bigNumber) dword_t {
 	y := &bigNumber{}
 	y.add(x, x)
 	y.strongReduce()
 	return dword_t(-(y[0] & 1))
-}
-
-// Extended Coordinate
-type twExtendedPoint struct {
-	x, y, z, t *bigNumber
-}
-
-func (p *twExtendedPoint) decafEncode(dst []byte) {
-	t := dword_t(0)
-	overT := dword_t(0)
-	serialize(dst, p.deisogenize(t, overT))
-}
-
-func (p *twExtendedPoint) deisogenize(t, overT dword_t) *bigNumber {
-	a, b, c, d, s := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	a.mulWSignedCurveConstant(p.y, 1-(D))
-	c.mul(a, p.t)
-	a.mul(p.x, p.z)
-	d.sub(c, a)
-	a.add(p.z, p.y)
-	b.sub(p.z, p.y)
-	c.mul(b, a)
-	b.mulWSignedCurveConstant(c, (-(D)))
-	a.isr(b)
-	b.mulWSignedCurveConstant(a, (-(D)))
-	c.mul(b, a)
-	a.mul(c, d)
-	d.add(b, b)
-	c.mul(d, p.z)
-	b.decafCondNegate(overT ^ (^(highBit(c))))
-	c.decafCondNegate(overT ^ (^(highBit(c))))
-	d.mul(b, p.y)
-	s.add(a, d)
-	s.decafCondNegate(overT ^ highBit(s))
-
-	return s
-}
-
-func decafDecode(ser serialized, identity dword_t) (*twExtendedPoint, dword_t) {
-	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	p := &twExtendedPoint{
-		x: &bigNumber{},
-		y: &bigNumber{},
-		z: &bigNumber{},
-		t: &bigNumber{},
-	}
-
-	n, succ := deserializeReturnMask(ser)
-	ok := dword_t(succ)
-
-	zero := decafEq(n, bigZero)
-	ok &= identity | ^zero
-	ok &= ^highBit(n)
-	a.square(n)
-	p.z.sub(bigOne, a)
-	b.square(p.z)
-	c.mulWSignedCurveConstant(a, 4-4*(D))
-	c.add(c, b)
-	b.mul(c, a)
-	d.isr(b)
-	e.square(d)
-	a.mul(e, b)
-	a.add(a, bigOne)
-	ok &= ^decafEq(a, bigZero)
-	b.mul(c, d)
-	d.decafCondNegate(highBit(b))
-	p.x.add(n, n)
-	c.mul(d, n)
-	b.sub(bigTwo, p.z)
-	a.mul(b, c)
-	p.y.mul(a, p.z)
-	p.t.mul(p.x, a)
-	p.y[0] -= word_t(zero)
-
-	return p, ok
 }

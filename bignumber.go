@@ -118,9 +118,8 @@ func (n *bigNumber) subRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	return n
 }
 
-func (n *bigNumber) subxRaw(x *bigNumber, y *bigNumber) *bigNumber {
-	// XXX Only weakReduce when 32bits
-	return n.subRaw(x, y).bias(2).weakReduce()
+func (n *bigNumber) subXBias(x *bigNumber, y *bigNumber, amt uint32) *bigNumber {
+	return n.subRaw(x, y).bias(amt).weakReduce()
 }
 
 //n = x * y

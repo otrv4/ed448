@@ -46,9 +46,10 @@ const (
 )
 
 var (
-	bigZero     = &bigNumber{0}
-	bigOne      = &bigNumber{1}
-	bigTwo      = &bigNumber{2}
+	bigZero = &bigNumber{0}
+	bigOne  = &bigNumber{1}
+	bigTwo  = &bigNumber{2}
+
 	sqrtDminus1 = mustDeserialize(serialized{
 		0x46, 0x9f, 0x74, 0x36, 0x18, 0xe2, 0xd2, 0x79,
 		0x01, 0x4f, 0x2b, 0xb4, 0x8d, 0x88, 0x38, 0xea,
