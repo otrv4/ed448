@@ -204,9 +204,30 @@ func (s *Ed448Suite) Test_AddNielsToExtended_BeforeDouble(c *C) {
 }
 
 func (s *Ed448Suite) Test_AddNielsToProjective(c *C) {
-	n := &twNiels{&bigNumber{0x08fcb20f, 0x04611087, 0x01cc6f32, 0x0df43db2, 0x04516644, 0x0ffdde9f, 0x091686b9, 0x05199177, 0x0fd34473, 0x0b72b441, 0x0cb1c72b, 0x08d45684, 0x00fc17a5, 0x01518137, 0x007f74d3, 0x0a456d13},
-		&bigNumber{0x09b607dc, 0x01430f14, 0x016715fc, 0x0e992ccd, 0x00a32a09, 0x0a62209b, 0x0c26b8e4, 0x0b889ced, 0x0ac109cf, 0x059bf9a3, 0x0b7feac2, 0x06871bb3, 0x0d9a0e6b, 0x0f4a4d5f, 0x00cd69a5, 0x0b95db46},
-		&bigNumber{0x08bda702, 0x03630441, 0x01561558, 0x07bc5686, 0x0e30416f, 0x0f344bc8, 0x080f59d7, 0x0a645370, 0x07d00ace, 0x0b4c2007, 0x0b26f8cc, 0x0ee79620, 0x00b5403d, 0x0a6a558e, 0x066f3d19, 0x08f1d2c7},
+	n := &twNiels{&bigNumber{0x08fcb20f, 0x04611087,
+		0x01cc6f32, 0x0df43db2,
+		0x04516644, 0x0ffdde9f,
+		0x091686b9, 0x05199177,
+		0x0fd34473, 0x0b72b441,
+		0x0cb1c72b, 0x08d45684,
+		0x00fc17a5, 0x01518137,
+		0x007f74d3, 0x0a456d13},
+		&bigNumber{0x09b607dc, 0x01430f14,
+			0x016715fc, 0x0e992ccd,
+			0x00a32a09, 0x0a62209b,
+			0x0c26b8e4, 0x0b889ced,
+			0x0ac109cf, 0x059bf9a3,
+			0x0b7feac2, 0x06871bb3,
+			0x0d9a0e6b, 0x0f4a4d5f,
+			0x00cd69a5, 0x0b95db46},
+		&bigNumber{0x08bda702, 0x03630441,
+			0x01561558, 0x07bc5686,
+			0x0e30416f, 0x0f344bc8,
+			0x080f59d7, 0x0a645370,
+			0x07d00ace, 0x0b4c2007,
+			0x0b26f8cc, 0x0ee79620,
+			0x00b5403d, 0x0a6a558e,
+			0x066f3d19, 0x08f1d2c7},
 	}
 
 	extdPoint := twExtendedPoint{
@@ -292,6 +313,50 @@ func (s *Ed448Suite) Test_AddNielsToProjective(c *C) {
 	c.Assert(extdPoint.y, DeepEquals, expected.y)
 	c.Assert(extdPoint.z, DeepEquals, expected.z)
 	c.Assert(extdPoint.t, DeepEquals, expected.t)
+}
+
+func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
+	p := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{0x01},
+		&bigNumber{0x01},
+		&bigNumber{},
+	}
+	niels := &twNiels{
+		&bigNumber{0x068d5b74},
+		&bigNumber{0x068d5b74},
+		&bigNumber{0x068d5b74},
+	}
+
+	expected := &twExtendedPoint{
+		&bigNumber{0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0ffffffe, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+		},
+		&bigNumber{0x0d1ab6e8},
+		&bigNumber{0x00000001},
+		&bigNumber{0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0ffffffe, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff,
+		},
+	}
+
+	p.nielsToExtended(niels)
+
+	c.Assert(p.x, DeepEquals, expected.x)
+	c.Assert(p.y, DeepEquals, expected.y)
+	c.Assert(p.z, DeepEquals, expected.z)
+	c.Assert(p.t, DeepEquals, expected.t)
 }
 
 //func (s *Ed448Suite) Test_ScalarMultiplicationForReal(c *C) {

@@ -116,6 +116,13 @@ func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
 	}
 }
 
+func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
+	p.y.add(src.b, src.a)
+	p.x.sub(src.b, src.a)
+	p.t.mul(p.y, p.x)
+	copy(p.z[:], bigOne[:])
+}
+
 //func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]word_t) {
 //	n := uint(5)
 //	t := uint(5)
