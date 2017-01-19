@@ -20,7 +20,7 @@ func (a *montgomery) montgomeryStep() {
 	a.za.square(a.zd)
 	a.xd.square(L0)
 	L0.square(L1)
-	a.zd.mulWSignedCurveConstant(a.xd, 1-curveDSigned) /* FIXME PERF MULW */
+	a.zd.mulWSignedCurveConstant(a.xd, 1-D) /* FIXME PERF MULW */
 	L1.subxRaw(a.xd, L0)
 	a.xd.mul(L0, a.zd)
 	L0.subRaw(a.zd, L1)
@@ -49,7 +49,7 @@ func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
 	L2 = a.z0.copy()
 	L2.addW(1)
 	L0.square(L2)
-	L1.mulWSignedCurveConstant(L0, curveDSigned-1)
+	L1.mulWSignedCurveConstant(L0, D-1)
 	L2.add(a.z0, a.z0)
 	L0.add(L2, L2)
 	L2.add(L0, L1)

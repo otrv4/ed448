@@ -5,22 +5,6 @@ import (
 	"fmt"
 )
 
-var (
-	bigNumOne           = mustDeserialize(serialized{1})
-	bigNumTwo           = mustDeserialize(serialized{2})
-	curveDSigned        = int64(-39081)
-	twistedCurveDSigned = int64(-39082)
-	sqrtDminus1         = mustDeserialize(serialized{
-		0x46, 0x9f, 0x74, 0x36, 0x18, 0xe2, 0xd2, 0x79,
-		0x01, 0x4f, 0x2b, 0xb4, 0x8d, 0x88, 0x38, 0xea,
-		0xde, 0xab, 0x9a, 0x18, 0x5a, 0x06, 0x4c, 0xf1,
-		0xa6, 0x5c, 0xe6, 0x51, 0x70, 0x97, 0x4d, 0x42,
-		0x7b, 0x9f, 0xa4, 0x56, 0xf6, 0xc5, 0x28, 0x46,
-		0xac, 0xdc, 0x4a, 0x73, 0x48, 0x87, 0x3b, 0x44,
-		0x49, 0x7a, 0x5b, 0xb2, 0xc0, 0xc0, 0xfe, 0x12,
-	})
-)
-
 func maskToBoolean(m uint32) bool {
 	return m == lmask
 }
@@ -83,7 +67,7 @@ func (p *extensibleCoordinates) OnCurve() bool {
 	l3 = l3.square(u)
 	l0 = l0.square(t)
 	l1 = l1.mul(l0, l3)
-	l0 = l0.mulWSignedCurveConstant(l1, curveDSigned)
+	l0 = l0.mulWSignedCurveConstant(l1, D)
 	l1 = l1.add(l0, l2)
 	l0 = l0.square(x)
 	l2 = l2.neg(l0)
@@ -226,7 +210,7 @@ func convertTwExtensibleToTwPNiels(dst *twPNiels, src *twExtensible) {
 	dst.n.a.sub(src.y, src.x)
 	dst.n.b.add(src.x, src.y)
 	dst.z.mul(src.u, src.t)
-	dst.n.c.mulWSignedCurveConstant(dst.z, curveDSigned*2-2)
+	dst.n.c.mulWSignedCurveConstant(dst.z, D*2-2)
 	dst.z.add(src.z, src.z)
 }
 
@@ -277,7 +261,7 @@ func (p *twExtensible) OnCurve() bool {
 	l3 = l3.square(p.u)
 	l0 = l0.square(p.t)
 	l1 = l1.mul(l0, l3)
-	l3 = l3.mulWSignedCurveConstant(l1, curveDSigned)
+	l3 = l3.mulWSignedCurveConstant(l1, D)
 	l0 = l0.add(l3, l2)
 	l3 = l3.neg(l1)
 	l2 = l2.add(l3, l0)
@@ -423,8 +407,8 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 	l2.square(p.z)
 	l1.square(l2)
 	b.add(b, b)
-	l2.mulWSignedCurveConstant(b, curveDSigned-1)
-	b.mulWSignedCurveConstant(l2, curveDSigned-1)
+	l2.mulWSignedCurveConstant(b, D-1)
+	b.mulWSignedCurveConstant(l2, D-1)
 	l0.mul(l2, l1)
 	l2.mul(b, l0)
 	l0.isr(l2)
@@ -449,7 +433,7 @@ func newHomogeneousProjective(x *bigNumber, y *bigNumber) *homogeneousProjective
 	return &homogeneousProjective{
 		x: x.copy(),
 		y: y.copy(),
-		z: bigNumOne.copy(),
+		z: bigOne.copy(),
 	}
 }
 
@@ -469,7 +453,7 @@ func (p *homogeneousProjective) OnCurve() bool {
 	z4 := new(bigNumber).mul(z2, z2)
 
 	x2y2 := new(bigNumber).mul(x2, y2)
-	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, curveDSigned)
+	dx2y2 := x2y2.mulWSignedCurveConstant(x2y2, D)
 	dx2y2.weakReduce()
 
 	r := new(bigNumber).add(x2, y2)
@@ -545,7 +529,7 @@ func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProje
 	c := new(bigNumber).mul(x1, x2)
 	d := new(bigNumber).mul(y1, y2)
 
-	e := new(bigNumber).mulWSignedCurveConstant(c, curveDSigned)
+	e := new(bigNumber).mulWSignedCurveConstant(c, D)
 	e.mulCopy(e, d)
 	f := new(bigNumber).sub(b, e)
 	g := new(bigNumber).add(b, e)
@@ -582,7 +566,7 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	a.y = a.z.copy()
 	a.y.addW(1)
 	L0.square(a.y)
-	a.x.mulWSignedCurveConstant(L0, curveDSigned-1)
+	a.x.mulWSignedCurveConstant(L0, D-1)
 	a.y.add(a.z, a.z)
 	a.u.add(a.y, a.y)
 	a.y.add(a.u, a.x)
@@ -629,17 +613,17 @@ func highBit(x *bigNumber) dword_t {
 }
 
 // Extended Coordinate
-type extPoint struct {
+type twExtendedPoint struct {
 	x, y, z, t *bigNumber
 }
 
-func (p *extPoint) decafEncode(dst []byte) {
+func (p *twExtendedPoint) decafEncode(dst []byte) {
 	t := dword_t(0)
 	overT := dword_t(0)
 	serialize(dst, p.deisogenize(t, overT))
 }
 
-func (p *extPoint) deisogenize(t, overT dword_t) *bigNumber {
+func (p *twExtendedPoint) deisogenize(t, overT dword_t) *bigNumber {
 	a, b, c, d, s := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.mulWSignedCurveConstant(p.y, 1-(D))
 	c.mul(a, p.t)
@@ -664,9 +648,9 @@ func (p *extPoint) deisogenize(t, overT dword_t) *bigNumber {
 	return s
 }
 
-func decafDecode(ser serialized, identity dword_t) (*extPoint, dword_t) {
+func decafDecode(ser serialized, identity dword_t) (*twExtendedPoint, dword_t) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	p := &extPoint{
+	p := &twExtendedPoint{
 		x: &bigNumber{},
 		y: &bigNumber{},
 		z: &bigNumber{},

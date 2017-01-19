@@ -323,7 +323,7 @@ func (s *Ed448Suite) Test_HighBit(c *C) {
 }
 
 func (s *Ed448Suite) TestDecafEncode(c *C) {
-	point := &extPoint{
+	point := &twExtendedPoint{
 		&bigNumber{
 			0x0d9a309b, 0x000289cb,
 			0x02d19f65, 0x0b622ac4,
