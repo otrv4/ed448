@@ -14,11 +14,11 @@ func (s *Ed448Suite) TestBarrettDeserializeAndReduce(c *C) {
 		0xd3, 0x74, 0x3e, 0x3b, 0x7b, 0x21, 0x70, 0x01,
 	}
 
-	result := [fieldWords]word_t{}
+	result := [scalarWords]word_t{}
 
 	barrettDeserializeAndReduce(result[:], serialized[:], &curvePrimeOrder)
 
-	c.Assert(result, DeepEquals, [fieldWords]word_t{
+	c.Assert(result, DeepEquals, [scalarWords]word_t{
 		0x3e3f0106, 0x109e3fb3,
 		0x2334dede, 0x44759a6a,
 		0x4f184169, 0x5052b779,
@@ -46,7 +46,7 @@ func (s *Ed448Suite) TestBarrettDeserialize(c *C) {
 	reduced := barrettDeserialize(result[:], serialized[:], &curvePrimeOrder)
 	c.Assert(reduced, Equals, false)
 
-	c.Assert(result, DeepEquals, [fieldWords]word_t{
+	c.Assert(result, DeepEquals, [scalarWords]word_t{
 		0x655b58fe, 0x18653891,
 		0x3390fe9d, 0x47acbe48,
 		0x280965ee, 0x0504e5de,
@@ -70,7 +70,7 @@ func (s *Ed448Suite) TestBarrettDeserialize(c *C) {
 	reduced = barrettDeserialize(result[:], serialized[:], &curvePrimeOrder)
 	c.Assert(reduced, Equals, true)
 
-	c.Assert(result, DeepEquals, [fieldWords]word_t{
+	c.Assert(result, DeepEquals, [scalarWords]word_t{
 		0x63528a25, 0xadfaf0d9,
 		0x8a40509d, 0xe36676f0,
 		0x1b86c23d, 0xb8185401,
@@ -82,7 +82,7 @@ func (s *Ed448Suite) TestBarrettDeserialize(c *C) {
 }
 
 func (s *Ed448Suite) TestBarrettNegate(c *C) {
-	n := [fieldWords]word_t{
+	n := [scalarWords]word_t{
 		0x6c226d73, 0x70edcfc3,
 		0x44156c47, 0x84f4695,
 		0xe72606ac, 0x9d0ce5e5,
@@ -92,7 +92,7 @@ func (s *Ed448Suite) TestBarrettNegate(c *C) {
 		0x48ba4461, 0x34eb2031,
 	}
 
-	notN := [fieldWords]word_t{
+	notN := [scalarWords]word_t{
 		0x3f35d780, 0xb28af2cf,
 		0x49b0230d, 0x191d7bdd,
 		0xc7b02fe4, 0x2741f563,
@@ -108,7 +108,7 @@ func (s *Ed448Suite) TestBarrettNegate(c *C) {
 }
 
 func (s *Ed448Suite) TestBarrettMac(c *C) {
-	accum := [fieldWords]word_t{
+	accum := [scalarWords]word_t{
 		0xc7a99dbd, 0xb92054cc,
 		0x79b10a3e, 0x38afe6b9,
 		0x859aa259, 0x007e0791,
@@ -118,7 +118,7 @@ func (s *Ed448Suite) TestBarrettMac(c *C) {
 		0x1616d689, 0x17db93b0,
 	}
 
-	x := [fieldWords]word_t{
+	x := [scalarWords]word_t{
 		0x3f35d780, 0xb28af2cf,
 		0x49b0230d, 0x191d7bdd,
 		0xc7b02fe4, 0x2741f563,
@@ -128,7 +128,7 @@ func (s *Ed448Suite) TestBarrettMac(c *C) {
 		0xb745bb9e, 0x0b14dfce,
 	}
 
-	y := [fieldWords]word_t{
+	y := [scalarWords]word_t{
 		0x2efd441f, 0xa8ca47de,
 		0x88454c7c, 0x5a017e1a,
 		0xfb3701a9, 0xe0b9be0d,
@@ -138,7 +138,7 @@ func (s *Ed448Suite) TestBarrettMac(c *C) {
 		0x3a114311, 0x22b8f8d1,
 	}
 
-	expected := [fieldWords]word_t{
+	expected := [scalarWords]word_t{
 		0x908c5c63, 0x21ab566a,
 		0x936bf39e, 0xa2c8ba5b,
 		0xf885f518, 0xc1f2945d,

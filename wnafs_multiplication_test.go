@@ -176,7 +176,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	x := [fieldWords]word_t{
+	x := [scalarWords]word_t{
 		0x6c226d73, 0x70edcfc3,
 		0x44156c47, 0x084f4695,
 		0xe72606ac, 0x9d0ce5e5,
@@ -186,7 +186,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 		0x48ba4461, 0x34eb2031,
 	}
 
-	y := [fieldWords]word_t{
+	y := [scalarWords]word_t{
 		0x2118b8c6, 0x4356acd5,
 		0x26d7e73c, 0x459174b7,
 		0xf10bea31, 0x83e528bb,
@@ -229,7 +229,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	x := [fieldWords]word_t{
+	x := [scalarWords]word_t{
 		0x150252d4, 0x91f90541,
 		0xfbc32870, 0x5055d9f0,
 		0x3e5d3a5c, 0xec7fe32d,
@@ -239,7 +239,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 		0xf2ce123c, 0xfb54751,
 	}
 
-	y := [fieldWords]word_t{
+	y := [scalarWords]word_t{
 		0xc6a3102f, 0xe9e887ee,
 		0x393be2cb, 0xd6dbb642,
 		0x3a20bf34, 0x8a75ad11,

@@ -15,9 +15,6 @@ const (
 	// The size of the Goldilocks field, in bytes.
 	fieldBytes = (fieldBits + 7) / 8 // 56
 
-	// The number of words in the Goldilocks field.
-	fieldWords = (fieldBits + wordBits - 1) / wordBits // 14
-
 	// The size of the Goldilocks scalars, in bits.
 	scalarBits = fieldBits - 2 // 446
 
@@ -44,6 +41,8 @@ const (
 
 	// The size of a SHA3-512 checksum in bytes
 	Size512 = 64
+
+	uintZero = uint(0)
 )
 
 var (
@@ -59,4 +58,14 @@ var (
 		0xac, 0xdc, 0x4a, 0x73, 0x48, 0x87, 0x3b, 0x44,
 		0x49, 0x7a, 0x5b, 0xb2, 0xc0, 0xc0, 0xfe, 0x12,
 	})
+
+	scalarP = [scalarWords]word_t{
+		0xab5844f3, 0x2378c292,
+		0x8dc58f55, 0x216cc272,
+		0xaed63690, 0xc44edb49,
+		0x7cca23e9, 0xffffffff,
+		0xffffffff, 0xffffffff,
+		0xffffffff, 0xffffffff,
+		0xffffffff, 0x3fffffff,
+	}
 )
