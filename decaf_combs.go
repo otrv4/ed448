@@ -8,14 +8,14 @@ type decafBaseTable struct {
 	scalarAdjustment scalarAdjustmentTable
 }
 
-var decafPrecompTable = &decafBaseTable{}
-
 // TODO: Security! This lookup should be done in constant time
 func (table *decafBaseTable) lookup(j, t, idx uint) *twNiels {
 	nin := j << (t - 1)
 	in := table.base[nin:] //this is not constant time
 	return in[idx].copy()
 }
+
+var decafPrecompTable = &decafBaseTable{}
 
 func init() {
 	t := [80]*twNiels{

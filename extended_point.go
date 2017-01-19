@@ -5,6 +5,7 @@ type twExtendedPoint struct {
 }
 
 // Based on Hisil's formula 5.1.3: Doubling in E^e
+// XXX: Find out if double is always a double of itself
 func (p *twExtendedPoint) double(q *twExtendedPoint, beforeDouble bool) {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	c.square(q.x)
@@ -123,50 +124,38 @@ func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
 	copy(p.z[:], bigOne[:])
 }
 
-//func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]word_t) {
-//	n := uint(5)
-//	t := uint(5)
-//	s := uint(18)
-//
-//	var scalar1 [scalarWords]word_t
-//	scalar1 = scalarAdd(scalar, precomputedBaseTable.scalarAdjustment)
-//
-//	scalar1 = scHalve(scalar1, scP)
-//
-//	var ni *twNiels
-//
-//	for i := int(s - 1); i >= 0; i-- {
-//		if i != int(s-1) {
-//			p.pointDoubleInternal(p, false)
-//		}
-//
-//		for j := uint(0); j < n; j++ {
-//			var tab word_t
-//			for k := uint(0); k < t; k++ {
-//				bit := uint(i) + s*(k+j*t)
-//				if bit < 446 { // change 446 to constant
-//					tab |= (scalar1[bit/uint(32)] >> (bit % uint(32)) & 1) << k
-//					// change uint(32) to constant
-//				}
-//			}
-//
-//			invert := (int32(tab) >> (t - 1)) - 1
-//			tab ^= word_t(invert)
-//			tab &= (1 << (t - 1)) - 1
-//
-//			ni = precomputedBaseTable.decafLookup(j, t, uint(tab))
-//
-//			ni.conditionalNegate(word_t(invert))
-//
-//			if i != int(s-1) || j != 0 {
-//				p.addNielsToProjective(ni, j == n-1 && i != 0)
-//			} else {
-//				convertNielsToPt(p, ni)
-//			}
-//		}
-//	}
-//	//pointPrint("x end", p.x)
-//	//pointPrint("y end", p.y)
-//	//pointPrint("z end", p.z)
-//	//pointPrint("t end", p.t)
-//}
+func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]word_t) {
+	scalar2 := scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
+	scalar2 = scalarHalve(scalar2, scalarP)
+
+	var ni *twNiels
+	for i := int(decafCombSpacing - 1); i >= 0; i-- {
+		if i != int(decafCombSpacing-1) {
+			p.double(p, false)
+		}
+
+		for j := uintZero; j < decafCombNumber; j++ {
+			var tab word_t
+			for k := uintZero; k < decafCombTeeth; k++ {
+				bit := uint(i) + decafCombSpacing*(k+j*decafCombTeeth)
+				if bit < scalarBits {
+					tab |= (scalar2[bit/wordBits] >> (bit % wordBits) & 1) << k
+				}
+			}
+
+			invert := (int32(tab) >> (decafCombTeeth - 1)) - 1
+			tab ^= word_t(invert)
+			tab &= (1 << (decafCombTeeth - 1)) - 1
+
+			ni = decafPrecompTable.lookup(j, decafCombTeeth, uint(tab))
+
+			ni.conditionalNegate(word_t(invert))
+
+			if i != int(decafCombSpacing-1) || j != 0 {
+				p.addNielsToExtended(ni, j == decafCombNumber-1 && i != 0)
+			} else {
+				p.nielsToExtended(ni)
+			}
+		}
+	}
+}

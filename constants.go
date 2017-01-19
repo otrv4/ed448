@@ -35,9 +35,14 @@ const (
 	signatureBytes = 2 * fieldBytes
 
 	// Comb configuration
-	combNumber  = uint(8)  // 5 if 64-bits
-	combTeeth   = uint(4)  // 5 if 64-bits
-	combSpacing = uint(14) // 18 if 64-bit
+	combNumber  = uint(8)
+	combTeeth   = uint(4)
+	combSpacing = uint(14)
+
+	// DecafComb configuration
+	decafCombNumber  = uint(5)
+	decafCombTeeth   = uint(5)
+	decafCombSpacing = uint(18)
 
 	// The size of a SHA3-512 checksum in bytes
 	Size512 = 64

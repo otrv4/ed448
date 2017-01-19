@@ -34,28 +34,19 @@ func scalarSubExtra(accum, sub [scalarWords]word_t, extra word_t) (out [scalarWo
 
 func scalarHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	mask := -(a[0] & 1)
-	var chain word_t
+	var chain dword_t
+	var i uint
 
-	for i := uintZero; i < scalarWords; i++ {
-		chain += a[i] + b[i]&mask
-		out[i] = chain
+	for i = 0; i < scalarWords; i++ {
+		chain += dword_t(a[i]) + dword_t(b[i]&mask)
+		out[i] = word_t(chain)
 		chain >>= wordBits
 	}
+	for i = 0; i < scalarWords-1; i++ {
+		out[i] = out[i]>>1 | out[i+1]<<(wordBits-1)
+	}
 
-	out[0] = out[0]>>1 | out[1]<<(wordBits-1)
-	out[1] = out[1]>>1 | out[2]<<(wordBits-1)
-	out[2] = out[2]>>1 | out[3]<<(wordBits-1)
-	out[3] = out[3]>>1 | out[4]<<(wordBits-1)
-	out[4] = out[4]>>1 | out[5]<<(wordBits-1)
-	out[5] = out[5]>>1 | out[6]<<(wordBits-1)
-	out[6] = out[6]>>1 | out[7]<<(wordBits-1)
-	out[7] = out[7]>>1 | out[8]<<(wordBits-1)
-	out[8] = out[8]>>1 | out[9]<<(wordBits-1)
-	out[9] = out[9]>>1 | out[10]<<(wordBits-1)
-	out[10] = out[10]>>1 | out[11]<<(wordBits-1)
-	out[11] = out[11]>>1 | out[12]<<(wordBits-1)
-	out[12] = out[12]>>1 | out[13]<<(wordBits-1)
-	out[13] = out[13]>>1 | chain<<(wordBits-1)
+	out[i] = out[i]>>1 | word_t(chain<<(wordBits-1))
 
 	return
 }
