@@ -97,6 +97,25 @@ func decafDecode(ser serialized, identity dword_t) (*twExtendedPoint, dword_t) {
 	return p, ok
 }
 
+func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
+	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	b.sub(p.y, p.x)
+	a.mul(p2.a, b)
+	b.addRaw(p.x, p.y)
+	p.y.mul(p2.b, b)
+	p.x.mul(p2.c, p.t)
+	c.addRaw(a, p.y)
+	b.sub(p.y, a)
+	p.y.sub(p.z, p.x)
+	a.addRaw(p.x, p.z)
+	p.z.mul(a, p.y)
+	p.x.mul(p.y, b)
+	p.y.mul(a, c)
+	if !beforeDouble {
+		p.t.mul(b, c)
+	}
+}
+
 //func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]word_t) {
 //	n := uint(5)
 //	t := uint(5)
