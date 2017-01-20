@@ -84,3 +84,12 @@ func Add(x [56]byte, y [56]byte) (out [56]byte) {
 	serialize(out[:], desX)
 	return out
 }
+
+// Sub subtracts two large values
+func Sub(x [56]byte, y [56]byte) (out [56]byte) {
+	desX, _ := deserialize(x)
+	desY, _ := deserialize(y)
+	desX.sub(desX, desY)
+	serialize(out[:], desX)
+	return out
+}
