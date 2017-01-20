@@ -75,3 +75,12 @@ func Mul(x [56]byte, y [56]byte) (out [56]byte) {
 	serialize(out[:], desX)
 	return out
 }
+
+// Add two large values
+func Add(x [56]byte, y [56]byte) (out [56]byte) {
+	desX, _ := deserialize(x)
+	desY, _ := deserialize(y)
+	desX.add(desX, desY)
+	serialize(out[:], desX)
+	return out
+}
