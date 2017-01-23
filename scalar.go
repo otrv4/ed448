@@ -1,15 +1,15 @@
 package ed448
 
 func scalarAdd(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
-	var chain uint32
+	var chain uint64
 
 	for i := uintZero; i < scalarWords; i++ {
-		chain += a[i] + b[i]
-		out[i] = chain
+		chain += uint64(a[i]) + uint64(b[i])
+		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
 
-	return scalarSubExtra(out, scalarP, chain)
+	return scalarSubExtra(out, scalarP, uint32(chain))
 }
 
 func scalarSubExtra(accum, sub [scalarWords]uint32, extra uint32) (out [scalarWords]uint32) {

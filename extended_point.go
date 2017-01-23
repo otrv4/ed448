@@ -124,7 +124,15 @@ func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
 	copy(p.z[:], bigOne[:])
 }
 
-func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]uint32) {
+func (c *curveT) precomputedScalarMul(scalar [scalarWords]uint32) *twExtendedPoint {
+
+	p := &twExtendedPoint{
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+	}
+
 	scalar2 := scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2 = scalarHalve(scalar2, scalarP)
 
@@ -158,4 +166,6 @@ func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]uint32) {
 			}
 		}
 	}
+
+	return p
 }

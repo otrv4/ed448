@@ -359,16 +359,10 @@ func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
 	c.Assert(p.t, DeepEquals, expected.t)
 }
 
-func (s *Ed448Suite) Test_ScalarMultiplicationForReal(c *C) {
+func (s *Ed448Suite) Test_ScalarMultiplication(c *C) {
 	scalar1 := [scalarWords]uint32{0}
 
-	p := &twExtendedPoint{
-		&bigNumber{0},
-		&bigNumber{0},
-		&bigNumber{0},
-		&bigNumber{0},
-	}
-	p.precomputedScalarMul(scalar1)
+	p := curve.precomputedScalarMul(scalar1)
 
 	expP := &twExtendedPoint{
 		&bigNumber{0x0d369310, 0x0397a715,
