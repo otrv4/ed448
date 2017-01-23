@@ -351,3 +351,31 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 
 	return eph.equals(pk)
 }
+
+func decafPseudoRandomFunction(sym []byte) []byte {
+	hash := sha3.NewShake256()
+	hash.Write(sym[:])
+	hash.Write([]byte("decaf_448_derive_private_key"))
+	var out [64]byte
+	hash.Read(out[:])
+	return out[:]
+}
+
+/// XXX: return a proper error for this method
+func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error) {
+
+	k := privateKey{}
+	copy(k.symKey(), sym[:])
+
+	skb := decafPseudoRandomFunction(sym[:])
+	secretKey := [scalarWords]uint32{}
+
+	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
+	wordsToBytes(k.secretKey(), secretKey[:])
+
+	publicKey := c.precomputedScalarMul(secretKey)
+
+	publicKey.decafEncode(k.publicKey())
+
+	return k, nil
+}
