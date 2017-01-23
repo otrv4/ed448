@@ -66,7 +66,7 @@ func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	return n
 }
 
-func (n *bigNumber) setUi(y uint64) *bigNumber {
+func (n *bigNumber) setUI(y uint64) *bigNumber {
 	n[0] = word_t(y) & radixMask
 	n[1] = word_t(y >> radix)
 	n[2] = 0
@@ -173,7 +173,7 @@ func (n *bigNumber) square(x *bigNumber) *bigNumber {
 func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	if y&1 != 0 {
 		n.square(x)
-		y -= 1
+		y--
 	} else {
 		n.square(new(bigNumber).square(x))
 		y -= 2
