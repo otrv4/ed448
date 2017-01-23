@@ -36,16 +36,16 @@ func (p *twExtendedPoint) decafEncode(dst []byte) {
 
 func (p *twExtendedPoint) deisogenize(t, overT dword_t) *bigNumber {
 	a, b, c, d, s := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	a.mulWSignedCurveConstant(p.y, 1-(D))
+	a.mulWSignedCurveConstant(p.y, 1-(edwardsD))
 	c.mul(a, p.t)
 	a.mul(p.x, p.z)
 	d.sub(c, a)
 	a.add(p.z, p.y)
 	b.sub(p.z, p.y)
 	c.mul(b, a)
-	b.mulWSignedCurveConstant(c, (-(D)))
+	b.mulWSignedCurveConstant(c, (-(edwardsD)))
 	a.isr(b)
-	b.mulWSignedCurveConstant(a, (-(D)))
+	b.mulWSignedCurveConstant(a, (-(edwardsD)))
 	c.mul(b, a)
 	a.mul(c, d)
 	d.add(b, b)
@@ -77,7 +77,7 @@ func decafDecode(ser serialized, identity dword_t) (*twExtendedPoint, dword_t) {
 	a.square(n)
 	p.z.sub(bigOne, a)
 	b.square(p.z)
-	c.mulWSignedCurveConstant(a, 4-4*(D))
+	c.mulWSignedCurveConstant(a, 4-4*(edwardsD))
 	c.add(c, b)
 	b.mul(c, a)
 	d.isr(b)

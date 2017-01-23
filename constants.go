@@ -10,7 +10,7 @@ const (
 
 	// The size of the Goldilocks field, in bits.
 	fieldBits = 448
-	D         = -39081
+	edwardsD  = -39081
 
 	// The size of the Goldilocks field, in bytes.
 	fieldBytes = (fieldBits + 7) / 8 // 56
@@ -44,7 +44,7 @@ const (
 	decafCombTeeth   = uint(5)
 	decafCombSpacing = uint(18)
 
-	// The size of a SHA3-512 checksum in bytes
+	// Size512 is byte size of a SHA3-512 checksum
 	Size512 = 64
 
 	uintZero = uint(0)

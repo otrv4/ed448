@@ -1,10 +1,10 @@
 package ed448
 
-type smvt_control struct {
+type smvtControl struct {
 	power, addend int
 }
 
-func recodeWnaf(control []smvt_control, scalar []word_t, nBits, tableBits uint) (position uint32) {
+func recodeWnaf(control []smvtControl, scalar []word_t, nBits, tableBits uint) (position uint32) {
 	current := 0
 	var i, j int
 	position = 0
@@ -68,37 +68,37 @@ func prepareWnafTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 	}
 }
 
-func linear_combo_var_fixed_vt(
-	working *twExtensible, scalar_var, scalar_pre []word_t, precmp []*twNiels) {
-	table_bits_var := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
-	nbits_var := uint(446)
-	nbits_pre := uint(446)
-	table_bits_pre := uint(5)
+func linearComboVarFixedVt(
+	working *twExtensible, scalarVar, scalarPre []word_t, precmp []*twNiels) {
+	tableBitsVar := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
+	nbitsVar := uint(446)
+	nbitsPre := uint(446)
+	tableBitsPre := uint(5)
 
-	var control_var [92]smvt_control // nbits_var/(table_bits_var+1)+3
-	var control_pre [77]smvt_control // nbits_pre/(table_bits_pre+1)+3
+	var controlVar [92]smvtControl // nbitsVar/(tableBitsVar+1)+3
+	var controlPre [77]smvtControl // nbitsPre/(tableBitsPre+1)+3
 
-	recodeWnaf(control_var[:], scalar_var, nbits_var, table_bits_var)
-	recodeWnaf(control_pre[:], scalar_pre, nbits_pre, table_bits_pre)
+	recodeWnaf(controlVar[:], scalarVar, nbitsVar, tableBitsVar)
+	recodeWnaf(controlPre[:], scalarPre, nbitsPre, tableBitsPre)
 
-	var precmp_var [16]*twPNiels // 1 << table_bits_var
-	prepareWnafTable(precmp_var[:], working, uint(table_bits_var))
+	var precmpVar [16]*twPNiels // 1 << tableBitsVar
+	prepareWnafTable(precmpVar[:], working, uint(tableBitsVar))
 
 	contp := 0
 	contv := 0
 
-	i := control_var[0].power
-	if i > control_pre[0].power {
-		convertTwPnielsToTwExtensible(working, precmp_var[control_var[0].addend>>1])
+	i := controlVar[0].power
+	if i > controlPre[0].power {
+		convertTwPnielsToTwExtensible(working, precmpVar[controlVar[0].addend>>1])
 		contv++
-	} else if i == control_pre[0].power && i >= 0 {
-		convertTwPnielsToTwExtensible(working, precmp_var[control_var[0].addend>>1])
-		working.addTwNiels(precmp[control_pre[0].addend>>1])
+	} else if i == controlPre[0].power && i >= 0 {
+		convertTwPnielsToTwExtensible(working, precmpVar[controlVar[0].addend>>1])
+		working.addTwNiels(precmp[controlPre[0].addend>>1])
 		contv++
 		contp++
 	} else {
-		i = control_pre[0].power
-		convertTwNielsToTwExtensible(working, precmp[control_pre[0].addend>>1])
+		i = controlPre[0].power
+		convertTwNielsToTwExtensible(working, precmp[controlPre[0].addend>>1])
 		contp++
 	}
 
@@ -110,20 +110,20 @@ func linear_combo_var_fixed_vt(
 	for i--; i >= 0; i-- {
 		working.double()
 
-		if i == control_var[contv].power {
-			if control_var[contv].addend > 0 {
-				working.addTwPNiels(precmp_var[control_var[contv].addend>>1])
+		if i == controlVar[contv].power {
+			if controlVar[contv].addend > 0 {
+				working.addTwPNiels(precmpVar[controlVar[contv].addend>>1])
 			} else {
-				working.subTwPNiels(precmp_var[(-control_var[contv].addend)>>1])
+				working.subTwPNiels(precmpVar[(-controlVar[contv].addend)>>1])
 			}
 			contv++
 		}
 
-		if i == control_pre[contp].power {
-			if control_pre[contp].addend > 0 {
-				working.addTwNiels(precmp[control_pre[contp].addend>>1])
+		if i == controlPre[contp].power {
+			if controlPre[contp].addend > 0 {
+				working.addTwNiels(precmp[controlPre[contp].addend>>1])
 			} else {
-				working.subTwNiels(precmp[(-control_pre[contp].addend)>>1])
+				working.subTwNiels(precmp[(-controlPre[contp].addend)>>1])
 			}
 			contp++
 		}

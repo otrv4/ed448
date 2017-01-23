@@ -23,7 +23,7 @@ func (s *Ed448Suite) TestPoint(c *C) {
 	}
 	gy := serialized{0x13}
 
-	basePoint, err := NewPoint(gx, gy)
+	basePoint, err := newPoint(gx, gy)
 	c.Assert(err, IsNil)
 
 	c.Assert(basePoint.OnCurve(), Equals, true)
@@ -123,23 +123,23 @@ func (s *Ed448Suite) TestConditionalNegate(c *C) {
 	c.Assert(x, DeepEquals, negN)
 }
 func (s *Ed448Suite) TestMontgomerySerialize(c *C) {
-	bs_in, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
-	bs_z0, _ := hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
-	bs_xd, _ := hex.DecodeString("c88f896abf42ca2cbff1edf881d1246ee76abe7385932d7b54fb9d71307fdd8043d8a80c7d0363e7a45443d4e9a03bf3e0aab82fb4714c5f")
-	bs_zd, _ := hex.DecodeString("962fa8b019eeedd607eda6b44454e17b76b1536f6b336362257d72c3c1576339514f1f4d2d0ae7b0680469a432a2f54cb7f9dbc14473802d")
-	bs_xa, _ := hex.DecodeString("09e41fe2e74667a6676fb0492b496f7d69d45055601ec86839b95e9343407ed592ea357118e5568eea272e9349adf0efbe29307187cfff6e")
-	bs_za, _ := hex.DecodeString("b115a615745fc6f453a43d1466e12acd2215ac373cadcd633211235510c6a04c4f041006d07f543f2bd4b050ecdd472be4415ab7a3f79f95")
-	in := new(bigNumber).setBytes(bs_in)
+	bsIn, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
+	bsZ0, _ := hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
+	bsXd, _ := hex.DecodeString("c88f896abf42ca2cbff1edf881d1246ee76abe7385932d7b54fb9d71307fdd8043d8a80c7d0363e7a45443d4e9a03bf3e0aab82fb4714c5f")
+	bsZd, _ := hex.DecodeString("962fa8b019eeedd607eda6b44454e17b76b1536f6b336362257d72c3c1576339514f1f4d2d0ae7b0680469a432a2f54cb7f9dbc14473802d")
+	bsXa, _ := hex.DecodeString("09e41fe2e74667a6676fb0492b496f7d69d45055601ec86839b95e9343407ed592ea357118e5568eea272e9349adf0efbe29307187cfff6e")
+	bsZa, _ := hex.DecodeString("b115a615745fc6f453a43d1466e12acd2215ac373cadcd633211235510c6a04c4f041006d07f543f2bd4b050ecdd472be4415ab7a3f79f95")
+	in := new(bigNumber).setBytes(bsIn)
 	mont := &montgomery{
-		new(bigNumber).setBytes(bs_z0),
-		new(bigNumber).setBytes(bs_xd),
-		new(bigNumber).setBytes(bs_zd),
-		new(bigNumber).setBytes(bs_xa),
-		new(bigNumber).setBytes(bs_za),
+		new(bigNumber).setBytes(bsZ0),
+		new(bigNumber).setBytes(bsXd),
+		new(bigNumber).setBytes(bsZd),
+		new(bigNumber).setBytes(bsXa),
+		new(bigNumber).setBytes(bsZa),
 	}
 
-	bs_exp, _ := hex.DecodeString("322d71661943b5e080abed64d9ed331874a975329aaf9b42815e793ac08691e478fe559b29593a5413d5a4475e3ae0735a6d9bc1dc192b7d")
-	exp := new(bigNumber).setBytes(bs_exp)
+	bsExp, _ := hex.DecodeString("322d71661943b5e080abed64d9ed331874a975329aaf9b42815e793ac08691e478fe559b29593a5413d5a4475e3ae0735a6d9bc1dc192b7d")
+	exp := new(bigNumber).setBytes(bsExp)
 
 	out, _ := mont.serialize(in)
 
@@ -147,20 +147,20 @@ func (s *Ed448Suite) TestMontgomerySerialize(c *C) {
 }
 
 func (s *Ed448Suite) TestMontgomeryDeserialize(c *C) {
-	bs_in, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008")
-	in := new(bigNumber).setBytes(bs_in)
+	bsIn, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008")
+	in := new(bigNumber).setBytes(bsIn)
 	out := new(montgomery)
 	out.deserialize(in)
-	bs_z0, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040")
-	z0 := new(bigNumber).setBytes(bs_z0)
-	bs_xd, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	xd := new(bigNumber).setBytes(bs_xd)
-	bs_zd, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-	zd := new(bigNumber).setBytes(bs_zd)
-	bs_xa, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	xa := new(bigNumber).setBytes(bs_xa)
-	bs_za, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040")
-	za := new(bigNumber).setBytes(bs_za)
+	bsZ0, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040")
+	z0 := new(bigNumber).setBytes(bsZ0)
+	bsXd, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
+	xd := new(bigNumber).setBytes(bsXd)
+	bsZd, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+	zd := new(bigNumber).setBytes(bsZd)
+	bsXa, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
+	xa := new(bigNumber).setBytes(bsXa)
+	bsZa, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040")
+	za := new(bigNumber).setBytes(bsZa)
 
 	c.Assert(out.z0.equals(z0), Equals, true)
 	c.Assert(out.xd.equals(xd), Equals, true)
@@ -170,30 +170,30 @@ func (s *Ed448Suite) TestMontgomeryDeserialize(c *C) {
 }
 
 func (s *Ed448Suite) TestMontgomeryStep(c *C) {
-	bs_z0, _ := hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
-	bs_xd, _ := hex.DecodeString("dc7c2264cf2a3f6178ee7884793f2d0cfe98e602c32adfbec9a5fc225c904f5e1f45c614fc483aec252745e04a38f49e1a4cfc0e8bbf14c5")
-	bs_zd, _ := hex.DecodeString("76ad01dbfd7dd72671ad1f827b762fe0c39c808084533b1e22ee18537b7e43c75b995f9e107ec055fbb3df4fb83ad78e69de76a188fb6db6")
-	bs_xa, _ := hex.DecodeString("86032c9f990e2680726003f62a1ec5c01f18ad130ce0883b247d2ea9e8d591e6121e6007027d44d94d9659a05fb47e91c3c11b5552cb2185")
-	bs_za, _ := hex.DecodeString("5c157ed45b60be2db18a494780b5b7ab79ae1afc3919c9b00c1879495ea079b73990eebf5f0def2897fe8ca78084c07ef89c5bfc336625fd")
+	bsZ0, _ := hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
+	bsXd, _ := hex.DecodeString("dc7c2264cf2a3f6178ee7884793f2d0cfe98e602c32adfbec9a5fc225c904f5e1f45c614fc483aec252745e04a38f49e1a4cfc0e8bbf14c5")
+	bsZd, _ := hex.DecodeString("76ad01dbfd7dd72671ad1f827b762fe0c39c808084533b1e22ee18537b7e43c75b995f9e107ec055fbb3df4fb83ad78e69de76a188fb6db6")
+	bsXa, _ := hex.DecodeString("86032c9f990e2680726003f62a1ec5c01f18ad130ce0883b247d2ea9e8d591e6121e6007027d44d94d9659a05fb47e91c3c11b5552cb2185")
+	bsZa, _ := hex.DecodeString("5c157ed45b60be2db18a494780b5b7ab79ae1afc3919c9b00c1879495ea079b73990eebf5f0def2897fe8ca78084c07ef89c5bfc336625fd")
 	mont := &montgomery{
-		new(bigNumber).setBytes(bs_z0),
-		new(bigNumber).setBytes(bs_xd),
-		new(bigNumber).setBytes(bs_zd),
-		new(bigNumber).setBytes(bs_xa),
-		new(bigNumber).setBytes(bs_za),
+		new(bigNumber).setBytes(bsZ0),
+		new(bigNumber).setBytes(bsXd),
+		new(bigNumber).setBytes(bsZd),
+		new(bigNumber).setBytes(bsXa),
+		new(bigNumber).setBytes(bsZa),
 	}
 	mont.montgomeryStep()
-	bs_z0, _ = hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
-	bs_xd, _ = hex.DecodeString("c88f896abf42ca2cbff1edf881d1246ee76abe7385932d7b54fb9d71307fdd8043d8a80c7d0363e7a45443d4e9a03bf3e0aab82fb4714c5f")
-	bs_zd, _ = hex.DecodeString("962fa8b019eeedd607eda6b44454e17b76b1536f6b336362257d72c3c1576339514f1f4d2d0ae7b0680469a432a2f54cb7f9dbc14473802d")
-	bs_xa, _ = hex.DecodeString("09e41fe2e74667a6676fb0492b496f7d69d45055601ec86839b95e9343407ed592ea357118e5568eea272e9349adf0efbe29307187cfff6e")
-	bs_za, _ = hex.DecodeString("b115a615745fc6f453a43d1466e12acd2215ac373cadcd633211235510c6a04c4f041006d07f543f2bd4b050ecdd472be4415ab7a3f79f95")
+	bsZ0, _ = hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
+	bsXd, _ = hex.DecodeString("c88f896abf42ca2cbff1edf881d1246ee76abe7385932d7b54fb9d71307fdd8043d8a80c7d0363e7a45443d4e9a03bf3e0aab82fb4714c5f")
+	bsZd, _ = hex.DecodeString("962fa8b019eeedd607eda6b44454e17b76b1536f6b336362257d72c3c1576339514f1f4d2d0ae7b0680469a432a2f54cb7f9dbc14473802d")
+	bsXa, _ = hex.DecodeString("09e41fe2e74667a6676fb0492b496f7d69d45055601ec86839b95e9343407ed592ea357118e5568eea272e9349adf0efbe29307187cfff6e")
+	bsZa, _ = hex.DecodeString("b115a615745fc6f453a43d1466e12acd2215ac373cadcd633211235510c6a04c4f041006d07f543f2bd4b050ecdd472be4415ab7a3f79f95")
 	exp := &montgomery{
-		new(bigNumber).setBytes(bs_z0),
-		new(bigNumber).setBytes(bs_xd),
-		new(bigNumber).setBytes(bs_zd),
-		new(bigNumber).setBytes(bs_xa),
-		new(bigNumber).setBytes(bs_za),
+		new(bigNumber).setBytes(bsZ0),
+		new(bigNumber).setBytes(bsXd),
+		new(bigNumber).setBytes(bsZd),
+		new(bigNumber).setBytes(bsXa),
+		new(bigNumber).setBytes(bsZa),
 	}
 
 	c.Assert(mont.z0.equals(exp.z0), Equals, true)

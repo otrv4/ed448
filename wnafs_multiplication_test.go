@@ -209,7 +209,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	linear_combo_var_fixed_vt(p, x[:], y[:], wnfsTable[:])
+	linearComboVarFixedVt(p, x[:], y[:], wnfsTable[:])
 
 	c.Assert(p.equals(expectedP), Equals, true)
 }
@@ -262,7 +262,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	linear_combo_var_fixed_vt(p, x[:], y[:], wnfsTable[:])
+	linearComboVarFixedVt(p, x[:], y[:], wnfsTable[:])
 
 	c.Assert(p.equals(expectedP), Equals, true)
 }
@@ -287,102 +287,102 @@ func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
 
 	//This is tricky, because even if controlVar has too much space, it does
 	//not matter
-	controlVar := make([]smvt_control, 92)
+	controlVar := make([]smvtControl, 92)
 	pos := recodeWnaf(controlVar, x[:], scalarBits, 4)
 
-	c.Assert(controlVar[:pos], DeepEquals, []smvt_control{
-		smvt_control{440, 19},
-		smvt_control{434, -23},
-		smvt_control{431, -3},
-		smvt_control{423, 13},
-		smvt_control{417, -11},
-		smvt_control{410, 29},
-		smvt_control{402, -31},
-		smvt_control{396, -15},
-		smvt_control{389, 31},
-		smvt_control{384, 3},
-		smvt_control{375, 15},
-		smvt_control{371, 3},
-		smvt_control{359, -21},
-		smvt_control{353, -23},
-		smvt_control{346, 31},
-		smvt_control{341, -9},
-		smvt_control{335, -9},
-		smvt_control{328, -23},
-		smvt_control{324, -7},
-		smvt_control{316, 23},
-		smvt_control{312, -5},
-		smvt_control{304, -27},
-		smvt_control{299, 9},
-		smvt_control{293, 5},
-		smvt_control{287, -7},
-		smvt_control{278, -23},
-		smvt_control{270, -21},
-		smvt_control{263, 19},
-		smvt_control{251, -23},
-		smvt_control{244, -29},
-		smvt_control{240, -5},
-		smvt_control{230, -29},
-		smvt_control{223, -27},
-		smvt_control{217, -7},
-		smvt_control{212, -3},
-		smvt_control{201, -17},
-		smvt_control{199, 1},
-		smvt_control{184, -21},
-		smvt_control{178, -27},
-		smvt_control{172, 21},
-		smvt_control{165, 15},
-		smvt_control{160, 7},
-		smvt_control{154, 7},
-		smvt_control{147, 1},
-		smvt_control{137, 11},
-		smvt_control{134, -1},
-		smvt_control{124, -15},
-		smvt_control{116, 31},
-		smvt_control{112, -7},
-		smvt_control{102, -29},
-		smvt_control{97, -11},
-		smvt_control{94, 1},
-		smvt_control{86, 5},
-		smvt_control{79, 13},
-		smvt_control{71, 19},
-		smvt_control{64, 23},
-		smvt_control{58, 27},
-		smvt_control{53, -15},
-		smvt_control{50, 1},
-		smvt_control{42, 7},
-		smvt_control{37, -3},
-		smvt_control{25, 9},
-		smvt_control{15, 17},
-		smvt_control{10, -11},
-		smvt_control{3, 25},
-		smvt_control{0, -1},
+	c.Assert(controlVar[:pos], DeepEquals, []smvtControl{
+		smvtControl{440, 19},
+		smvtControl{434, -23},
+		smvtControl{431, -3},
+		smvtControl{423, 13},
+		smvtControl{417, -11},
+		smvtControl{410, 29},
+		smvtControl{402, -31},
+		smvtControl{396, -15},
+		smvtControl{389, 31},
+		smvtControl{384, 3},
+		smvtControl{375, 15},
+		smvtControl{371, 3},
+		smvtControl{359, -21},
+		smvtControl{353, -23},
+		smvtControl{346, 31},
+		smvtControl{341, -9},
+		smvtControl{335, -9},
+		smvtControl{328, -23},
+		smvtControl{324, -7},
+		smvtControl{316, 23},
+		smvtControl{312, -5},
+		smvtControl{304, -27},
+		smvtControl{299, 9},
+		smvtControl{293, 5},
+		smvtControl{287, -7},
+		smvtControl{278, -23},
+		smvtControl{270, -21},
+		smvtControl{263, 19},
+		smvtControl{251, -23},
+		smvtControl{244, -29},
+		smvtControl{240, -5},
+		smvtControl{230, -29},
+		smvtControl{223, -27},
+		smvtControl{217, -7},
+		smvtControl{212, -3},
+		smvtControl{201, -17},
+		smvtControl{199, 1},
+		smvtControl{184, -21},
+		smvtControl{178, -27},
+		smvtControl{172, 21},
+		smvtControl{165, 15},
+		smvtControl{160, 7},
+		smvtControl{154, 7},
+		smvtControl{147, 1},
+		smvtControl{137, 11},
+		smvtControl{134, -1},
+		smvtControl{124, -15},
+		smvtControl{116, 31},
+		smvtControl{112, -7},
+		smvtControl{102, -29},
+		smvtControl{97, -11},
+		smvtControl{94, 1},
+		smvtControl{86, 5},
+		smvtControl{79, 13},
+		smvtControl{71, 19},
+		smvtControl{64, 23},
+		smvtControl{58, 27},
+		smvtControl{53, -15},
+		smvtControl{50, 1},
+		smvtControl{42, 7},
+		smvtControl{37, -3},
+		smvtControl{25, 9},
+		smvtControl{15, 17},
+		smvtControl{10, -11},
+		smvtControl{3, 25},
+		smvtControl{0, -1},
 	})
 }
 
 func (s *Ed448Suite) TestRecodeWnafForS0(c *C) {
-	//nbits_var := 446
-	nbits_pre := uint(446)
-	table_bits_pre := uint(5)
-	//struct smvt_control control_var[nbits_var/(table_bits_var+1)+3];
-	controlLen := nbits_pre/(table_bits_pre+1) + 3
-	control_pre := make([]smvt_control, controlLen)
+	//nbitsVar := 446
+	nbitsPre := uint(446)
+	tableBitsPre := uint(5)
+	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
+	controlLen := nbitsPre/(tableBitsPre+1) + 3
+	controlPre := make([]smvtControl, controlLen)
 	sig := [scalarWords]word_t{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	}
 
-	position := recodeWnaf(control_pre[:], sig[:], nbits_pre, table_bits_pre)
+	position := recodeWnaf(controlPre[:], sig[:], nbitsPre, tableBitsPre)
 
 	c.Assert(position, Equals, uint32(0))
-	c.Assert(control_pre[position].power, Equals, -1)
-	c.Assert(control_pre[position].addend, Equals, 0)
+	c.Assert(controlPre[position].power, Equals, -1)
+	c.Assert(controlPre[position].addend, Equals, 0)
 }
 
 func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
 	nbits := uint(446)
-	table_bits := uint(4)
-	controlLen := nbits/(table_bits+1) + 3
-	control := make([]smvt_control, controlLen)
+	tableBits := uint(4)
+	controlLen := nbits/(tableBits+1) + 3
+	control := make([]smvtControl, controlLen)
 	challenge := [scalarWords]word_t{
 		0xfd27ffdd, 0xa4a42c92,
 		0xd9464f36, 0xac8078dd,
@@ -393,7 +393,7 @@ func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
 		0xb1428aca, 0x31b43b4d,
 	}
 
-	position := recodeWnaf(control[:], challenge[:], nbits, table_bits)
+	position := recodeWnaf(control[:], challenge[:], nbits, tableBits)
 
 	c.Assert(position, Equals, uint32(67))
 	c.Assert(control[position].power, Equals, -1)

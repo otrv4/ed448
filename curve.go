@@ -57,7 +57,7 @@ var (
 )
 
 func mustNewPoint(x, y serialized) *homogeneousProjective {
-	p, err := NewPoint(x, y)
+	p, err := newPoint(x, y)
 	if err != nil {
 		panic("failed to create point")
 	}
@@ -65,7 +65,7 @@ func mustNewPoint(x, y serialized) *homogeneousProjective {
 	return p
 }
 
-func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]word_t, nbits, n_extra_doubles int) (*bigNumber, word_t) {
+func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]word_t, nbits, extraDoubles int) (*bigNumber, word_t) {
 	mont := new(montgomery)
 	mont.deserialize(in)
 	var i, j, n int
@@ -88,8 +88,8 @@ func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]word_t, n
 
 	mont.xa.conditionalSwap(mont.xd, pflip)
 	mont.za.conditionalSwap(mont.zd, pflip)
-	//assert(n_extra_doubles < INT_MAX);
-	for j = 0; j < n_extra_doubles; j++ {
+	//assert(extraDoubles < INT_MAX);
+	for j = 0; j < extraDoubles; j++ {
 		mont.montgomeryStep()
 	}
 
@@ -346,7 +346,7 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 
 	//magic
 	//PK_2(X, Y) = PK(X,Y) * ????
-	linear_combo_var_fixed_vt(pkPoint, challenge[:], nonce[:], wnfsTable[:])
+	linearComboVarFixedVt(pkPoint, challenge[:], nonce[:], wnfsTable[:])
 
 	//PK_2(X,Y) -> (untwist & double & SERPT) -> 2*pubKeyWireFormat
 	//In the end, this should be = 4 * nonce * G
