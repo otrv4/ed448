@@ -4,7 +4,7 @@ type smvtControl struct {
 	power, addend int
 }
 
-func recodeWnaf(control []smvtControl, scalar []word_t, nBits, tableBits uint) (position uint32) {
+func recodeWnaf(control []smvtControl, scalar []uint32, nBits, tableBits uint) (position uint32) {
 	current := 0
 	var i, j int
 	position = 0
@@ -69,7 +69,7 @@ func prepareWnafTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 }
 
 func linearComboVarFixedVt(
-	working *twExtensible, scalarVar, scalarPre []word_t, precmp []*twNiels) {
+	working *twExtensible, scalarVar, scalarPre []uint32, precmp []*twNiels) {
 	tableBitsVar := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
 	nbitsVar := uint(446)
 	nbitsPre := uint(446)

@@ -167,7 +167,7 @@ func (p *twNiels) copy() *twNiels {
 	}
 }
 
-func (p *twNiels) conditionalNegate(neg word_t) {
+func (p *twNiels) conditionalNegate(neg uint32) {
 	p.a.conditionalSwap(p.b, neg)
 	p.c = p.c.conditionalNegate(neg)
 }
@@ -604,9 +604,9 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 }
 
 //TODO: MOVE ME TO BIGNUM
-func highBit(x *bigNumber) dword_t {
+func highBit(x *bigNumber) uint64 {
 	y := &bigNumber{}
 	y.add(x, x)
 	y.strongReduce()
-	return dword_t(-(y[0] & 1))
+	return uint64(-(y[0] & 1))
 }

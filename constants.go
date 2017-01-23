@@ -6,7 +6,7 @@ const (
 	// For 32 arch
 	limbs     = 16
 	radix     = 28
-	radixMask = word_t(0xfffffff)
+	radixMask = uint32(0xfffffff)
 
 	// The size of the Goldilocks field, in bits.
 	fieldBits = 448
@@ -65,7 +65,7 @@ var (
 		0x49, 0x7a, 0x5b, 0xb2, 0xc0, 0xc0, 0xfe, 0x12,
 	})
 
-	scalarP = [scalarWords]word_t{
+	scalarP = [scalarWords]uint32{
 		0xab5844f3, 0x2378c292,
 		0x8dc58f55, 0x216cc272,
 		0xaed63690, 0xc44edb49,

@@ -360,7 +360,7 @@ func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarMultiplicationForReal(c *C) {
-	scalar1 := [scalarWords]word_t{0}
+	scalar1 := [scalarWords]uint32{0}
 
 	p := &twExtendedPoint{
 		&bigNumber{0},

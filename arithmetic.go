@@ -2,7 +2,7 @@ package ed448
 
 // ModQ produces a byte array mod Q (prime order)
 func ModQ(serial []byte) []byte {
-	words := [16]word_t{}
+	words := [16]uint32{}
 	deserializeModQ(words[:], serial)
 	out := make([]byte, fieldBytes)
 	wordsToBytes(out, words[:])

@@ -2,7 +2,7 @@ package ed448
 
 import "fmt"
 
-type bigNumber [limbs]word_t
+type bigNumber [limbs]uint32
 type serialized [56]byte
 
 func mustDeserialize(in serialized) *bigNumber {
@@ -20,20 +20,20 @@ func isZeroMask(n uint32) uint32 {
 	return uint32(nn >> wordBits)
 }
 
-func constantTimeGreaterOrEqualP(n *bigNumber) word_t {
-	ge := word_t(lmask)
+func constantTimeGreaterOrEqualP(n *bigNumber) uint32 {
+	ge := uint32(lmask)
 
 	for i := 0; i < 4; i++ {
 		ge &= n[i]
 	}
 
-	ge = (ge & (n[4] + 1)) | word_t(isZeroMask(uint32(n[4]^radixMask)))
+	ge = (ge & (n[4] + 1)) | uint32(isZeroMask(uint32(n[4]^radixMask)))
 
 	for i := 5; i < 8; i++ {
 		ge &= n[i]
 	}
 
-	return word_t(^isZeroMask(uint32(ge ^ radixMask)))
+	return uint32(^isZeroMask(uint32(ge ^ radixMask)))
 }
 
 //n = x + y
@@ -42,7 +42,7 @@ func (n *bigNumber) add(x *bigNumber, y *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) addW(w uint32) *bigNumber {
-	n[0] += word_t(w)
+	n[0] += uint32(w)
 	return n
 }
 
@@ -67,8 +67,8 @@ func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) setUI(y uint64) *bigNumber {
-	n[0] = word_t(y) & radixMask
-	n[1] = word_t(y >> radix)
+	n[0] = uint32(y) & radixMask
+	n[1] = uint32(y >> radix)
 	n[2] = 0
 	n[3] = 0
 	n[4] = 0
@@ -93,7 +93,7 @@ func (n *bigNumber) sub(x *bigNumber, y *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) subW(w uint32) *bigNumber {
-	n[0] -= word_t(w)
+	n[0] -= uint32(w)
 	return n
 }
 
@@ -187,7 +187,7 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 }
 
 func (n *bigNumber) weakReduce() *bigNumber {
-	tmp := word_t(uint64(n[limbs-1]) >> radix)
+	tmp := uint32(uint64(n[limbs-1]) >> radix)
 	n[limbs/2] += tmp
 
 	n[15] = (n[15] & radixMask) + (n[14] >> radix)
@@ -227,17 +227,17 @@ func (n *bigNumber) neg(x *bigNumber) *bigNumber {
 	return n.negRaw(x).bias(2).weakReduce()
 }
 
-func (n *bigNumber) conditionalNegate(neg word_t) *bigNumber {
+func (n *bigNumber) conditionalNegate(neg uint32) *bigNumber {
 	return constantTimeSelect(new(bigNumber).neg(n), n, neg)
 }
 
-func constantTimeSelect(x, y *bigNumber, first word_t) *bigNumber {
+func constantTimeSelect(x, y *bigNumber, first uint32) *bigNumber {
 	//XXX this is probably more complicate than it should
 	return y.copy().conditionalSwap(x.copy(), first)
 }
 
 //if swap == 0xffffffff => n = x, x = n
-func (n *bigNumber) conditionalSwap(x *bigNumber, swap word_t) *bigNumber {
+func (n *bigNumber) conditionalSwap(x *bigNumber, swap uint32) *bigNumber {
 	for i, xv := range x {
 		s := (xv ^ n[i]) & swap
 		x[i] ^= s
@@ -247,48 +247,48 @@ func (n *bigNumber) conditionalSwap(x *bigNumber, swap word_t) *bigNumber {
 	return n
 }
 
-func (n *bigNumber) decafCondNegate(neg dword_t) {
+func (n *bigNumber) decafCondNegate(neg uint64) {
 	y := &bigNumber{}
 	y.sub(&bigNumber{0}, n)
 	n.decafConstTimeSel(n, y, neg)
 }
 
-func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg dword_t) {
-	n[0] = (x[0] & word_t(^neg)) | (y[0] & word_t(neg))
-	n[1] = (x[1] & word_t(^neg)) | (y[1] & word_t(neg))
-	n[2] = (x[2] & word_t(^neg)) | (y[2] & word_t(neg))
-	n[3] = (x[3] & word_t(^neg)) | (y[3] & word_t(neg))
-	n[4] = (x[4] & word_t(^neg)) | (y[4] & word_t(neg))
-	n[5] = (x[5] & word_t(^neg)) | (y[5] & word_t(neg))
-	n[6] = (x[6] & word_t(^neg)) | (y[6] & word_t(neg))
-	n[7] = (x[7] & word_t(^neg)) | (y[7] & word_t(neg))
-	n[8] = (x[8] & word_t(^neg)) | (y[8] & word_t(neg))
-	n[9] = (x[9] & word_t(^neg)) | (y[9] & word_t(neg))
-	n[10] = (x[10] & word_t(^neg)) | (y[10] & word_t(neg))
-	n[11] = (x[11] & word_t(^neg)) | (y[11] & word_t(neg))
-	n[12] = (x[12] & word_t(^neg)) | (y[12] & word_t(neg))
-	n[13] = (x[13] & word_t(^neg)) | (y[13] & word_t(neg))
-	n[14] = (x[14] & word_t(^neg)) | (y[14] & word_t(neg))
-	n[15] = (x[15] & word_t(^neg)) | (y[15] & word_t(neg))
+func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg uint64) {
+	n[0] = (x[0] & uint32(^neg)) | (y[0] & uint32(neg))
+	n[1] = (x[1] & uint32(^neg)) | (y[1] & uint32(neg))
+	n[2] = (x[2] & uint32(^neg)) | (y[2] & uint32(neg))
+	n[3] = (x[3] & uint32(^neg)) | (y[3] & uint32(neg))
+	n[4] = (x[4] & uint32(^neg)) | (y[4] & uint32(neg))
+	n[5] = (x[5] & uint32(^neg)) | (y[5] & uint32(neg))
+	n[6] = (x[6] & uint32(^neg)) | (y[6] & uint32(neg))
+	n[7] = (x[7] & uint32(^neg)) | (y[7] & uint32(neg))
+	n[8] = (x[8] & uint32(^neg)) | (y[8] & uint32(neg))
+	n[9] = (x[9] & uint32(^neg)) | (y[9] & uint32(neg))
+	n[10] = (x[10] & uint32(^neg)) | (y[10] & uint32(neg))
+	n[11] = (x[11] & uint32(^neg)) | (y[11] & uint32(neg))
+	n[12] = (x[12] & uint32(^neg)) | (y[12] & uint32(neg))
+	n[13] = (x[13] & uint32(^neg)) | (y[13] & uint32(neg))
+	n[14] = (x[14] & uint32(^neg)) | (y[14] & uint32(neg))
+	n[15] = (x[15] & uint32(^neg)) | (y[15] & uint32(neg))
 }
 
 func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
-	n[0] = word_t(-x[0])
-	n[1] = word_t(-x[1])
-	n[2] = word_t(-x[2])
-	n[3] = word_t(-x[3])
-	n[4] = word_t(-x[4])
-	n[5] = word_t(-x[5])
-	n[6] = word_t(-x[6])
-	n[7] = word_t(-x[7])
-	n[8] = word_t(-x[8])
-	n[9] = word_t(-x[9])
-	n[10] = word_t(-x[10])
-	n[11] = word_t(-x[11])
-	n[12] = word_t(-x[12])
-	n[13] = word_t(-x[13])
-	n[14] = word_t(-x[14])
-	n[15] = word_t(-x[15])
+	n[0] = uint32(-x[0])
+	n[1] = uint32(-x[1])
+	n[2] = uint32(-x[2])
+	n[3] = uint32(-x[3])
+	n[4] = uint32(-x[4])
+	n[5] = uint32(-x[5])
+	n[6] = uint32(-x[6])
+	n[7] = uint32(-x[7])
+	n[8] = uint32(-x[8])
+	n[9] = uint32(-x[9])
+	n[10] = uint32(-x[10])
+	n[11] = uint32(-x[11])
+	n[12] = uint32(-x[12])
+	n[13] = uint32(-x[13])
+	n[14] = uint32(-x[14])
+	n[15] = uint32(-x[15])
 
 	return n
 }
@@ -305,7 +305,7 @@ func (n *bigNumber) set(x *bigNumber) *bigNumber {
 }
 
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
-	r := word_t(0)
+	r := uint32(0)
 	x := n.copy().strongReduce()
 	y := o.copy().strongReduce()
 
@@ -329,22 +329,22 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	return r == 0
 }
 
-func decafEq(x, y *bigNumber) dword_t {
+func decafEq(x, y *bigNumber) uint64 {
 	n := &bigNumber{}
 	n.sub(x, y)
 	n.strongReduce()
 
-	var ret word_t
+	var ret uint32
 
 	for i := 0; i < limbs; i++ {
 		ret |= n[i]
 	}
-	return ((dword_t(ret) - 1) >> 32)
+	return ((uint64(ret) - 1) >> 32)
 }
 
 func (n *bigNumber) zeroMask() uint32 {
 	x := n.copy().strongReduce()
-	r := word_t(0)
+	r := uint32(0)
 
 	r |= x[0] ^ 0
 	r |= x[1] ^ 0
@@ -400,6 +400,6 @@ func (n *bigNumber) String() string {
 	//return fmt.Sprintf("0x%s", new(big.Int).SetBytes(rev(dst)).Text(16))
 }
 
-func (n *bigNumber) limbs() []word_t {
+func (n *bigNumber) limbs() []uint32 {
 	return n[:]
 }

@@ -7,9 +7,6 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-type word_t uint32
-type dword_t uint64
-
 var (
 	//p = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 	prime, _ = deserialize(serialized{
@@ -65,12 +62,12 @@ func mustNewPoint(x, y serialized) *homogeneousProjective {
 	return p
 }
 
-func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]word_t, nbits, extraDoubles int) (*bigNumber, word_t) {
+func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]uint32, nbits, extraDoubles int) (*bigNumber, uint32) {
 	mont := new(montgomery)
 	mont.deserialize(in)
 	var i, j, n int
 	n = (nbits - 1) % wordBits
-	pflip := word_t(0)
+	pflip := uint32(0)
 
 	for j = (nbits+wordBits-1)/wordBits - 1; j >= 0; j-- {
 		w := scalar[j]
@@ -94,10 +91,10 @@ func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]word_t, n
 	}
 
 	out, ok := mont.serialize(in)
-	return out, word_t(ok)
+	return out, uint32(ok)
 }
 
-func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
+func (c *curveT) multiplyByBase(scalar [scalarWords]uint32) *twExtensible {
 	out := &twExtensible{
 		new(bigNumber),
 		new(bigNumber),
@@ -110,7 +107,7 @@ func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 	t := combTeeth
 	s := combSpacing
 
-	schedule := make([]word_t, scalarWords)
+	schedule := make([]uint32, scalarWords)
 	scheduleScalarForCombs(schedule, scalar)
 
 	var ni *twNiels
@@ -121,7 +118,7 @@ func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 		}
 
 		for j := uint(0); j < n; j++ {
-			tab := word_t(0)
+			tab := uint32(0)
 
 			for k := uint(0); k < t; k++ {
 				bit := (s - 1 - i) + k*s + j*(s*t)
@@ -130,7 +127,7 @@ func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 				}
 			}
 
-			invert := word_t(tab>>(t-1)) - 1
+			invert := uint32(tab>>(t-1)) - 1
 			tab ^= invert
 			tab &= (1 << (t - 1)) - 1
 
@@ -151,7 +148,7 @@ func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 }
 
 // Deserializes an array of bytes (little-endian) into an array of words
-func bytesToWords(dst []word_t, src []byte) {
+func bytesToWords(dst []uint32, src []byte) {
 	wordBytes := uint(wordBits / 8)
 	srcLen := uint(len(src))
 
@@ -161,9 +158,9 @@ func bytesToWords(dst []word_t, src []byte) {
 	}
 
 	for i := uint(0); i*wordBytes < srcLen; i++ {
-		out := word_t(0)
+		out := uint32(0)
 		for j := uint(0); j < wordBytes && wordBytes*i+j < srcLen; j++ {
-			out |= word_t(src[wordBytes*i+j]) << (8 * j)
+			out |= uint32(src[wordBytes*i+j]) << (8 * j)
 		}
 
 		dst[i] = out
@@ -171,7 +168,7 @@ func bytesToWords(dst []word_t, src []byte) {
 }
 
 // Serializes an array of words into an array of bytes (little-endian)
-func wordsToBytes(dst []byte, src []word_t) {
+func wordsToBytes(dst []byte, src []uint32) {
 	wordBytes := wordBits / 8
 
 	for i := 0; i*wordBytes < len(dst); i++ {
@@ -193,7 +190,7 @@ func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
 
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to DESERMODq()
-func deserializeModQ(dst []word_t, serial []byte) {
+func deserializeModQ(dst []uint32, serial []byte) {
 	barrettDeserializeAndReduce(dst, serial, &curvePrimeOrder)
 }
 
@@ -207,7 +204,7 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 	copy(k.symKey(), symmetricKey[:])
 
 	skb := pseudoRandomFunction(symmetricKey)
-	secretKey := [scalarWords]word_t{}
+	secretKey := [scalarWords]uint32{}
 	deserializeModQ(secretKey[:], skb)
 	wordsToBytes(k.secretKey(), secretKey[:])
 
@@ -229,16 +226,16 @@ func (c *curveT) generateKey(read io.Reader) (k privateKey, err error) {
 
 //XXX Is private only the secret part of the privateKey?
 func (c *curveT) computeSecret(private, public []byte) []byte {
-	var sk [scalarWords]word_t
+	var sk [scalarWords]uint32
 	var pub serialized
 	copy(pub[:], public)
 
-	msucc := word_t(lmask)
+	msucc := uint32(lmask)
 	pk, succ := deserializeReturnMask(pub)
 
 	msucc &= barrettDeserializeReturnMask(sk[:], private, &curvePrimeOrder)
 
-	ok := word_t(0)
+	ok := uint32(0)
 	pk, ok = c.multiplyMontgomery(pk, sk, scalarBits, 1)
 	succ &= ok
 
@@ -252,7 +249,7 @@ func (c *curveT) computeSecret(private, public []byte) []byte {
 }
 
 func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {
-	secretKeyWords := [scalarWords]word_t{}
+	secretKeyWords := [scalarWords]uint32{}
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		//XXX SECURITY should we wipe secretKeyWords?
 		e = errors.New("corrupted private key")
@@ -284,7 +281,7 @@ func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e erro
 	return
 }
 
-func (c *curveT) deriveTemporarySignature(nonce [scalarWords]word_t) (dst [fieldBytes]byte) {
+func (c *curveT) deriveTemporarySignature(nonce [scalarWords]uint32) (dst [fieldBytes]byte) {
 	// tmpSig = 4 * nonce * basePoint
 	fourTimesGTimesNonce := c.multiplyByBase(nonce).double().untwistAndDoubleAndSerialize()
 	serialize(dst[:], fourTimesGTimesNonce)
@@ -292,7 +289,7 @@ func (c *curveT) deriveTemporarySignature(nonce [scalarWords]word_t) (dst [field
 }
 
 //XXX Should pubKey have a fixed size here?
-func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst [scalarWords]word_t) {
+func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst [scalarWords]uint32) {
 	h := sha3.New512()
 	h.Write(pubKey)
 	h.Write(tmpSignature[:])
@@ -303,7 +300,7 @@ func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (
 	return
 }
 
-func deriveNonce(msg []byte, symKey []byte) (dst [scalarWords]word_t) {
+func deriveNonce(msg []byte, symKey []byte) (dst [scalarWords]uint32) {
 	h := sha3.New512()
 	h.Write([]byte("signonce"))
 	h.Write(symKey)
@@ -323,7 +320,7 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 		return false
 	}
 
-	nonce := [scalarWords]word_t{}
+	nonce := [scalarWords]uint32{}
 	ok = barrettDeserialize(nonce[:], signature[fieldBytes:2*fieldBytes], &curvePrimeOrder)
 	if !ok {
 		return false

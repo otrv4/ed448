@@ -1,7 +1,7 @@
 package ed448
 
 type nielsTable []*twNiels
-type scalarAdjustmentTable [scalarWords]word_t
+type scalarAdjustmentTable [scalarWords]uint32
 
 type decafBaseTable struct {
 	base             nielsTable

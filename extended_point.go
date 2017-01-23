@@ -29,12 +29,12 @@ func (p *twExtendedPoint) double(q *twExtendedPoint, beforeDouble bool) {
 }
 
 func (p *twExtendedPoint) decafEncode(dst []byte) {
-	t := dword_t(0)
-	overT := dword_t(0)
+	t := uint64(0)
+	overT := uint64(0)
 	serialize(dst, p.deisogenize(t, overT))
 }
 
-func (p *twExtendedPoint) deisogenize(t, overT dword_t) *bigNumber {
+func (p *twExtendedPoint) deisogenize(t, overT uint64) *bigNumber {
 	a, b, c, d, s := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.mulWSignedCurveConstant(p.y, 1-(edwardsD))
 	c.mul(a, p.t)
@@ -59,7 +59,7 @@ func (p *twExtendedPoint) deisogenize(t, overT dword_t) *bigNumber {
 	return s
 }
 
-func decafDecode(ser serialized, identity dword_t) (*twExtendedPoint, dword_t) {
+func decafDecode(ser serialized, identity uint64) (*twExtendedPoint, uint64) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	p := &twExtendedPoint{
 		x: &bigNumber{},
@@ -69,7 +69,7 @@ func decafDecode(ser serialized, identity dword_t) (*twExtendedPoint, dword_t) {
 	}
 
 	n, succ := deserializeReturnMask(ser)
-	ok := dword_t(succ)
+	ok := uint64(succ)
 
 	zero := decafEq(n, bigZero)
 	ok &= identity | ^zero
@@ -93,7 +93,7 @@ func decafDecode(ser serialized, identity dword_t) (*twExtendedPoint, dword_t) {
 	a.mul(b, c)
 	p.y.mul(a, p.z)
 	p.t.mul(p.x, a)
-	p.y[0] -= word_t(zero)
+	p.y[0] -= uint32(zero)
 
 	return p, ok
 }
@@ -124,7 +124,7 @@ func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
 	copy(p.z[:], bigOne[:])
 }
 
-func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]word_t) {
+func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]uint32) {
 	scalar2 := scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2 = scalarHalve(scalar2, scalarP)
 
@@ -135,7 +135,7 @@ func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]word_t) {
 		}
 
 		for j := uintZero; j < decafCombNumber; j++ {
-			var tab word_t
+			var tab uint32
 			for k := uintZero; k < decafCombTeeth; k++ {
 				bit := uint(i) + decafCombSpacing*(k+j*decafCombTeeth)
 				if bit < scalarBits {
@@ -144,12 +144,12 @@ func (p *twExtendedPoint) precomputedScalarMul(scalar [scalarWords]word_t) {
 			}
 
 			invert := (int32(tab) >> (decafCombTeeth - 1)) - 1
-			tab ^= word_t(invert)
+			tab ^= uint32(invert)
 			tab &= (1 << (decafCombTeeth - 1)) - 1
 
 			ni = decafPrecompTable.lookup(j, decafCombTeeth, uint(tab))
 
-			ni.conditionalNegate(word_t(invert))
+			ni.conditionalNegate(uint32(invert))
 
 			if i != int(decafCombSpacing-1) || j != 0 {
 				p.addNielsToExtended(ni, j == decafCombNumber-1 && i != 0)

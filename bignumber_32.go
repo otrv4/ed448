@@ -1,6 +1,6 @@
 package ed448
 
-func deserializeReturnMask(in serialized) (*bigNumber, word_t) {
+func deserializeReturnMask(in serialized) (*bigNumber, uint32) {
 	n := &bigNumber{}
 
 	for i := uint(0); i < 8; i++ {
@@ -9,8 +9,8 @@ func deserializeReturnMask(in serialized) (*bigNumber, word_t) {
 			out |= uint64(in[7*i+j]) << (8 * j)
 		}
 
-		n[2*i] = word_t(out) & radixMask
-		n[2*i+1] = word_t(out >> 28)
+		n[2*i] = uint32(out) & radixMask
+		n[2*i+1] = uint32(out >> 28)
 	}
 
 	return n, constantTimeGreaterOrEqualP(n)
@@ -37,10 +37,10 @@ func serialize(dst []byte, n *bigNumber) {
 }
 
 func (n *bigNumber) bias(b uint32) *bigNumber {
-	var co1 = radixMask * word_t(b)
-	var co2 = co1 - word_t(b)
-	lo := [4]word_t{co1, co1, co1, co1}
-	hi := [4]word_t{co2, co1, co1, co1}
+	var co1 = radixMask * uint32(b)
+	var co2 = co1 - uint32(b)
+	lo := [4]uint32{co1, co1, co1, co1}
+	hi := [4]uint32{co2, co1, co1, co1}
 
 	n[0] += lo[0]
 	n[1] += lo[1]
@@ -75,137 +75,137 @@ func (n *bigNumber) strongReduce() *bigNumber {
 
 	scarry := int64(0)
 	scarry += int64(n[0]) - 0xfffffff
-	n[0] = word_t(scarry) & radixMask
+	n[0] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[1]) - 0xfffffff
-	n[1] = word_t(scarry) & radixMask
+	n[1] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[2]) - 0xfffffff
-	n[2] = word_t(scarry) & radixMask
+	n[2] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[3]) - 0xfffffff
-	n[3] = word_t(scarry) & radixMask
+	n[3] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[4]) - 0xfffffff
-	n[4] = word_t(scarry) & radixMask
+	n[4] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[5]) - 0xfffffff
-	n[5] = word_t(scarry) & radixMask
+	n[5] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[6]) - 0xfffffff
-	n[6] = word_t(scarry) & radixMask
+	n[6] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[7]) - 0xfffffff
-	n[7] = word_t(scarry) & radixMask
+	n[7] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[8]) - 0xffffffe
-	n[8] = word_t(scarry) & radixMask
+	n[8] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[9]) - 0xfffffff
-	n[9] = word_t(scarry) & radixMask
+	n[9] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[10]) - 0xfffffff
-	n[10] = word_t(scarry) & radixMask
+	n[10] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[11]) - 0xfffffff
-	n[11] = word_t(scarry) & radixMask
+	n[11] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[12]) - 0xfffffff
-	n[12] = word_t(scarry) & radixMask
+	n[12] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[13]) - 0xfffffff
-	n[13] = word_t(scarry) & radixMask
+	n[13] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[14]) - 0xfffffff
-	n[14] = word_t(scarry) & radixMask
+	n[14] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	scarry += int64(n[15]) - 0xfffffff
-	n[15] = word_t(scarry) & radixMask
+	n[15] = uint32(scarry) & radixMask
 	scarry >>= 28
 
 	// second for
 
-	scarryMask := word_t(scarry) & word_t(radixMask)
+	scarryMask := uint32(scarry) & uint32(radixMask)
 	carry := uint64(0)
 	m := uint64(scarryMask)
 
 	carry += uint64(n[0]) + m
-	n[0] = word_t(carry) & radixMask
+	n[0] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[1]) + m
-	n[1] = word_t(carry) & radixMask
+	n[1] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[2]) + m
-	n[2] = word_t(carry) & radixMask
+	n[2] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[3]) + m
-	n[3] = word_t(carry) & radixMask
+	n[3] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[4]) + m
-	n[4] = word_t(carry) & radixMask
+	n[4] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[5]) + m
-	n[5] = word_t(carry) & radixMask
+	n[5] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[6]) + m
-	n[6] = word_t(carry) & radixMask
+	n[6] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[7]) + m
-	n[7] = word_t(carry) & radixMask
+	n[7] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[8]) + m&uint64(0xfffffffffffffffe)
-	n[8] = word_t(carry) & radixMask
+	n[8] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[9]) + m
-	n[9] = word_t(carry) & radixMask
+	n[9] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[10]) + m
-	n[10] = word_t(carry) & radixMask
+	n[10] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[11]) + m
-	n[11] = word_t(carry) & radixMask
+	n[11] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[12]) + m
-	n[12] = word_t(carry) & radixMask
+	n[12] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[13]) + m
-	n[13] = word_t(carry) & radixMask
+	n[13] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[14]) + m
-	n[14] = word_t(carry) & radixMask
+	n[14] = uint32(carry) & radixMask
 	carry >>= 28
 
 	carry += uint64(n[15]) + m
-	n[15] = word_t(carry) & radixMask
+	n[15] = uint32(carry) & radixMask
 	carry >>= 28
 
 	return n
@@ -222,10 +222,10 @@ func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
 	accum0 += uint64(whi) * uint64(x[15])
 	accum8 += uint64(whi) * uint64(x[15]+x[7])
 
-	n[0] = word_t(accum0 & uint64(radixMask))
+	n[0] = uint32(accum0 & uint64(radixMask))
 	accum0 >>= radix
 
-	n[8] = word_t(accum8 & uint64(radixMask))
+	n[8] = uint32(accum8 & uint64(radixMask))
 	accum8 >>= radix
 
 	for i := 1; i < limbs/2; i++ {
@@ -234,20 +234,20 @@ func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
 		accum0 += uint64(whi) * uint64(x[i-1])
 		accum8 += uint64(whi) * uint64(x[i+7])
 
-		n[i] = word_t(accum0 & uint64(radixMask))
+		n[i] = uint32(accum0 & uint64(radixMask))
 		accum0 >>= radix
 
-		n[i+8] = word_t(accum8 & uint64(radixMask))
+		n[i+8] = uint32(accum8 & uint64(radixMask))
 		accum8 >>= radix
 	}
 
 	accum0 += accum8 + uint64(n[8])
-	n[8] = word_t(accum0 & uint64(radixMask))
-	n[9] += word_t(accum0 >> radix)
+	n[8] = uint32(accum0 & uint64(radixMask))
+	n[9] += uint32(accum0 >> radix)
 
 	accum8 += uint64(n[0])
-	n[0] = word_t(accum8 & uint64(radixMask))
-	n[1] += word_t(accum8 >> radix)
+	n[0] = uint32(accum8 & uint64(radixMask))
+	n[1] += uint32(accum8 >> radix)
 
 	return n
 }

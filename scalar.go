@@ -1,7 +1,7 @@
 package ed448
 
-func scalarAdd(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
-	var chain word_t
+func scalarAdd(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
+	var chain uint32
 
 	for i := uintZero; i < scalarWords; i++ {
 		chain += a[i] + b[i]
@@ -12,12 +12,12 @@ func scalarAdd(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	return scalarSubExtra(out, scalarP, chain)
 }
 
-func scalarSubExtra(accum, sub [scalarWords]word_t, extra word_t) (out [scalarWords]word_t) {
+func scalarSubExtra(accum, sub [scalarWords]uint32, extra uint32) (out [scalarWords]uint32) {
 	var chain int64
 
 	for i := uintZero; i < scalarWords; i++ {
 		chain += int64(accum[i]) - int64(sub[i])
-		out[i] = word_t(chain)
+		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
 
@@ -26,27 +26,27 @@ func scalarSubExtra(accum, sub [scalarWords]word_t, extra word_t) (out [scalarWo
 
 	for i := uintZero; i < scalarWords; i++ {
 		chain += int64(out[i]) + (int64(scalarP[i]) & borrow)
-		out[i] = word_t(chain)
+		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
 	return
 }
 
-func scalarHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
+func scalarHalve(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
 	mask := -(a[0] & 1)
-	var chain dword_t
+	var chain uint64
 	var i uint
 
 	for i = 0; i < scalarWords; i++ {
-		chain += dword_t(a[i]) + dword_t(b[i]&mask)
-		out[i] = word_t(chain)
+		chain += uint64(a[i]) + uint64(b[i]&mask)
+		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
 	for i = 0; i < scalarWords-1; i++ {
 		out[i] = out[i]>>1 | out[i+1]<<(wordBits-1)
 	}
 
-	out[i] = out[i]>>1 | word_t(chain<<(wordBits-1))
+	out[i] = out[i]>>1 | uint32(chain<<(wordBits-1))
 
 	return
 }
