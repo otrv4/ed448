@@ -3,7 +3,7 @@ package ed448
 import "fmt"
 
 type bigNumber [limbs]uint32
-type serialized [56]byte
+type serialized [fieldBytes]byte
 
 func mustDeserialize(in serialized) *bigNumber {
 	n, ok := deserialize(in)
@@ -372,7 +372,7 @@ func (n *bigNumber) zero() (eq bool) {
 
 //in is big endian
 func (n *bigNumber) setBytes(in []byte) *bigNumber {
-	if len(in) != 56 {
+	if len(in) != fieldBytes {
 		return nil
 	}
 
@@ -394,7 +394,7 @@ func (n *bigNumber) setBytes(in []byte) *bigNumber {
 }
 
 func (n *bigNumber) String() string {
-	dst := make([]byte, 56)
+	dst := make([]byte, fieldBytes)
 	serialize(dst[:], n)
 	return fmt.Sprintf("%#v", dst)
 	//return fmt.Sprintf("0x%s", new(big.Int).SetBytes(rev(dst)).Text(16))

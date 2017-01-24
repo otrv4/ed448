@@ -109,7 +109,7 @@ type twPNiels struct {
 	z *bigNumber
 }
 
-func newTwistedPNiels(a, b, c, z [56]byte) *twPNiels {
+func newTwistedPNiels(a, b, c, z [fieldBytes]byte) *twPNiels {
 	return &twPNiels{
 		&twNiels{
 			a: mustDeserialize(serialized(a)),
@@ -137,7 +137,7 @@ type twNiels struct {
 	a, b, c *bigNumber
 }
 
-func newNielsPoint(a, b, c [56]byte) *twNiels {
+func newNielsPoint(a, b, c [fieldBytes]byte) *twNiels {
 	return &twNiels{
 		a: mustDeserialize(serialized(a)),
 		b: mustDeserialize(serialized(b)),

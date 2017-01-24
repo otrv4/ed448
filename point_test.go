@@ -299,7 +299,7 @@ func (s *Ed448Suite) TestUntwistDoubleAndSerialize(c *C) {
 }
 
 func compareNumbers(label string, n *bigNumber, b *big.Int) {
-	s := [56]byte{}
+	s := [fieldBytes]byte{}
 	serialize(s[:], n)
 
 	r := rev(s[:])
@@ -368,7 +368,7 @@ func (s *Ed448Suite) TestDecafEncode(c *C) {
 
 	b, _ := hex.DecodeString("e4b2a1a14395b5eb3a5c3f3d265782efc28b9a94cc1d46fff8725079cee988d0955a3da9a2ef30abc30ef1bd947f48e093aad8405db1d268")
 
-	dst := [56]byte{}
+	dst := [fieldBytes]byte{}
 
 	point.decafEncode(dst[:])
 

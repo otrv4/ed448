@@ -62,11 +62,11 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 }
 
 func (s *Ed448Suite) TestSerialize(c *C) {
-	dst := [56]byte{}
+	dst := [fieldBytes]byte{}
 
 	one := &bigNumber{0x01}
 	serialize(dst[:], one)
-	c.Assert(dst, DeepEquals, [56]byte{1})
+	c.Assert(dst, DeepEquals, [fieldBytes]byte{1})
 
 	p := &bigNumber{
 		0xfffffff, 0xfffffff,
@@ -82,5 +82,5 @@ func (s *Ed448Suite) TestSerialize(c *C) {
 	serialize(dst[:], p)
 
 	//0 because serialize reduces mod p
-	c.Assert(dst, DeepEquals, [56]byte{})
+	c.Assert(dst, DeepEquals, [fieldBytes]byte{})
 }
