@@ -9,7 +9,7 @@ func scalarAdd(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
 		chain >>= wordBits
 	}
 
-	return scalarSubExtra(out, scalarP, uint32(chain))
+	return scalarSubExtra(out, scalarQ, uint32(chain))
 }
 
 func scalarSubExtra(accum, sub [scalarWords]uint32, extra uint32) (out [scalarWords]uint32) {
@@ -25,7 +25,7 @@ func scalarSubExtra(accum, sub [scalarWords]uint32, extra uint32) (out [scalarWo
 	chain = 0
 
 	for i := uintZero; i < scalarWords; i++ {
-		chain += int64(out[i]) + (int64(scalarP[i]) & borrow)
+		chain += int64(out[i]) + (int64(scalarQ[i]) & borrow)
 		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
