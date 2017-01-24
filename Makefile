@@ -11,6 +11,9 @@ get:
 lint:
 	golint
 
+vet:
+	go vet ./...
+
 test:
 	go test -check.vv -cover ./...
 
