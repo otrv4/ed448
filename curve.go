@@ -379,3 +379,12 @@ func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error
 
 	return k, nil
 }
+
+func (c *curveT) decafGenerateKeys(r io.Reader) (k privateKey, e error) {
+	symKey, err := generateSymmetricKey(r)
+	if err != nil {
+		return
+	}
+
+	return c.decafDerivePrivateKey(symKey)
+}
