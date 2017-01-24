@@ -48,20 +48,20 @@ func (s *Ed448Suite) Test_ModQ_WithPrimeOrder(c *C) {
 	c.Assert(primeOrderPlusOneModQ, DeepEquals, one[:])
 }
 
-func (s *Ed448Suite) Test_Mul(c *C) {
-	resultZero := Mul(zero, testValue)
-	resultValueTimes1 := Mul(one, testValue)
+func (s *Ed448Suite) Test_PointMul(c *C) {
+	resultZero := PointMul(zero, testValue)
+	resultValueTimes1 := PointMul(one, testValue)
 
 	c.Assert(resultZero, DeepEquals, zero[:])
 	c.Assert(resultValueTimes1, DeepEquals, testValue[:])
 
-	val := Mul(primeSerial, one)
+	val := PointMul(primeSerial, one)
 	c.Assert(val, IsNil)
 
-	val = Mul(one, primeSerial)
+	val = PointMul(one, primeSerial)
 	c.Assert(val, IsNil)
 
-	val = Mul(primeSerial, primeSerial)
+	val = PointMul(primeSerial, primeSerial)
 	c.Assert(val, IsNil)
 }
 

@@ -50,3 +50,7 @@ func scalarHalve(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
 
 	return
 }
+
+func scalarMul(x, y *bigNumber) (out *bigNumber) {
+	return new(bigNumber)
+}
