@@ -10,28 +10,35 @@ func ModQ(serial []byte) []byte {
 }
 
 // Mul multiplies two large values
-func Mul(x [fieldBytes]byte, y [fieldBytes]byte) (out [fieldBytes]byte) {
-	desX, _ := deserialize(x)
-	desY, _ := deserialize(y)
+// TODO: change this definition
+func Mul(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
+	desX, okX := deserialize(x)
+	desY, okY := deserialize(y)
+	if !(okX && okY) {
+		return nil
+	}
 	desX.mulCopy(desX, desY)
-	serialize(out[:], desX)
+	out = make([]byte, fieldBytes)
+	serialize(out, desX)
 	return out
 }
 
-// Add two large values
-func Add(x [fieldBytes]byte, y [fieldBytes]byte) (out [fieldBytes]byte) {
-	desX, _ := deserialize(x)
-	desY, _ := deserialize(y)
+// PointAddition adds two Ed448 points
+// Inputs should never be >= prime P. If they are, PointAddition returns nil.
+func PointAddition(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
+	desX, okX := deserialize(x)
+	desY, okY := deserialize(y)
+	if !(okX && okY) {
+		return nil
+	}
 	desX.add(desX, desY)
-	serialize(out[:], desX)
+	out = make([]byte, fieldBytes)
+	serialize(out, desX)
 	return out
 }
 
-// Sub subtracts two large values
-func Sub(x [fieldBytes]byte, y [fieldBytes]byte) (out [fieldBytes]byte) {
-	desX, _ := deserialize(x)
-	desY, _ := deserialize(y)
-	desX.sub(desX, desY)
-	serialize(out[:], desX)
-	return out
+// ScalarSub subtracts scalar x from scalar y. ScalarSub automatically reduces the output by Q
+func ScalarSub(x [scalarWords]uint32, y [scalarWords]uint32) (out [scalarWords]uint32) {
+	noExtra := uint32(0)
+	return scalarSubExtra(x, y, noExtra)
 }

@@ -1,11 +1,24 @@
 package ed448
 
-import (
-	. "gopkg.in/check.v1"
+import . "gopkg.in/check.v1"
+
+var (
+	primeSerial = [fieldBytes]byte{
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	}
+
+	one  = [fieldBytes]byte{1}
+	zero = [fieldBytes]byte{}
 )
 
 func (s *Ed448Suite) Test_ModQ_WithPrimeOrder(c *C) {
-	zero := make([]byte, fieldBytes)
 	primeOrderSerial := []byte{
 		0xf3, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
 		0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x72, 0xc2,
@@ -16,10 +29,10 @@ func (s *Ed448Suite) Test_ModQ_WithPrimeOrder(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
 	}
-	primeOrderModQ := ModQ(primeOrderSerial)
-	c.Assert(primeOrderModQ, DeepEquals, zero)
 
-	one := append([]byte{0x01}, make([]byte, fieldBytes-1)...)
+	primeOrderModQ := ModQ(primeOrderSerial)
+	c.Assert(primeOrderModQ, DeepEquals, zero[:])
+
 	primeOrderPlusOne := []byte{
 		0xf4, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
 		0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x72, 0xc2,
@@ -30,28 +43,30 @@ func (s *Ed448Suite) Test_ModQ_WithPrimeOrder(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
 	}
+
 	primeOrderPlusOneModQ := ModQ(primeOrderPlusOne)
-	c.Assert(primeOrderPlusOneModQ, DeepEquals, one)
+	c.Assert(primeOrderPlusOneModQ, DeepEquals, one[:])
 }
 
 func (s *Ed448Suite) Test_Mul(c *C) {
-	zero := [fieldBytes]byte{}
-	one := [fieldBytes]byte{}
-	one[0] = 0x01
-
 	resultZero := Mul(zero, testValue)
 	resultValueTimes1 := Mul(one, testValue)
 
-	c.Assert(resultZero, DeepEquals, zero)
-	c.Assert(resultValueTimes1, DeepEquals, testValue)
+	c.Assert(resultZero, DeepEquals, zero[:])
+	c.Assert(resultValueTimes1, DeepEquals, testValue[:])
+
+	val := Mul(primeSerial, one)
+	c.Assert(val, IsNil)
+
+	val = Mul(one, primeSerial)
+	c.Assert(val, IsNil)
+
+	val = Mul(primeSerial, primeSerial)
+	c.Assert(val, IsNil)
 }
 
 func (s *Ed448Suite) Test_Add(c *C) {
-	zero := [fieldBytes]byte{}
-	one := [fieldBytes]byte{}
-	one[0] = 0x01
-
-	valuePlusOne := [56]byte{
+	valuePlusOne := [fieldBytes]byte{
 		0x04, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
 		0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x32, 0xc2,
 		0x6c, 0x21, 0x90, 0x36, 0xd6, 0xae, 0x49,
@@ -62,32 +77,28 @@ func (s *Ed448Suite) Test_Add(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
 	}
 
-	resultAddZero := Add(zero, testValue)
-	resultAddOne := Add(one, testValue)
+	resultAddZero := PointAddition(zero, testValue)
+	resultAddOne := PointAddition(one, testValue)
 
-	c.Assert(resultAddZero, DeepEquals, testValue)
-	c.Assert(resultAddOne, DeepEquals, valuePlusOne)
+	c.Assert(resultAddZero, DeepEquals, testValue[:])
+	c.Assert(resultAddOne, DeepEquals, valuePlusOne[:])
+
+	val := PointAddition(primeSerial, primeSerial)
+	c.Assert(val, IsNil)
+
+	val = PointAddition(primeSerial, zero)
+	c.Assert(val, IsNil)
+
+	val = PointAddition(zero, primeSerial)
+	c.Assert(val, IsNil)
 }
 
-func (s *Ed448Suite) Test_Sub(c *C) {
-	zero := [fieldBytes]byte{}
-	one := [fieldBytes]byte{}
-	one[0] = 0x01
+func (s *Ed448Suite) Test_ScalarSub(c *C) {
+	twelve := [scalarWords]uint32{0xc}
+	thirteen := [scalarWords]uint32{0xd}
+	scalarOne := [scalarWords]uint32{0x1}
 
-	valueMinusOne := [56]byte{
-		0x02, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
-		0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x32, 0xc2,
-		0x6c, 0x21, 0x90, 0x36, 0xd6, 0xae, 0x49,
-		0xdb, 0x4e, 0xc4, 0xe9, 0x23, 0xca, 0x7c,
-		0xff, 0xff, 0xff, 0x1f, 0xff, 0xff, 0xff,
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-		0xff, 0x2f, 0xff, 0xff, 0xff, 0xff, 0xff,
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
-	}
+	result := ScalarSub(thirteen, twelve)
 
-	resultSubZero := Sub(testValue, zero)
-	resultSubOne := Sub(testValue, one)
-
-	c.Assert(resultSubZero, DeepEquals, testValue)
-	c.Assert(resultSubOne, DeepEquals, valueMinusOne)
+	c.Assert(result, DeepEquals, scalarOne)
 }
