@@ -11,10 +11,10 @@ func scalarAdd(a, b Scalar) (out Scalar) {
 		chain >>= wordBits
 	}
 
-	return scalarSubExtra(out[:], scalarQ, uint32(chain))
+	return scalarSubExtra(out, scalarQ, uint32(chain))
 }
 
-func scalarSubExtra(minuend []uint32, subtrahend Scalar, carry uint32) (out Scalar) {
+func scalarSubExtra(minuend Scalar, subtrahend Scalar, carry uint32) (out Scalar) {
 	var chain int64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -54,7 +54,7 @@ func scalarHalve(a, b Scalar) (out Scalar) {
 }
 
 func montgomeryMultiply(x, y Scalar) Scalar {
-	out := [scalarWords + 1]uint32{0}
+	var out Scalar
 	carry := uint32(0)
 
 	for i := 0; i < scalarWords; i++ {
@@ -64,7 +64,7 @@ func montgomeryMultiply(x, y Scalar) Scalar {
 			out[j] = uint32(chain)
 			chain >>= wordBits
 		}
-		out[scalarWords] = uint32(chain)
+		saved := uint32(chain)
 		multiplicand := out[0] * montgomeryFactor
 		chain = 0
 		for j := 0; j < scalarWords; j++ {
@@ -74,9 +74,9 @@ func montgomeryMultiply(x, y Scalar) Scalar {
 			}
 			chain >>= wordBits
 		}
-		chain += uint64(out[scalarWords]) + uint64(carry)
+		chain += uint64(saved) + uint64(carry)
 		out[scalarWords-1] = uint32(chain)
 		carry = uint32(chain >> wordBits)
 	}
-	return scalarSubExtra(out[:], scalarQ, carry)
+	return scalarSubExtra(out, scalarQ, carry)
 }
