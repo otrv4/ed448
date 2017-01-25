@@ -52,10 +52,10 @@ func (s *Ed448Suite) Test_littleScalarMul_Identity(c *C) {
 		0x893b4262, 0x22c93812,
 	}
 
-	out := scalarMul(x, y)
+	out := montgomeryMultiply(x, y)
 	c.Assert(out, DeepEquals, expected)
 
-	c.Assert(scalarMul(out, scalarR2), DeepEquals, x)
+	c.Assert(montgomeryMultiply(out, scalarR2), DeepEquals, x)
 }
 
 func (s *Ed448Suite) Test_littleScalarMul_Zero(c *C) {
@@ -70,7 +70,7 @@ func (s *Ed448Suite) Test_littleScalarMul_Zero(c *C) {
 	}
 	y := Scalar{}
 
-	c.Assert(scalarMul(x, y), DeepEquals, y)
+	c.Assert(montgomeryMultiply(x, y), DeepEquals, y)
 }
 
 func (s *Ed448Suite) Test_littleScalarMul_fullMultiplication(c *C) {
@@ -103,5 +103,5 @@ func (s *Ed448Suite) Test_littleScalarMul_fullMultiplication(c *C) {
 		0x611e7191, 0x19381160,
 	}
 
-	c.Assert(scalarMul(x, y), DeepEquals, expected)
+	c.Assert(montgomeryMultiply(x, y), DeepEquals, expected)
 }

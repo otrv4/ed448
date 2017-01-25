@@ -48,5 +48,5 @@ func ScalarSub(x Scalar, y Scalar) (out Scalar) {
 // ScalarMul multiplies scalar x from scalar y.
 // ScalarMul automatically reduces the output by Q
 func ScalarMul(x Scalar, y Scalar) (out Scalar) {
-	return scalarMul(scalarMul(x, y), scalarR2)
+	return montgomeryMultiply(montgomeryMultiply(x, y), scalarR2)
 }

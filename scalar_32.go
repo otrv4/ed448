@@ -53,7 +53,7 @@ func scalarHalve(a, b Scalar) (out Scalar) {
 	return
 }
 
-func scalarMul(x, y Scalar) Scalar {
+func montgomeryMultiply(x, y Scalar) Scalar {
 	out := [scalarWords + 1]uint32{0}
 	carry := uint32(0)
 
