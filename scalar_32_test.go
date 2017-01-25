@@ -5,14 +5,14 @@ import (
 )
 
 func (s *Ed448Suite) Test_ScalarAddition(c *C) {
-	s1 := [scalarWords]uint32{
+	s1 := Scalar{
 		0x529eec33, 0x721cf5b5,
 		0xc8e9c2ab, 0x7a4cf635,
 		0x44a725bf, 0xeec492d9,
 		0x0cd77058, 0x00000002,
 	}
-	s2 := [scalarWords]uint32{0x00000001}
-	expected := [scalarWords]uint32{
+	s2 := Scalar{0x00000001}
+	expected := Scalar{
 		0x529eec34, 0x721cf5b5,
 		0xc8e9c2ab, 0x7a4cf635,
 		0x44a725bf, 0xeec492d9,
@@ -23,15 +23,15 @@ func (s *Ed448Suite) Test_ScalarAddition(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarHalve(c *C) {
-	expected := [scalarWords]uint32{6}
+	expected := Scalar{6}
 
-	c.Assert(scalarHalve([scalarWords]uint32{12}, [scalarWords]uint32{4}),
+	c.Assert(scalarHalve(Scalar{12}, Scalar{4}),
 		DeepEquals,
 		expected)
 }
 
 func (s *Ed448Suite) Test_littleScalarMul_Identity(c *C) {
-	x := [scalarWords]uint32{
+	x := Scalar{
 		0xd013f18b, 0xa03bc31f,
 		0xa5586c00, 0x5269ccea,
 		0x80becb3f, 0x38058556,
@@ -40,9 +40,9 @@ func (s *Ed448Suite) Test_littleScalarMul_Identity(c *C) {
 		0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
-	y := [scalarWords]uint32{0x00000001}
+	y := Scalar{0x00000001}
 
-	expected := [scalarWords]uint32{
+	expected := Scalar{
 		0xf19fb32f, 0x62bc6ae6,
 		0xed626086, 0x0e2d81d7,
 		0x7a83d54b, 0x38e73799,
@@ -59,7 +59,7 @@ func (s *Ed448Suite) Test_littleScalarMul_Identity(c *C) {
 }
 
 func (s *Ed448Suite) Test_littleScalarMul_Zero(c *C) {
-	x := [scalarWords]uint32{
+	x := Scalar{
 		0xd013f18b, 0xa03bc31f,
 		0xa5586c00, 0x5269ccea,
 		0x80becb3f, 0x38058556,
@@ -68,13 +68,13 @@ func (s *Ed448Suite) Test_littleScalarMul_Zero(c *C) {
 		0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
-	y := [scalarWords]uint32{}
+	y := Scalar{}
 
 	c.Assert(scalarMul(x, y), DeepEquals, y)
 }
 
 func (s *Ed448Suite) Test_littleScalarMul_fullMultiplication(c *C) {
-	x := [scalarWords]uint32{
+	x := Scalar{
 		0xffb823a3, 0xc96a3c35,
 		0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764,
@@ -83,7 +83,7 @@ func (s *Ed448Suite) Test_littleScalarMul_fullMultiplication(c *C) {
 		0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
-	y := [scalarWords]uint32{
+	y := Scalar{
 		0xd8bedc42, 0x686eb329,
 		0xe416b899, 0x17aa6d9b,
 		0x1e30b38b, 0x188c6b1a,
@@ -93,7 +93,7 @@ func (s *Ed448Suite) Test_littleScalarMul_fullMultiplication(c *C) {
 		0xcae1cb68, 0x16c5450a,
 	}
 
-	expected := [scalarWords]uint32{
+	expected := Scalar{
 		0x14aec10b, 0x426d3399,
 		0x3f79af9e, 0xb1f67159,
 		0x6aa5e214, 0x33819c2b,

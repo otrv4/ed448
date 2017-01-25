@@ -360,7 +360,7 @@ func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
 }
 
 func (s *Ed448Suite) Test_PrecomputedScalarMultiplication(c *C) {
-	scalar := [scalarWords]uint32{0}
+	scalar := Scalar{0}
 
 	p := curve.precomputedScalarMul(scalar)
 

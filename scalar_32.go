@@ -1,6 +1,8 @@
 package ed448
 
-func scalarAdd(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
+type Scalar [scalarWords]uint32
+
+func scalarAdd(a, b Scalar) (out Scalar) {
 	var chain uint64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -12,7 +14,7 @@ func scalarAdd(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
 	return scalarSubExtra(out[:], scalarQ, uint32(chain))
 }
 
-func scalarSubExtra(minuend []uint32, subtrahend [scalarWords]uint32, carry uint32) (out [scalarWords]uint32) {
+func scalarSubExtra(minuend []uint32, subtrahend Scalar, carry uint32) (out Scalar) {
 	var chain int64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -32,7 +34,7 @@ func scalarSubExtra(minuend []uint32, subtrahend [scalarWords]uint32, carry uint
 	return
 }
 
-func scalarHalve(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
+func scalarHalve(a, b Scalar) (out Scalar) {
 	mask := -(a[0] & 1)
 	var chain uint64
 	var i uint
@@ -51,7 +53,7 @@ func scalarHalve(a, b [scalarWords]uint32) (out [scalarWords]uint32) {
 	return
 }
 
-func scalarMul(x, y [scalarWords]uint32) [scalarWords]uint32 {
+func scalarMul(x, y Scalar) Scalar {
 	out := [scalarWords + 1]uint32{0}
 	carry := uint32(0)
 

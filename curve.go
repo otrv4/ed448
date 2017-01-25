@@ -62,7 +62,7 @@ func mustNewPoint(x, y serialized) *homogeneousProjective {
 	return p
 }
 
-func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]uint32, nbits, extraDoubles int) (*bigNumber, uint32) {
+func (c *curveT) multiplyMontgomery(in *bigNumber, scalar Scalar, nbits, extraDoubles int) (*bigNumber, uint32) {
 	mont := new(montgomery)
 	mont.deserialize(in)
 	var i, j, n int
@@ -94,7 +94,7 @@ func (c *curveT) multiplyMontgomery(in *bigNumber, scalar [scalarWords]uint32, n
 	return out, uint32(ok)
 }
 
-func (c *curveT) multiplyByBase(scalar [scalarWords]uint32) *twExtensible {
+func (c *curveT) multiplyByBase(scalar Scalar) *twExtensible {
 	out := &twExtensible{
 		new(bigNumber),
 		new(bigNumber),
@@ -204,7 +204,7 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 	copy(k.symKey(), symmetricKey[:])
 
 	skb := pseudoRandomFunction(symmetricKey)
-	secretKey := [scalarWords]uint32{}
+	secretKey := Scalar{}
 	deserializeModQ(secretKey[:], skb)
 	wordsToBytes(k.secretKey(), secretKey[:])
 
@@ -226,7 +226,7 @@ func (c *curveT) generateKey(read io.Reader) (k privateKey, err error) {
 
 //XXX Is private only the secret part of the privateKey?
 func (c *curveT) computeSecret(private, public []byte) []byte {
-	var sk [scalarWords]uint32
+	var sk Scalar
 	var pub serialized
 	copy(pub[:], public)
 
@@ -249,7 +249,7 @@ func (c *curveT) computeSecret(private, public []byte) []byte {
 }
 
 func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {
-	secretKeyWords := [scalarWords]uint32{}
+	secretKeyWords := Scalar{}
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		//XXX SECURITY should we wipe secretKeyWords?
 		e = errors.New("corrupted private key")
@@ -281,7 +281,7 @@ func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e erro
 	return
 }
 
-func (c *curveT) deriveTemporarySignature(nonce [scalarWords]uint32) (dst [fieldBytes]byte) {
+func (c *curveT) deriveTemporarySignature(nonce Scalar) (dst [fieldBytes]byte) {
 	// tmpSig = 4 * nonce * basePoint
 	fourTimesGTimesNonce := c.multiplyByBase(nonce).double().untwistAndDoubleAndSerialize()
 	serialize(dst[:], fourTimesGTimesNonce)
@@ -289,7 +289,7 @@ func (c *curveT) deriveTemporarySignature(nonce [scalarWords]uint32) (dst [field
 }
 
 //XXX Should pubKey have a fixed size here?
-func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst [scalarWords]uint32) {
+func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst Scalar) {
 	h := sha3.New512()
 	h.Write(pubKey)
 	h.Write(tmpSignature[:])
@@ -300,7 +300,7 @@ func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (
 	return
 }
 
-func deriveNonce(msg []byte, symKey []byte) (dst [scalarWords]uint32) {
+func deriveNonce(msg []byte, symKey []byte) (dst Scalar) {
 	h := sha3.New512()
 	h.Write([]byte("signonce"))
 	h.Write(symKey)
@@ -320,7 +320,7 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 		return false
 	}
 
-	nonce := [scalarWords]uint32{}
+	nonce := Scalar{}
 	ok = barrettDeserialize(nonce[:], signature[fieldBytes:2*fieldBytes], &curvePrimeOrder)
 	if !ok {
 		return false
@@ -368,7 +368,7 @@ func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error
 	copy(k.symKey(), sym[:])
 
 	skb := decafPseudoRandomFunction(sym[:])
-	secretKey := [scalarWords]uint32{}
+	secretKey := Scalar{}
 
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
 	wordsToBytes(k.secretKey(), secretKey[:])

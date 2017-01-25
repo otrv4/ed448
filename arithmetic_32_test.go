@@ -94,9 +94,9 @@ func (s *Ed448Suite) Test_Add(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarSub(c *C) {
-	twelve := [scalarWords]uint32{0xc}
-	thirteen := [scalarWords]uint32{0xd}
-	scalarOne := [scalarWords]uint32{0x1}
+	twelve := Scalar{0xc}
+	thirteen := Scalar{0xd}
+	scalarOne := Scalar{0x1}
 
 	result := ScalarSub(thirteen, twelve)
 
@@ -104,7 +104,7 @@ func (s *Ed448Suite) Test_ScalarSub(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarMul(c *C) {
-	x := [scalarWords]uint32{
+	x := Scalar{
 		0xffb823a3, 0xc96a3c35,
 		0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764,
@@ -114,7 +114,7 @@ func (s *Ed448Suite) Test_ScalarMul(c *C) {
 		0x3b089f07, 0x1e63e807,
 	}
 
-	y := [scalarWords]uint32{
+	y := Scalar{
 		0xd8bedc42, 0x686eb329,
 		0xe416b899, 0x17aa6d9b,
 		0x1e30b38b, 0x188c6b1a,
@@ -124,7 +124,7 @@ func (s *Ed448Suite) Test_ScalarMul(c *C) {
 		0xcae1cb68, 0x16c5450a,
 	}
 
-	expected := [scalarWords]uint32{
+	expected := Scalar{
 		0xa18d010a, 0x1f5b3197,
 		0x994c9c2b, 0x6abd26f5,
 		0x08a3a0e4, 0x36a14920,

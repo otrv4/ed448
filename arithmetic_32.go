@@ -40,13 +40,13 @@ func PointAddition(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
 
 // ScalarSub subtracts scalar x from scalar y.
 // ScalarSub automatically reduces the output by Q
-func ScalarSub(x [scalarWords]uint32, y [scalarWords]uint32) (out [scalarWords]uint32) {
+func ScalarSub(x Scalar, y Scalar) (out Scalar) {
 	noExtra := uint32(0)
 	return scalarSubExtra(x[:], y, noExtra)
 }
 
 // ScalarMul multiplies scalar x from scalar y.
 // ScalarMul automatically reduces the output by Q
-func ScalarMul(x [scalarWords]uint32, y [scalarWords]uint32) (out [scalarWords]uint32) {
+func ScalarMul(x Scalar, y Scalar) (out Scalar) {
 	return scalarMul(scalarMul(x, y), scalarR2)
 }

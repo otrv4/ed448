@@ -1,11 +1,10 @@
 package ed448
 
 type nielsTable []*twNiels
-type scalarAdjustmentTable [scalarWords]uint32
 
 type decafBaseTable struct {
 	base             nielsTable
-	scalarAdjustment scalarAdjustmentTable
+	scalarAdjustment Scalar
 }
 
 // TODO: Security! This lookup should be done in constant time
@@ -502,7 +501,7 @@ func init() {
 	}
 
 	decafPrecompTable.base = t[:]
-	decafPrecompTable.scalarAdjustment = scalarAdjustmentTable{
+	decafPrecompTable.scalarAdjustment = Scalar{
 		0x4a7bb0cf, 0xc873d6d5,
 		0x23a70aad, 0xe933d8d7,
 		0x129c96fd, 0xbb124b65,

@@ -124,7 +124,7 @@ func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
 	copy(p.z[:], bigOne[:])
 }
 
-func (c *curveT) precomputedScalarMul(scalar [scalarWords]uint32) *twExtendedPoint {
+func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 
 	p := &twExtendedPoint{
 		new(bigNumber),
