@@ -48,6 +48,8 @@ const (
 	Size512 = 64
 
 	uintZero = uint(0)
+
+	montgomeryFactor = uint32(0xae918bc5)
 )
 
 var (
@@ -73,5 +75,15 @@ var (
 		0xffffffff, 0xffffffff,
 		0xffffffff, 0xffffffff,
 		0xffffffff, 0x3fffffff,
+	}
+
+	scalarR2 = [scalarWords]uint32{
+		0x049b9b60, 0xe3539257,
+		0xc1b195d9, 0x7af32c4b,
+		0x88ea1859, 0x0d66de23,
+		0x5ee4d838, 0xae17cf72,
+		0xa3c47c44, 0x1a9cc14b,
+		0xe4d070af, 0x2052bcb7,
+		0xf823b729, 0x3402a939,
 	}
 )
