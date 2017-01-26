@@ -117,6 +117,13 @@ func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
 	}
 }
 
+func (p *twExtendedPoint) add(pn *twPNiels, beforeDouble bool) {
+	lo := &bigNumber{}
+	lo.mul(p.z, pn.z)
+	p.z[0] = lo[0]
+	p.addNielsToExtended(pn.n, beforeDouble)
+}
+
 func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
 	p.y.add(src.b, src.a)
 	p.x.sub(src.b, src.a)
