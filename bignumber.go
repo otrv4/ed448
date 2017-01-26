@@ -210,17 +210,13 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	return n
 }
 
-//XXX Security this should be constant time
+//XXX Security this is not constant time when c is a signed integer
 func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c int64) *bigNumber {
 	if c >= 0 {
 		return n.mulW(x, uint64(c))
 	}
-
 	r := n.mulW(x, uint64(-c))
-	r.negRaw(r)
-	r.bias(2)
-
-	return r
+	return r.sub(bigZero, r)
 }
 
 func (n *bigNumber) neg(x *bigNumber) *bigNumber {

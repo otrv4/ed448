@@ -198,13 +198,12 @@ var wnfsTable = [32]*twNiels{
 func (p *twExtendedPoint) prepareFixedWindow(ntable int) []*twPNiels {
 	//var tmp twExtendedPoint
 	//tmp.double(p, false)
-	//unimplemented
 	//twpn := tmp.twPNiels()
 	//out := [ntable]twPNiels{b.twPNiels()}
 	//point_copy(tmp, b)
 	//for i := 0; i < ntable; i++ {
-	//	addPNielsToExtended(tmp, twpn, false)
-	//	out[i] = tmp.pNiels()
+	//	addPNielsToExtended(tmp, twpn, false) -- unimplemented
+	//	out[i] = tmp.pNiels() -- unimplemented
 	//}
 	//return out
 	return []*twPNiels{}

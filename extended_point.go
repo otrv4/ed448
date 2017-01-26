@@ -124,6 +124,25 @@ func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
 	copy(p.z[:], bigOne[:])
 }
 
+func (p *twExtendedPoint) twPNiels() *twPNiels {
+	a := &bigNumber{}
+	a.sub(p.y, p.x)
+
+	b := &bigNumber{}
+	b.add(p.x, p.y)
+
+	c := &bigNumber{}
+	c.mulWSignedCurveConstant(p.t, 2*edwardsD-2)
+
+	z := &bigNumber{}
+	z.add(p.z, p.z)
+
+	return &twPNiels{
+		&twNiels{a, b, c},
+		z,
+	}
+}
+
 func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 
 	p := &twExtendedPoint{
