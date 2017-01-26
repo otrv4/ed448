@@ -68,6 +68,26 @@ func prepareWnafTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 	}
 }
 
+func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) {
+	dst[0] = p.twPNiels()
+
+	if tableSize == 0 {
+		return
+	}
+
+	p.double(p, false)
+
+	twOp := p.twPNiels()
+
+	p.add(dst[0], false)
+	dst[1] = p.twPNiels()
+
+	for i := 2; i < 1<<tableSize; i++ {
+		p.add(twOp, false)
+		dst[i] = p.twPNiels()
+	}
+}
+
 func linearComboVarFixedVt(
 	working *twExtensible, scalarVar, scalarPre []uint32, precmp []*twNiels) {
 	tableBitsVar := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;

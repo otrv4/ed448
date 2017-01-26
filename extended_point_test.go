@@ -583,7 +583,6 @@ func (s *Ed448Suite) Test_ExtendedToPNiels(c *C) {
 }
 
 func (s *Ed448Suite) Test_AddPNielsToExtended(c *C) {
-	// c.Skip("WIP")
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x065fe00e, 0x070a5e7e, 0x0bfd74eb, 0x08eee5a2,
