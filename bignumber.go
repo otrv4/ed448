@@ -291,8 +291,13 @@ func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
 
 func (n *bigNumber) copy() *bigNumber {
 	c := &bigNumber{}
-	copy(c[:], n[:])
+	*c = *n
 	return c
+}
+
+func (n *bigNumber) copyInto(c *bigNumber) *bigNumber {
+	*n = *c
+	return n
 }
 
 func (n *bigNumber) set(x *bigNumber) *bigNumber {
