@@ -343,7 +343,7 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 
 	//magic
 	//PK_2(X, Y) = PK(X,Y) * ????
-	linearComboVarFixedVt(pkPoint, challenge[:], nonce[:], wnfsTable[:])
+	linearComboVarFixedVt(pkPoint, challenge, nonce, wnfsTable[:])
 
 	//PK_2(X,Y) -> (untwist & double & SERPT) -> 2*pubKeyWireFormat
 	//In the end, this should be = 4 * nonce * G

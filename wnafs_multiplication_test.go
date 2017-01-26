@@ -209,7 +209,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	linearComboVarFixedVt(p, x[:], y[:], wnfsTable[:])
+	linearComboVarFixedVt(p, x, y, wnfsTable[:])
 
 	c.Assert(p.equals(expectedP), Equals, true)
 }
@@ -262,7 +262,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	linearComboVarFixedVt(p, x[:], y[:], wnfsTable[:])
+	linearComboVarFixedVt(p, x, y, wnfsTable[:])
 
 	c.Assert(p.equals(expectedP), Equals, true)
 }
@@ -281,7 +281,7 @@ func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
 	//This is tricky, because even if controlVar has too much space, it does
 	//not matter
 	controlVar := make([]smvtControl, 92)
-	pos := recodeWnaf(controlVar, x[:], scalarBits, 4)
+	pos := recodeWnaf(controlVar, x, scalarBits, 4)
 
 	c.Assert(controlVar[:pos], DeepEquals, []smvtControl{
 		smvtControl{440, 19},
@@ -364,7 +364,7 @@ func (s *Ed448Suite) TestRecodeWnafForS0(c *C) {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	}
 
-	position := recodeWnaf(controlPre[:], sig[:], nbitsPre, tableBitsPre)
+	position := recodeWnaf(controlPre[:], sig, nbitsPre, tableBitsPre)
 
 	c.Assert(position, Equals, uint32(0))
 	c.Assert(controlPre[position].power, Equals, -1)
@@ -386,7 +386,7 @@ func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
 		0xb1428aca, 0x31b43b4d,
 	}
 
-	position := recodeWnaf(control[:], challenge[:], nbits, tableBits)
+	position := recodeWnaf(control[:], challenge, nbits, tableBits)
 
 	c.Assert(position, Equals, uint32(67))
 	c.Assert(control[position].power, Equals, -1)
@@ -405,7 +405,7 @@ func (s *Ed448Suite) TestRecodeWnafForDecaf(c *C) {
 	}
 
 	controlVar := make([]smvtControl, 115)
-	pos := recodeWnaf(controlVar, x[:], scalarBits, 3)
+	pos := recodeWnaf(controlVar, x, scalarBits, 3)
 
 	c.Assert(controlVar[:pos], DeepEquals, []smvtControl{
 		smvtControl{441, 9},
@@ -494,7 +494,7 @@ func (s *Ed448Suite) TestDecafRecodeWnafForS0(c *C) {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	}
 
-	position := recodeWnaf(controlPre[:], sig[:], scalarBits, tableBitsPre)
+	position := recodeWnaf(controlPre[:], sig, scalarBits, tableBitsPre)
 
 	c.Assert(position, Equals, uint32(0))
 	c.Assert(controlPre[position].power, Equals, -1)
