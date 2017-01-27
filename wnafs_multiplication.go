@@ -79,11 +79,11 @@ func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 
 	twOp := p.twPNiels()
 
-	p.add(dst[0], false)
+	p.addProjectiveNielsToExtended(dst[0], false)
 	dst[1] = p.twPNiels()
 
 	for i := 2; i < 1<<tableSize; i++ {
-		p.add(twOp, false)
+		p.addProjectiveNielsToExtended(twOp, false)
 		dst[i] = p.twPNiels()
 	}
 }

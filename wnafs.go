@@ -201,7 +201,7 @@ func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
 	out := make([]*twPNiels, nTable)
 	out[0] = pCopy.twPNiels()
 	for i := 1; i < nTable; i++ {
-		pCopy.add(pn, false)
+		pCopy.addProjectiveNielsToExtended(pn, false)
 		out[i] = pCopy.twPNiels()
 	}
 	return out[:]

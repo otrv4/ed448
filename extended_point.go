@@ -99,6 +99,15 @@ func decafDecode(ser serialized, identity uint64) (*twExtendedPoint, uint64) {
 	return p, ok
 }
 
+func (p *twExtendedPoint) copy() *twExtendedPoint {
+	n := &twExtendedPoint{}
+	n.x = p.x.copy()
+	n.y = p.y.copy()
+	n.z = p.z.copy()
+	n.t = p.t.copy()
+	return n
+}
+
 func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.sub(p.y, p.x)
@@ -116,15 +125,6 @@ func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
 	if !beforeDouble {
 		p.t.mul(b, c)
 	}
-}
-
-func (p *twExtendedPoint) copy() *twExtendedPoint {
-	n := &twExtendedPoint{}
-	n.x = p.x.copy()
-	n.y = p.y.copy()
-	n.z = p.z.copy()
-	n.t = p.t.copy()
-	return n
 }
 
 func (p *twExtendedPoint) subNielsFromExtendedPoint(p2 *twNiels, beforeDouble bool) {
@@ -147,7 +147,7 @@ func (p *twExtendedPoint) subNielsFromExtendedPoint(p2 *twNiels, beforeDouble bo
 	}
 }
 
-func (p *twExtendedPoint) add(pn *twPNiels, beforeDouble bool) {
+func (p *twExtendedPoint) addProjectiveNielsToExtended(pn *twPNiels, beforeDouble bool) {
 	tmp := &bigNumber{}
 	tmp.mul(p.z, pn.z)
 	p.z = tmp.copy()
@@ -155,9 +155,9 @@ func (p *twExtendedPoint) add(pn *twPNiels, beforeDouble bool) {
 }
 
 func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, beforeDouble bool) {
-	l0 := &bigNumber{}
-	l0.mul(p.z, p2.z)
-	p.z = l0.copy()
+	tmp := &bigNumber{}
+	tmp.mul(p.z, p2.z)
+	p.z = tmp.copy()
 	p.subNielsFromExtendedPoint(p2.n, beforeDouble)
 }
 
