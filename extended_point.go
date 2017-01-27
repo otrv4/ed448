@@ -127,11 +127,38 @@ func (p *twExtendedPoint) copy() *twExtendedPoint {
 	return n
 }
 
+func (p *twExtendedPoint) subNielsFromExtendedPoint(p2 *twNiels, beforeDouble bool) {
+	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	b.sub(p.y, p.x)
+	a.mul(p2.b, b)
+	b.addRaw(p.x, p.y)
+	p.y.mul(p2.a, b)
+	p.x.mul(p2.c, p.t)
+	c.addRaw(a, p.y)
+	b.sub(p.y, a)
+	p.y.addRaw(p.z, p.x)
+
+	a.sub(p.z, p.x)
+	p.z.mul(a, p.y)
+	p.x.mul(p.y, b)
+	p.y.mul(a, c)
+	if !beforeDouble {
+		p.t.mul(b, c)
+	}
+}
+
 func (p *twExtendedPoint) add(pn *twPNiels, beforeDouble bool) {
 	tmp := &bigNumber{}
 	tmp.mul(p.z, pn.z)
 	p.z = tmp.copy()
 	p.addNielsToExtended(pn.n, beforeDouble)
+}
+
+func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, beforeDouble bool) {
+	l0 := &bigNumber{}
+	l0.mul(p.z, p2.z)
+	p.z = l0.copy()
+	p.subNielsFromExtendedPoint(p2.n, beforeDouble)
 }
 
 func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
