@@ -249,8 +249,6 @@ func pointDoubleScalarMul(
 	//scalar2x = scalarHalve(scalar2x, scalarQ)
 
 	///* Set up a precomputed table with odd multiples of scalarC. */
-	//pn := &twPNiels{}
-	//tmp := &twExtendedPoint{}
 	//multiples1 := pointB.prepareFixedWindow(nTable)
 	//multiples2 := pointC.prepareFixedWindow(nTable)
 
@@ -273,14 +271,14 @@ func pointDoubleScalarMul(
 	//	bits1 ^= inv1
 	//	bits2 ^= inv2
 
-	// <--- continue from here
-	/* Add in from table.  Compute t only on last iteration. */
-	//decafPrecompTable.lookupxx(pn, multiples1, size(pn), nTable, bits1 & windowTMask)	//implement lookupxx
+	///* Add in from table.  Compute t only on last iteration. */
+	//pn := constTimeLookup(multiples1, bits1 & windowTMask)
 	//pn.n.conditionalNegate(inv1)
-	//v := 1
-	//if (v !=0) {
-	//	tmp.twExtendedPoint(pn)
-	//	v = 0
+	//tmp := &twExtendedPoint{}
+	//if (first) {
+	//	<--- ***************** continue here
+	//	tmp := pn.twExtendedPoint()
+	//	first = 0
 	//} else {
 	//	/* Using Hisil et al's lookahead method instead of extensible here
 	//     * for no particular reason.  Double WINDOW times, but only compute t on
