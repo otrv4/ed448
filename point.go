@@ -109,6 +109,10 @@ type twPNiels struct {
 	z *bigNumber
 }
 
+func (p *twPNiels) twExtendedPoint() *twExtendedPoint {
+	return &twExtendedPoint{}
+}
+
 func newTwistedPNiels(a, b, c, z [fieldBytes]byte) *twPNiels {
 	return &twPNiels{
 		&twNiels{
