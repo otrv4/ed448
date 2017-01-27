@@ -6,7 +6,7 @@ type twExtendedPoint struct {
 
 // Based on Hisil's formula 5.1.3: Doubling in E^e
 // XXX: Find out if double is always a double of itself
-func (p *twExtendedPoint) double(q *twExtendedPoint, beforeDouble bool) {
+func (p *twExtendedPoint) double(q *twExtendedPoint, beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	c.square(q.x)
 	a.square(q.y)
@@ -26,6 +26,7 @@ func (p *twExtendedPoint) double(q *twExtendedPoint, beforeDouble bool) {
 	if !beforeDouble {
 		p.t.mul(b, d)
 	}
+	return p
 }
 
 func (p *twExtendedPoint) decafEncode(dst []byte) {
@@ -115,6 +116,13 @@ func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
 	if !beforeDouble {
 		p.t.mul(b, c)
 	}
+}
+
+func (p *twExtendedPoint) copyInto(p2 *twExtendedPoint) {
+	p.x.copyInto(p2.x)
+	p.y.copyInto(p2.y)
+	p.z.copyInto(p2.z)
+	p.t.copyInto(p2.t)
 }
 
 func (p *twExtendedPoint) add(pn *twPNiels, beforeDouble bool) {

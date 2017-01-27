@@ -1,5 +1,7 @@
 package ed448
 
+import "fmt"
+
 var wnfsTable = [32]*twNiels{
 	//0
 	newNielsPoint(
@@ -195,16 +197,47 @@ var wnfsTable = [32]*twNiels{
 	),
 }
 
-func (p *twExtendedPoint) prepareFixedWindow(ntable int) []*twPNiels {
-	//var tmp twExtendedPoint
-	//tmp.double(p, false)
-	//twpn := tmp.twPNiels()
-	//out := [ntable]twPNiels{b.twPNiels()}
-	//point_copy(tmp, b)
-	//for i := 0; i < ntable; i++ {
-	//	addPNielsToExtended(tmp, twpn, false) -- unimplemented
-	//	out[i] = tmp.pNiels() -- unimplemented
-	//}
-	//return out
-	return []*twPNiels{}
+func (b *twExtendedPoint) prepareFixedWindow(ntable int) []*twPNiels {
+	fmt.Printf("start\nx: %#v\n", b.x)
+	fmt.Printf("y: %#v\n", b.y)
+	fmt.Printf("z: %#v\n", b.z)
+	fmt.Printf("t: %#v\n", b.t)
+
+	tmp := b.double(b, false)
+	fmt.Printf("point double internal\nx: %#v\n", tmp.x)
+	fmt.Printf("y: %#v\n", tmp.y)
+	fmt.Printf("z: %#v\n", tmp.z)
+	fmt.Printf("t: %#v\n", tmp.t)
+
+	pn := tmp.twPNiels()
+	fmt.Println("starting pniels:")
+	fmt.Printf("a: %#v\n", pn.n.a)
+	fmt.Printf("b: %#v\n", pn.n.b)
+	fmt.Printf("c: %#v\n", pn.n.c)
+	fmt.Printf("z: %#v\n", pn.z)
+
+	multiples := make([]*twPNiels, ntable)
+	multiples[0] = b.twPNiels()
+
+	tmp.copyInto(b)
+
+	for i := 1; i < ntable; i++ {
+		fmt.Println("in loop pniels:")
+		fmt.Printf("a: %#v\n", pn.n.a)
+		fmt.Printf("b: %#v\n", pn.n.b)
+		fmt.Printf("c: %#v\n", pn.n.c)
+		fmt.Printf("z: %#v\n", pn.z)
+		fmt.Printf("b4\nx: %#v\n", tmp.x)
+		fmt.Printf("y: %#v\n", tmp.y)
+		fmt.Printf("z: %#v\n", tmp.z)
+		fmt.Printf("t: %#v\n", tmp.t)
+		tmp.add(pn, false)
+		fmt.Printf("after\nx: %#v\n", tmp.x)
+		fmt.Printf("y: %#v\n", tmp.y)
+		fmt.Printf("z: %#v\n", tmp.z)
+		fmt.Printf("t: %#v\n", tmp.t)
+
+		multiples[i] = tmp.twPNiels()
+	}
+	return multiples[:]
 }
