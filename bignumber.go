@@ -295,11 +295,6 @@ func (n *bigNumber) copy() *bigNumber {
 	return c
 }
 
-func (n *bigNumber) copyInto(c *bigNumber) *bigNumber {
-	*n = *c
-	return n
-}
-
 func (n *bigNumber) set(x *bigNumber) *bigNumber {
 	copy(n[:], x[:])
 	return n

@@ -118,17 +118,19 @@ func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
 	}
 }
 
-func (p *twExtendedPoint) copyInto(p2 *twExtendedPoint) {
-	p.x.copyInto(p2.x)
-	p.y.copyInto(p2.y)
-	p.z.copyInto(p2.z)
-	p.t.copyInto(p2.t)
+func (p *twExtendedPoint) copy() *twExtendedPoint {
+	n := &twExtendedPoint{}
+	n.x = p.x.copy()
+	n.y = p.y.copy()
+	n.z = p.z.copy()
+	n.t = p.t.copy()
+	return n
 }
 
 func (p *twExtendedPoint) add(pn *twPNiels, beforeDouble bool) {
 	tmp := &bigNumber{}
 	tmp.mul(p.z, pn.z)
-	p.z.copyInto(tmp)
+	p.z = tmp.copy()
 	p.addNielsToExtended(pn.n, beforeDouble)
 }
 
