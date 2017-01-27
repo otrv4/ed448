@@ -110,7 +110,21 @@ type twPNiels struct {
 }
 
 func (p *twPNiels) twExtendedPoint() *twExtendedPoint {
-	return &twExtendedPoint{}
+	eu := &bigNumber{}
+	q := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+	eu.add(p.n.b, p.n.a)
+	q.y.sub(p.n.b, p.n.a)
+	q.t.mul(q.y, eu)
+	q.x.mul(p.z, q.y)
+	q.y.mul(p.z, eu)
+	q.z.square(p.z)
+
+	return q
 }
 
 func newTwistedPNiels(a, b, c, z [fieldBytes]byte) *twPNiels {

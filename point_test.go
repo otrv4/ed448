@@ -433,7 +433,6 @@ func (s *Ed448Suite) TestDecafDecode(c *C) {
 }
 
 func (s *Ed448Suite) Test_twPNielsToExtended(c *C) {
-	c.Skip("WIP")
 	pn := &twPNiels{
 		&twNiels{
 			&bigNumber{0x00923994, 0x09e0df3c, 0x05d44abd, 0x0e120043, 0x0802cd52, 0x03d6dc68, 0x06848872, 0x0b6dc339, 0x0847737b, 0x0bc369ba, 0x02096051, 0x0bb48580, 0x07f1feb0, 0x01f3325e, 0x05347dc3, 0x0ac3e06b},
