@@ -243,10 +243,11 @@ func pointDoubleScalarMul(
 	const windowTMask = windowMask >> 1  //0x0000f 15
 	const nTable = 1 << (window - 1)     //0x00010 16
 
-	scalar1x := scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
-	scalar1x = scalarHalve(scalar1x, scalarQ)
-	scalar2x := scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
-	scalar2x = scalarHalve(scalar2x, scalarQ)
+	var scalar1x, scalar2x Scalar
+	scalar1x.scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
+	scalar1x.scalarHalve(scalar1x, scalarQ)
+	scalar2x.scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
+	scalar2x.scalarHalve(scalar2x, scalarQ)
 
 	multiples1 := pointB.prepareFixedWindow(nTable)
 	multiples2 := pointC.prepareFixedWindow(nTable)
