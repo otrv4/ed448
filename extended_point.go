@@ -236,66 +236,59 @@ func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 func pointDoubleScalarMul(
 	pointB *twExtendedPoint, scalarB Scalar,
 	pointC *twExtendedPoint, scalarC Scalar,
-) (out *twExtendedPoint) {
-	//const decafWindowBits = 5
-	//const window = decafWindowBits       //5
-	//const windowMask = (1 << window) - 1 //0x0001f 31
-	//const windowTMask = windowMask >> 1  //0x0000f 15
-	//const nTable = 1 << (window - 1)     //0x00010 16
+) *twExtendedPoint {
+	const decafWindowBits = 5
+	const window = decafWindowBits       //5
+	const windowMask = (1 << window) - 1 //0x0001f 31
+	const windowTMask = windowMask >> 1  //0x0000f 15
+	const nTable = 1 << (window - 1)     //0x00010 16
 
-	//scalar1x := scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
-	//scalar1x = scalarHalve(scalar1x, scalarQ)
-	//scalar2x := scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
-	//scalar2x = scalarHalve(scalar2x, scalarQ)
+	scalar1x := scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
+	scalar1x = scalarHalve(scalar1x, scalarQ)
+	scalar2x := scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
+	scalar2x = scalarHalve(scalar2x, scalarQ)
 
-	///* Set up a precomputed table with odd multiples of scalarC. */
-	//multiples1 := pointB.prepareFixedWindow(nTable)
-	//multiples2 := pointC.prepareFixedWindow(nTable)
-
-	///* Initialize. */
-	//i, j, first := 1, 1, 1
-	//i = scalarBits - ((scalarBits - 1) % window) - 1
-
-	//for ; i >= 0; i -= window {
-	//	/* Fetch another block of bits */
-	//	bits1 := scalar1x[i/wordBits] >> uint(i%wordBits)
-	//	bits2 := scalar2x[i/wordBits] >> uint(i%wordBits)
-	//	if i%wordBits >= wordBits-window && i/wordBits < scalarWords-1 {
-	//		bits1 ^= scalar1x[i/wordBits+1] << uint(wordBits-(i%wordBits))
-	//		bits2 ^= scalar2x[i/wordBits+1] << uint(wordBits-(i%wordBits))
-	//	}
-	//	bits1 &= windowMask
-	//	bits2 &= windowMask
-	//	inv1 := (bits1 >> (window - 1)) - 1
-	//	inv2 := (bits2 >> (window - 1)) - 1
-	//	bits1 ^= inv1
-	//	bits2 ^= inv2
-
-	///* Add in from table.  Compute t only on last iteration. */
-	//pn := constTimeLookup(multiples1, bits1 & windowTMask)
-	//pn.n.conditionalNegate(inv1)
-	//tmp := &twExtendedPoint{}
-	//if (first) {
-	//	<--- ***************** continue here
-	//	tmp := pn.twExtendedPoint()
-	//	first = 0
-	//} else {
-	//	/* Using Hisil et al's lookahead method instead of extensible here
-	//     * for no particular reason.  Double WINDOW times, but only compute t on
-	//     * the last one.
-	//     */
-	//	 for int j:= 0; j<window-1; j++ {
-	//     	pointDoubleInternal(tmp, tmp, -1)
-	//     }
-	//     pointDoubleInternal(tmp, tmp, 0)
-	//     tmp.addNielsToExtended(pn, false)
-	//}
-
-	//decafPrecompTable.lookupxx(pn, multiples2, size(pn), nTable, bits2 & windowTMask)	//implement lookupxx
-	//pn.n.conditionalNegate(inv2)
-	//tmp.addNielsToExtended(pn, i!=0 ? -1 : 0)
-
-	//}
-	//copyInto(out, tmp)
+	multiples1 := pointB.prepareFixedWindow(nTable)
+	multiples2 := pointC.prepareFixedWindow(nTable)
+	out := &twExtendedPoint{}
+	first := true
+	for i := scalarBits - ((scalarBits - 1) % window) - 1; i >= 0; i -= window {
+		bits1 := scalar1x[i/wordBits] >> uint(i%wordBits)
+		bits2 := scalar2x[i/wordBits] >> uint(i%wordBits)
+		if i%wordBits >= wordBits-window && i/wordBits < scalarWords-1 {
+			bits1 ^= scalar1x[i/wordBits+1] << uint(wordBits-(i%wordBits))
+			bits2 ^= scalar2x[i/wordBits+1] << uint(wordBits-(i%wordBits))
+		}
+		bits1 &= windowMask
+		bits2 &= windowMask
+		inv1 := (bits1 >> (window - 1)) - 1
+		inv2 := (bits2 >> (window - 1)) - 1
+		bits1 ^= inv1
+		bits2 ^= inv2
+		/* Add in from table.  Compute t only on last iteration. */
+		mul1pn := constTimeLookup(multiples1, bits1&windowTMask).copy()
+		mul1pn.n.conditionalNegate(inv1)
+		if first {
+			out = mul1pn.twExtendedPoint()
+			first = false
+		} else {
+			/* Using Hisil et al's lookahead method instead of extensible here
+			 * for no particular reason.  Double WINDOW times, but only compute t on
+			 * the last one.
+			 */
+			for j := 0; j < window-1; j++ {
+				out.double(true)
+			}
+			out.double(false)
+			out.addProjectiveNielsToExtended(mul1pn, false)
+		}
+		mul2pn := constTimeLookup(multiples2, bits2&windowTMask).copy()
+		mul2pn.n.conditionalNegate(inv2)
+		if i > 0 {
+			out.addProjectiveNielsToExtended(mul2pn, true)
+		} else {
+			out.addProjectiveNielsToExtended(mul2pn, false)
+		}
+	}
 	return out
 }

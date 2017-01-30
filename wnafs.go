@@ -196,18 +196,18 @@ var wnfsTable = [32]*twNiels{
 }
 
 func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
-	pCopy := p.copy()
-	pn := p.double(false).twPNiels()
+	pOriginal := p.copy()
+	pn := p.copy().double(false).twPNiels()
 	out := make([]*twPNiels, nTable)
-	out[0] = pCopy.twPNiels()
+	out[0] = pOriginal.twPNiels()
 	for i := 1; i < nTable; i++ {
-		pCopy.addProjectiveNielsToExtended(pn, false)
-		out[i] = pCopy.twPNiels()
+		pOriginal.addProjectiveNielsToExtended(pn, false)
+		out[i] = pOriginal.twPNiels()
 	}
 	return out[:]
 }
 
 // XXX Security: this should be constant time
-func constTimeLookup(table []*twPNiels, idx uint) *twPNiels {
+func constTimeLookup(table []*twPNiels, idx uint32) *twPNiels {
 	return table[idx]
 }

@@ -109,6 +109,17 @@ type twPNiels struct {
 	z *bigNumber
 }
 
+func (p *twPNiels) copy() *twPNiels {
+	return &twPNiels{
+		&twNiels{
+			p.n.a.copy(),
+			p.n.b.copy(),
+			p.n.c.copy(),
+		},
+		p.z.copy(),
+	}
+}
+
 func (p *twPNiels) twExtendedPoint() *twExtendedPoint {
 	eu := &bigNumber{}
 	q := &twExtendedPoint{
