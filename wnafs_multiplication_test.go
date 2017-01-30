@@ -867,7 +867,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
 		},
 	}
 
-	s1 := Scalar{
+	s1 := scalar32{
 		0xd9436800, 0x1290c087,
 		0x33c051b3, 0xf9e8460f,
 		0xfcbb9385, 0x78d7514f,
@@ -877,7 +877,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
 		0xf5ca959a, 0x1be183fc,
 	}
 
-	s2 := Scalar{
+	s2 := scalar32{
 		0x2378c292, 0x216cc272,
 		0xc44edb49, 0xffffffff,
 		0xffffffff, 0xffffffff,

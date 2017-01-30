@@ -150,7 +150,7 @@ func linearComboVarFixedVt(
 	}
 }
 
-func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar Scalar) *twExtendedPoint {
+func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar scalar32) *twExtendedPoint {
 	tableBitsVar := uint(3) // DECAF_WNAF_VAR_TABLE_BITS
 	tableBitsPre := uint(5) // DECAF_WNAF_FIXED_TABLE_BITS
 
