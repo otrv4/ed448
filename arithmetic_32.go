@@ -17,9 +17,10 @@ func PointMul(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
 	if !(okX && okY) {
 		return nil
 	}
-	desX.mulCopy(desX, desY)
+	desZ := &bigNumber{}
+	desZ.mulCopy(desX, desY)
 	out = make([]byte, fieldBytes)
-	serialize(out, desX)
+	serialize(out, desZ)
 	return out
 }
 
@@ -32,9 +33,10 @@ func PointAddition(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
 	if !(okX && okY) {
 		return nil
 	}
-	desX.add(desX, desY)
+	desZ := &bigNumber{}
+	desZ.add(desX, desY)
 	out = make([]byte, fieldBytes)
-	serialize(out, desX)
+	serialize(out, desZ)
 	return out
 }
 
