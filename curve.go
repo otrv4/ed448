@@ -187,7 +187,7 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 
 	skb := pseudoRandomFunction(symmetricKey)
 	secretKey := scalar32{}
-	secretKey.deserializeModQ(skb)
+	secretKey.Decode(skb)
 	secretKey.serialize(k.secretKey())
 
 	publicKey := c.multiplyByBase(secretKey)

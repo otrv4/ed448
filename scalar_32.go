@@ -2,26 +2,19 @@ package ed448
 
 type scalar32 [scalarWords]uint32
 
-//See Goldilocks spec, "Public and private keys" section.
-//This is equivalent to DESERMODq()
-func (dst *scalar32) deserializeModQ(serial []byte) {
-	barrettDeserializeAndReduce(dst[:], serial, &curvePrimeOrder)
-	return
-}
-
 // Serializes an array of words into an array of bytes (little-endian)
-func (src scalar32) serialize(dst []byte) {
+func (s *scalar32) serialize(dst []byte) {
 	wordBytes := wordBits / 8
 
 	for i := 0; i*wordBytes < len(dst); i++ {
 		for j := 0; j < wordBytes; j++ {
-			b := src[i] >> uint(8*j)
+			b := s[i] >> uint(8*j)
 			dst[wordBytes*i+j] = byte(b)
 		}
 	}
 }
 
-func (dst *scalar32) scalarAdd(a, b *scalar32) {
+func (s *scalar32) scalarAdd(a, b *scalar32) {
 	out := &scalar32{}
 	var chain uint64
 
@@ -31,10 +24,10 @@ func (dst *scalar32) scalarAdd(a, b *scalar32) {
 		chain >>= wordBits
 	}
 	out.scalarSubExtra(out, scalarQ, uint32(chain))
-	copy(dst[:], out[:])
+	copy(s[:], out[:])
 }
 
-func (dst *scalar32) scalarSubExtra(minuend *scalar32, subtrahend *scalar32, carry uint32) {
+func (s *scalar32) scalarSubExtra(minuend *scalar32, subtrahend *scalar32, carry uint32) {
 	out := &scalar32{}
 	var chain int64
 
@@ -52,10 +45,10 @@ func (dst *scalar32) scalarSubExtra(minuend *scalar32, subtrahend *scalar32, car
 		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
-	copy(dst[:], out[:])
+	copy(s[:], out[:])
 }
 
-func (dst *scalar32) scalarHalve(a, b *scalar32) {
+func (s *scalar32) scalarHalve(a, b *scalar32) {
 	out := &scalar32{}
 	mask := -(a[0] & 1)
 	var chain uint64
@@ -72,10 +65,10 @@ func (dst *scalar32) scalarHalve(a, b *scalar32) {
 
 	out[i] = out[i]>>1 | uint32(chain<<(wordBits-1))
 
-	copy(dst[:], out[:])
+	copy(s[:], out[:])
 }
 
-func (dst *scalar32) montgomeryMultiply(x, y *scalar32) {
+func (s *scalar32) montgomeryMultiply(x, y *scalar32) {
 	out := &scalar32{}
 	carry := uint32(0)
 
@@ -101,19 +94,13 @@ func (dst *scalar32) montgomeryMultiply(x, y *scalar32) {
 		carry = uint32(chain >> wordBits)
 	}
 	out.scalarSubExtra(out, scalarQ, carry)
-	copy(dst[:], out[:])
+	copy(s[:], out[:])
 }
 
-func (dst *scalar32) Mul(x, y Scalar) {
-	dst.montgomeryMultiply(x.(*scalar32), y.(*scalar32))
-	dst.montgomeryMultiply(dst, scalarR2)
+func (s *scalar32) Decode(serial []byte) {
+	barrettDeserializeAndReduce(s[:], serial, &curvePrimeOrder)
 }
 
-func (dst *scalar32) Sub(x, y Scalar) {
-	noExtra := uint32(0)
-	dst.scalarSubExtra(x.(*scalar32), y.(*scalar32), noExtra)
-}
-
-func (dst *scalar32) Add(x, y Scalar) {
-	dst.scalarAdd(x.(*scalar32), y.(*scalar32))
+func (s *scalar32) Encode(dst []byte) {
+	s.serialize(dst)
 }
