@@ -187,7 +187,7 @@ func (p *twExtendedPoint) twPNiels() *twPNiels {
 	}
 }
 
-func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
+func (c *curveT) precomputedScalarMul(scalar *Scalar) *twExtendedPoint {
 
 	p := &twExtendedPoint{
 		new(bigNumber),
@@ -195,7 +195,7 @@ func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 		new(bigNumber),
 		new(bigNumber),
 	}
-	scalar2 := Scalar{}
+	scalar2 := &Scalar{}
 	scalar2.scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2.scalarHalve(scalar2, scalarQ)
 
@@ -234,8 +234,8 @@ func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 }
 
 func pointDoubleScalarMul(
-	pointB *twExtendedPoint, scalarB Scalar,
-	pointC *twExtendedPoint, scalarC Scalar,
+	pointB *twExtendedPoint, scalarB *Scalar,
+	pointC *twExtendedPoint, scalarC *Scalar,
 ) *twExtendedPoint {
 	const decafWindowBits = 5
 	const window = decafWindowBits       //5
@@ -243,9 +243,10 @@ func pointDoubleScalarMul(
 	const windowTMask = windowMask >> 1  //0x0000f 15
 	const nTable = 1 << (window - 1)     //0x00010 16
 
-	var scalar1x, scalar2x Scalar
+	scalar1x := &Scalar{}
 	scalar1x.scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
 	scalar1x.scalarHalve(scalar1x, scalarQ)
+	scalar2x := &Scalar{}
 	scalar2x.scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
 	scalar2x.scalarHalve(scalar2x, scalarQ)
 

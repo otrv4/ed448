@@ -94,17 +94,18 @@ func (s *Ed448Suite) Test_Add(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarSub(c *C) {
-	twelve := Scalar{0xc}
-	thirteen := Scalar{0xd}
-	scalarOne := Scalar{0x1}
+	twelve := &Scalar{0xc}
+	thirteen := &Scalar{0xd}
+	scalarOne := &Scalar{0x1}
 
-	result := ScalarSub(thirteen, twelve)
+	result := &Scalar{}
+	result.Sub(thirteen, twelve)
 
 	c.Assert(result, DeepEquals, scalarOne)
 }
 
 func (s *Ed448Suite) Test_ScalarMul(c *C) {
-	x := Scalar{
+	x := &Scalar{
 		0xffb823a3, 0xc96a3c35,
 		0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764,
@@ -114,7 +115,7 @@ func (s *Ed448Suite) Test_ScalarMul(c *C) {
 		0x3b089f07, 0x1e63e807,
 	}
 
-	y := Scalar{
+	y := &Scalar{
 		0xd8bedc42, 0x686eb329,
 		0xe416b899, 0x17aa6d9b,
 		0x1e30b38b, 0x188c6b1a,
@@ -124,7 +125,7 @@ func (s *Ed448Suite) Test_ScalarMul(c *C) {
 		0xcae1cb68, 0x16c5450a,
 	}
 
-	expected := Scalar{
+	expected := &Scalar{
 		0xa18d010a, 0x1f5b3197,
 		0x994c9c2b, 0x6abd26f5,
 		0x08a3a0e4, 0x36a14920,
@@ -133,6 +134,6 @@ func (s *Ed448Suite) Test_ScalarMul(c *C) {
 		0x203d424b, 0xfccd61b3,
 		0x4ca389ed, 0x31e055c1,
 	}
-
-	c.Assert(ScalarMul(x, y), DeepEquals, expected)
+	x.Mul(x, y)
+	c.Assert(x, DeepEquals, expected)
 }

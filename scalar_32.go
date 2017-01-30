@@ -21,8 +21,8 @@ func (src Scalar) serialize(dst []byte) {
 	}
 }
 
-func (dst *Scalar) scalarAdd(a, b Scalar) {
-	var out Scalar
+func (dst *Scalar) scalarAdd(a, b *Scalar) {
+	out := &Scalar{}
 	var chain uint64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -34,8 +34,8 @@ func (dst *Scalar) scalarAdd(a, b Scalar) {
 	copy(dst[:], out[:])
 }
 
-func (dst *Scalar) scalarSubExtra(minuend Scalar, subtrahend Scalar, carry uint32) {
-	var out Scalar
+func (dst *Scalar) scalarSubExtra(minuend *Scalar, subtrahend *Scalar, carry uint32) {
+	out := &Scalar{}
 	var chain int64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -55,8 +55,8 @@ func (dst *Scalar) scalarSubExtra(minuend Scalar, subtrahend Scalar, carry uint3
 	copy(dst[:], out[:])
 }
 
-func (dst *Scalar) scalarHalve(a, b Scalar) {
-	var out Scalar
+func (dst *Scalar) scalarHalve(a, b *Scalar) {
+	out := &Scalar{}
 	mask := -(a[0] & 1)
 	var chain uint64
 	var i uint
@@ -75,8 +75,8 @@ func (dst *Scalar) scalarHalve(a, b Scalar) {
 	copy(dst[:], out[:])
 }
 
-func (dst *Scalar) montgomeryMultiply(x, y Scalar) {
-	var out Scalar
+func (dst *Scalar) montgomeryMultiply(x, y *Scalar) {
+	out := &Scalar{}
 	carry := uint32(0)
 
 	for i := 0; i < scalarWords; i++ {
@@ -102,4 +102,14 @@ func (dst *Scalar) montgomeryMultiply(x, y Scalar) {
 	}
 	out.scalarSubExtra(out, scalarQ, carry)
 	copy(dst[:], out[:])
+}
+
+func (dst *Scalar) Mul(x, y ScalarI) {
+	dst.montgomeryMultiply(x.(*Scalar), y.(*Scalar))
+	dst.montgomeryMultiply(dst, scalarR2)
+}
+
+func (dst *Scalar) Sub(x, y ScalarI) {
+	noExtra := uint32(0)
+	dst.scalarSubExtra(x.(*Scalar), y.(*Scalar), noExtra)
 }

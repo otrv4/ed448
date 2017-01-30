@@ -39,19 +39,3 @@ func PointAddition(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
 	serialize(out, desZ)
 	return out
 }
-
-// ScalarSub subtracts scalar x from scalar y.
-// ScalarSub automatically reduces the output by Q
-func ScalarSub(x Scalar, y Scalar) (out Scalar) {
-	noExtra := uint32(0)
-	out.scalarSubExtra(x, y, noExtra)
-	return
-}
-
-// ScalarMul multiplies scalar x from scalar y.
-// ScalarMul automatically reduces the output by Q
-func ScalarMul(x Scalar, y Scalar) (out Scalar) {
-	out.montgomeryMultiply(x, y)
-	out.montgomeryMultiply(out, scalarR2)
-	return
-}

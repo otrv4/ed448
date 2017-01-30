@@ -350,7 +350,7 @@ func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error
 	copy(k.symKey(), sym[:])
 
 	skb := decafPseudoRandomFunction(sym[:])
-	secretKey := Scalar{}
+	secretKey := &Scalar{}
 
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
 	secretKey.serialize(k.secretKey())
