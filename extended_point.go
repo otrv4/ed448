@@ -6,17 +6,17 @@ type twExtendedPoint struct {
 
 // Based on Hisil's formula 5.1.3: Doubling in E^e
 // XXX: Find out if double is always a double of itself
-func (p *twExtendedPoint) double(q *twExtendedPoint, beforeDouble bool) *twExtendedPoint {
+func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	c.square(q.x)
-	a.square(q.y)
+	c.square(p.x)
+	a.square(p.y)
 	d.addRaw(c, a)
-	p.t.addRaw(q.y, q.x)
+	p.t.addRaw(p.y, p.x)
 	b.square(p.t)
 	exponentBias := uint32(3)
 	b.subXBias(b, d, exponentBias)
 	p.t.sub(a, c)
-	p.x.square(q.z)
+	p.x.square(p.z)
 	p.z.addRaw(p.x, p.x)
 	exponentBias = uint32(4)
 	a.subXBias(p.z, p.t, exponentBias)
@@ -202,7 +202,7 @@ func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 	var ni *twNiels
 	for i := int(decafCombSpacing - 1); i >= 0; i-- {
 		if i != int(decafCombSpacing-1) {
-			p.double(p, false)
+			p.double(false)
 		}
 
 		for j := uintZero; j < decafCombNumber; j++ {

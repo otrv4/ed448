@@ -75,7 +75,7 @@ func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 		return
 	}
 
-	p.double(p, false)
+	p.double(false)
 
 	twOp := p.twPNiels()
 

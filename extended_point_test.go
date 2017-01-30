@@ -5,16 +5,14 @@ import (
 )
 
 func (s *Ed448Suite) Test_PointDouble(c *C) {
-	q := &twExtendedPoint{
+	p := &twExtendedPoint{
 		&bigNumber{0x08354b7a, 0x0895b3e8, 0x06ae5175, 0x0644b394, 0x0b7faf9e, 0x0c5237db, 0x013a0c90, 0x08f5bce0, 0x09a3d79b, 0x00f17559, 0x0de8f041, 0x073e222f, 0x0dc2b7ee, 0x005ac354, 0x0766db38, 0x065631fe},
 		&bigNumber{0x00398885, 0x055c9bed, 0x0ae443ca, 0x0fd70ea4, 0x09e2a7d2, 0x04ac2e9d, 0x00678287, 0x0294768e, 0x0b604cea, 0x07b49317, 0x0dc2a6d9, 0x0e44a6fb, 0x09db3965, 0x049d3bf5, 0x03e655fe, 0x003a9c02},
 		&bigNumber{0x0fd57162, 0x0a39f768, 0x03009756, 0x065d735f, 0x0d1da282, 0x0589ecd7, 0x003196b1, 0x0c001dfe, 0x019f1050, 0x0152e8d2, 0x0c14ff38, 0x00f7a446, 0x028053f6, 0x0f8a91e9, 0x05a8d694, 0x09d5ae86},
 		&bigNumber{0x04198f2e, 0x0d82440f, 0x0fce100e, 0x0af4829d, 0x0d5c3516, 0x0094a0da, 0x078cdb39, 0x0e738836, 0x01ec536d, 0x06dfd1e9, 0x0ee16173, 0x0addc8c0, 0x0797fb1d, 0x059741a3, 0x0a7f9c34, 0x088fe0a6},
 	}
 
-	p := &twExtendedPoint{&bigNumber{0}, &bigNumber{0}, &bigNumber{0}, &bigNumber{0}}
-
-	p.double(q, false)
+	p.double(false)
 
 	expected := &twExtendedPoint{
 		&bigNumber{0x00d8f04c, 0x03e54689, 0x0eb4db2b, 0x0887ba34, 0x0a5b4ebc, 0x0f6c0261, 0x03bfa803, 0x0408ff02, 0x03b4ef26, 0x0465c028, 0x0cd47378, 0x064c55b4, 0x08245850, 0x01912682, 0x0dcbf92c, 0x07a7fa30},
@@ -24,8 +22,6 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 
 	c.Assert(p, DeepEquals, expected)
 
-	resetPoint(p)
-
 	w := &twExtendedPoint{
 		&bigNumber{1},
 		&bigNumber{2},
@@ -33,7 +29,7 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 		&bigNumber{4},
 	}
 
-	p.double(w, true)
+	w.double(true)
 
 	expected2 := &twExtendedPoint{
 		&bigNumber{0x0000003b, 0x10000000, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff},
@@ -41,16 +37,7 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 		&bigNumber{0x0000002c, 0x10000000, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff},
 		&bigNumber{0x00000002, 0x10000000, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff}}
 
-	c.Assert(p, DeepEquals, expected2)
-}
-
-func resetPoint(p *twExtendedPoint) {
-	p = &twExtendedPoint{
-		&bigNumber{0},
-		&bigNumber{0},
-		&bigNumber{0},
-		&bigNumber{0},
-	}
+	c.Assert(w, DeepEquals, expected2)
 }
 
 func (s *Ed448Suite) Test_AddNielsToExtended_BeforeDouble(c *C) {

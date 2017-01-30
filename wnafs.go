@@ -197,7 +197,7 @@ var wnfsTable = [32]*twNiels{
 
 func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
 	pCopy := p.copy()
-	pn := p.double(p, false).twPNiels()
+	pn := p.double(false).twPNiels()
 	out := make([]*twPNiels, nTable)
 	out[0] = pCopy.twPNiels()
 	for i := 1; i < nTable; i++ {
