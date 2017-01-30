@@ -113,3 +113,7 @@ func (dst *scalar32) Sub(x, y Scalar) {
 	noExtra := uint32(0)
 	dst.scalarSubExtra(x.(*scalar32), y.(*scalar32), noExtra)
 }
+
+func (dst *scalar32) Add(x, y Scalar) {
+	dst.scalarAdd(x.(*scalar32), y.(*scalar32))
+}

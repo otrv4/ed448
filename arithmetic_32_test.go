@@ -93,15 +93,26 @@ func (s *Ed448Suite) Test_Add(c *C) {
 	c.Assert(val, IsNil)
 }
 
+func (s *Ed448Suite) Test_ScalarAdd(c *C) {
+	one := &scalar32{0x1}
+	two := &scalar32{0x2}
+	three := &scalar32{0x3}
+
+	result := &scalar32{}
+	result.Add(one, two)
+
+	c.Assert(result, DeepEquals, three)
+}
+
 func (s *Ed448Suite) Test_ScalarSub(c *C) {
 	twelve := &scalar32{0xc}
 	thirteen := &scalar32{0xd}
-	scalarOne := &scalar32{0x1}
+	one := &scalar32{0x1}
 
 	result := &scalar32{}
 	result.Sub(thirteen, twelve)
 
-	c.Assert(result, DeepEquals, scalarOne)
+	c.Assert(result, DeepEquals, one)
 }
 
 func (s *Ed448Suite) Test_ScalarMul(c *C) {
