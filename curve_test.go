@@ -12,7 +12,7 @@ func (s *Ed448Suite) TestRadixBasePointIsOnCurve(c *C) {
 }
 
 func (s *Ed448Suite) TestRadixMultiplyByBase(c *C) {
-	scalar := Scalar{}
+	scalar := scalar32{}
 	scalar[scalarWords-1] = 1000
 
 	p := curve.multiplyByBase(scalar)
@@ -65,7 +65,7 @@ func (s *Ed448Suite) TestDeriveNonce(c *C) {
 		0xfc, 0xfd, 0x9c, 0x62, 0xff, 0x65, 0x09, 0x65,
 	}
 
-	expectedNonce := Scalar{
+	expectedNonce := scalar32{
 		0xa7f2a3b8, 0xd4506099,
 		0xfadfcc8b, 0xa1cdb278,
 		0xe1228e40, 0x1a7b2b8c,
@@ -101,7 +101,7 @@ func (s *Ed448Suite) TestDeriveChallenge(c *C) {
 		0x0e, 0x0a, 0x31, 0x5a, 0x05, 0x5d, 0xe6, 0x47,
 	}
 
-	expectedChallenge := Scalar{
+	expectedChallenge := scalar32{
 		0xee6472a4, 0x0007ea9a,
 		0x58390769, 0xed3a8792,
 		0x5fcb3d28, 0x38f60426,
@@ -211,7 +211,7 @@ func (s *Ed448Suite) TestMultiplyMontgomery(c *C) {
 		0xe1, 0xc8, 0x49, 0xb9, 0xc1, 0x86, 0x37, 0xd0,
 	})
 
-	sk := Scalar{
+	sk := scalar32{
 		0x2efd441f, 0xa8ca47de,
 		0x88454c7c, 0x5a017e1a,
 		0xfb3701a9, 0xe0b9be0d,

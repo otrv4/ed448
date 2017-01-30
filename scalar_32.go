@@ -1,16 +1,16 @@
 package ed448
 
-type Scalar [scalarWords]uint32
+type scalar32 [scalarWords]uint32
 
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to DESERMODq()
-func (dst *Scalar) deserializeModQ(serial []byte) {
+func (dst *scalar32) deserializeModQ(serial []byte) {
 	barrettDeserializeAndReduce(dst[:], serial, &curvePrimeOrder)
 	return
 }
 
 // Serializes an array of words into an array of bytes (little-endian)
-func (src Scalar) serialize(dst []byte) {
+func (src scalar32) serialize(dst []byte) {
 	wordBytes := wordBits / 8
 
 	for i := 0; i*wordBytes < len(dst); i++ {
@@ -21,8 +21,8 @@ func (src Scalar) serialize(dst []byte) {
 	}
 }
 
-func (dst *Scalar) scalarAdd(a, b *Scalar) {
-	out := &Scalar{}
+func (dst *scalar32) scalarAdd(a, b *scalar32) {
+	out := &scalar32{}
 	var chain uint64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -34,8 +34,8 @@ func (dst *Scalar) scalarAdd(a, b *Scalar) {
 	copy(dst[:], out[:])
 }
 
-func (dst *Scalar) scalarSubExtra(minuend *Scalar, subtrahend *Scalar, carry uint32) {
-	out := &Scalar{}
+func (dst *scalar32) scalarSubExtra(minuend *scalar32, subtrahend *scalar32, carry uint32) {
+	out := &scalar32{}
 	var chain int64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -55,8 +55,8 @@ func (dst *Scalar) scalarSubExtra(minuend *Scalar, subtrahend *Scalar, carry uin
 	copy(dst[:], out[:])
 }
 
-func (dst *Scalar) scalarHalve(a, b *Scalar) {
-	out := &Scalar{}
+func (dst *scalar32) scalarHalve(a, b *scalar32) {
+	out := &scalar32{}
 	mask := -(a[0] & 1)
 	var chain uint64
 	var i uint
@@ -75,8 +75,8 @@ func (dst *Scalar) scalarHalve(a, b *Scalar) {
 	copy(dst[:], out[:])
 }
 
-func (dst *Scalar) montgomeryMultiply(x, y *Scalar) {
-	out := &Scalar{}
+func (dst *scalar32) montgomeryMultiply(x, y *scalar32) {
+	out := &scalar32{}
 	carry := uint32(0)
 
 	for i := 0; i < scalarWords; i++ {
@@ -104,12 +104,12 @@ func (dst *Scalar) montgomeryMultiply(x, y *Scalar) {
 	copy(dst[:], out[:])
 }
 
-func (dst *Scalar) Mul(x, y ScalarI) {
-	dst.montgomeryMultiply(x.(*Scalar), y.(*Scalar))
+func (dst *scalar32) Mul(x, y Scalar) {
+	dst.montgomeryMultiply(x.(*scalar32), y.(*scalar32))
 	dst.montgomeryMultiply(dst, scalarR2)
 }
 
-func (dst *Scalar) Sub(x, y ScalarI) {
+func (dst *scalar32) Sub(x, y Scalar) {
 	noExtra := uint32(0)
-	dst.scalarSubExtra(x.(*Scalar), y.(*Scalar), noExtra)
+	dst.scalarSubExtra(x.(*scalar32), y.(*scalar32), noExtra)
 }

@@ -1,6 +1,6 @@
 package ed448
 
-func scheduleScalarForCombs(schedule []uint32, scalar Scalar) {
+func scheduleScalarForCombs(schedule []uint32, scalar scalar32) {
 	table := baseTable
 	tmp := make([]uint32, len(schedule))
 	copy(tmp, scalar[:])

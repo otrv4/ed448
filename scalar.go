@@ -1,6 +1,6 @@
 package ed448
 
-type ScalarI interface {
-	Mul(a, b ScalarI)
-	Sub(a, b ScalarI)
+type Scalar interface {
+	Mul(a, b Scalar)
+	Sub(a, b Scalar)
 }

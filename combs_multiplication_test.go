@@ -3,7 +3,7 @@ package ed448
 import . "gopkg.in/check.v1"
 
 func (s *Ed448Suite) TestRadixScheduleForCombs(c *C) {
-	scalar := Scalar{
+	scalar := scalar32{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 	}
 
@@ -16,7 +16,7 @@ func (s *Ed448Suite) TestRadixScheduleForCombs(c *C) {
 		0x80000000, 0x20000000,
 	})
 
-	scalar = Scalar{
+	scalar = scalar32{
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE,
 	}
 	scheduleScalarForCombs(schedule, scalar)
