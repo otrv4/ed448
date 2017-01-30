@@ -2,9 +2,10 @@ package ed448
 
 // ModQ produces a byte array mod Q (prime order)
 func ModQ(serial []byte) []byte {
-	words := deserializeModQ(serial)
+	words := Scalar{}
+	words.deserializeModQ(serial)
 	out := make([]byte, fieldBytes)
-	wordsToBytes(out, words[:])
+	words.serialize(out)
 	return out
 }
 
@@ -43,11 +44,14 @@ func PointAddition(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
 // ScalarSub automatically reduces the output by Q
 func ScalarSub(x Scalar, y Scalar) (out Scalar) {
 	noExtra := uint32(0)
-	return scalarSubExtra(x, y, noExtra)
+	out.scalarSubExtra(x, y, noExtra)
+	return
 }
 
 // ScalarMul multiplies scalar x from scalar y.
 // ScalarMul automatically reduces the output by Q
 func ScalarMul(x Scalar, y Scalar) (out Scalar) {
-	return montgomeryMultiply(montgomeryMultiply(x, y), scalarR2)
+	out.montgomeryMultiply(x, y)
+	out.montgomeryMultiply(out, scalarR2)
+	return
 }

@@ -167,18 +167,6 @@ func bytesToWords(dst []uint32, src []byte) {
 	}
 }
 
-// Serializes an array of words into an array of bytes (little-endian)
-func wordsToBytes(dst []byte, src []uint32) {
-	wordBytes := wordBits / 8
-
-	for i := 0; i*wordBytes < len(dst); i++ {
-		for j := 0; j < wordBytes; j++ {
-			b := src[i] >> uint(8*j)
-			dst[wordBytes*i+j] = byte(b)
-		}
-	}
-}
-
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to PRF(k)
 func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
@@ -186,13 +174,6 @@ func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
 	h.Write([]byte("derivepk"))
 	h.Write(k[:])
 	return h.Sum(nil)
-}
-
-//See Goldilocks spec, "Public and private keys" section.
-//This is equivalent to DESERMODq()
-func deserializeModQ(serial []byte) (dst Scalar) {
-	barrettDeserializeAndReduce(dst[:], serial, &curvePrimeOrder)
-	return
 }
 
 func generateSymmetricKey(read io.Reader) (symKey [symKeyBytes]byte, err error) {
@@ -205,8 +186,9 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 	copy(k.symKey(), symmetricKey[:])
 
 	skb := pseudoRandomFunction(symmetricKey)
-	secretKey := deserializeModQ(skb)
-	wordsToBytes(k.secretKey(), secretKey[:])
+	secretKey := Scalar{}
+	secretKey.deserializeModQ(skb)
+	secretKey.serialize(k.secretKey())
 
 	publicKey := c.multiplyByBase(secretKey)
 	serializedPublicKey := publicKey.untwistAndDoubleAndSerialize()
@@ -268,7 +250,7 @@ func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e erro
 
 	// signature = tmpSignature || nonce
 	copy(s[:fieldBytes], tmpSig[:])
-	wordsToBytes(s[fieldBytes:], nonce[:])
+	nonce.serialize(s[fieldBytes:])
 
 	//XXX SECURITY Should we wipe nonce, gsk, secretKeyWords, tmpSig, challenge?
 
@@ -371,7 +353,7 @@ func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error
 	secretKey := Scalar{}
 
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
-	wordsToBytes(k.secretKey(), secretKey[:])
+	secretKey.serialize(k.secretKey())
 
 	publicKey := c.precomputedScalarMul(secretKey)
 

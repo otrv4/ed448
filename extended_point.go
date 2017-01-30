@@ -195,9 +195,9 @@ func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 		new(bigNumber),
 		new(bigNumber),
 	}
-
-	scalar2 := scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
-	scalar2 = scalarHalve(scalar2, scalarQ)
+	scalar2 := Scalar{}
+	scalar2.scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
+	scalar2.scalarHalve(scalar2, scalarQ)
 
 	var ni *twNiels
 	for i := int(decafCombSpacing - 1); i >= 0; i-- {

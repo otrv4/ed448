@@ -2,7 +2,27 @@ package ed448
 
 type Scalar [scalarWords]uint32
 
-func scalarAdd(a, b Scalar) (out Scalar) {
+//See Goldilocks spec, "Public and private keys" section.
+//This is equivalent to DESERMODq()
+func (dst *Scalar) deserializeModQ(serial []byte) {
+	barrettDeserializeAndReduce(dst[:], serial, &curvePrimeOrder)
+	return
+}
+
+// Serializes an array of words into an array of bytes (little-endian)
+func (src Scalar) serialize(dst []byte) {
+	wordBytes := wordBits / 8
+
+	for i := 0; i*wordBytes < len(dst); i++ {
+		for j := 0; j < wordBytes; j++ {
+			b := src[i] >> uint(8*j)
+			dst[wordBytes*i+j] = byte(b)
+		}
+	}
+}
+
+func (dst *Scalar) scalarAdd(a, b Scalar) {
+	var out Scalar
 	var chain uint64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -10,11 +30,12 @@ func scalarAdd(a, b Scalar) (out Scalar) {
 		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
-
-	return scalarSubExtra(out, scalarQ, uint32(chain))
+	out.scalarSubExtra(out, scalarQ, uint32(chain))
+	copy(dst[:], out[:])
 }
 
-func scalarSubExtra(minuend Scalar, subtrahend Scalar, carry uint32) (out Scalar) {
+func (dst *Scalar) scalarSubExtra(minuend Scalar, subtrahend Scalar, carry uint32) {
+	var out Scalar
 	var chain int64
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -31,10 +52,11 @@ func scalarSubExtra(minuend Scalar, subtrahend Scalar, carry uint32) (out Scalar
 		out[i] = uint32(chain)
 		chain >>= wordBits
 	}
-	return
+	copy(dst[:], out[:])
 }
 
-func scalarHalve(a, b Scalar) (out Scalar) {
+func (dst *Scalar) scalarHalve(a, b Scalar) {
+	var out Scalar
 	mask := -(a[0] & 1)
 	var chain uint64
 	var i uint
@@ -50,10 +72,10 @@ func scalarHalve(a, b Scalar) (out Scalar) {
 
 	out[i] = out[i]>>1 | uint32(chain<<(wordBits-1))
 
-	return
+	copy(dst[:], out[:])
 }
 
-func montgomeryMultiply(x, y Scalar) Scalar {
+func (dst *Scalar) montgomeryMultiply(x, y Scalar) {
 	var out Scalar
 	carry := uint32(0)
 
@@ -78,5 +100,6 @@ func montgomeryMultiply(x, y Scalar) Scalar {
 		out[scalarWords-1] = uint32(chain)
 		carry = uint32(chain >> wordBits)
 	}
-	return scalarSubExtra(out, scalarQ, carry)
+	out.scalarSubExtra(out, scalarQ, carry)
+	copy(dst[:], out[:])
 }
