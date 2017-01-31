@@ -6,7 +6,7 @@ type Scalar interface {
 	Sub(a, b Scalar)
 	Add(a, b Scalar)
 	Decode(src []byte) error
-	Encode(dst []byte)
+	Encode(dst []byte) error
 	Copy() Scalar
 	Equals(a Scalar) bool
 	// unexposed funcs

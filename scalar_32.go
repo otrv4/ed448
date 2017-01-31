@@ -1,17 +1,25 @@
 package ed448
 
+import (
+	"fmt"
+)
+
 type scalar32 [scalarWords]uint32
 
 // Serializes an array of words into an array of bytes (little-endian)
-func (s *scalar32) serialize(dst []byte) {
+func (s *scalar32) serialize(dst []byte) error {
 	wordBytes := wordBits / 8
+	if len(dst) < fieldBytes {
+		return fmt.Errorf("dst length smaller than fieldBytes")
+	}
 
-	for i := 0; i*wordBytes < len(dst); i++ {
+	for i := 0; i*wordBytes < fieldBytes; i++ {
 		for j := 0; j < wordBytes; j++ {
 			b := s[i] >> uint(8*j)
 			dst[wordBytes*i+j] = byte(b)
 		}
 	}
+	return nil
 }
 
 func (s *scalar32) scalarAdd(a, b *scalar32) {
@@ -122,13 +130,16 @@ func (s *scalar32) halve(a, b Scalar) {
 	s.scalarHalve(a.(*scalar32), b.(*scalar32))
 }
 
-func (s *scalar32) Decode(serial []byte) error {
-	barrettDeserializeAndReduce(s[:], serial, &curvePrimeOrder)
+func (s *scalar32) Decode(src []byte) error {
+	if len(src) < fieldBytes {
+		return fmt.Errorf("src length smaller than fieldBytes")
+	}
+	barrettDeserializeAndReduce(s[:], src, &curvePrimeOrder)
 	return nil
 }
 
-func (s *scalar32) Encode(dst []byte) {
-	s.serialize(dst)
+func (s *scalar32) Encode(dst []byte) error {
+	return s.serialize(dst)
 }
 
 func (s *scalar32) Copy() Scalar {

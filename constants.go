@@ -13,10 +13,12 @@ const (
 	edwardsD  = -39081
 
 	// The size of the Goldilocks field, in bytes.
-	fieldBytes = (fieldBits + 7) / 8 // 56
+	fieldBytes = fieldBits / 8 // 56
 
 	// The size of the Goldilocks scalars, in bits.
 	scalarBits = fieldBits - 2 // 446
+	// The size of the Goldilocks field, in bytes.
+	scalarBytes = (scalarBits + 7) / 8 // 56
 
 	wordBits = 32 // 32-bits
 	//wordBits = 64 // 64-bits
