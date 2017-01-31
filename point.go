@@ -335,7 +335,7 @@ func (p *twExtensible) equals(p2 *twExtensible) bool {
 
 	l3 := l0.zeroMask()
 
-	return (l4 & l3) == lmask
+	return maskToBoolean(l4 & l3)
 }
 
 func (p *twExtensible) double() *twExtensible {
