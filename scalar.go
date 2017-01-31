@@ -5,7 +5,7 @@ type Scalar interface {
 	Mul(a, b Scalar)
 	Sub(a, b Scalar)
 	Add(a, b Scalar)
-	Decode([]byte)
-	Encode([]byte)
+	Decode(src []byte)
+	Encode(dst []byte)
 	Copy() Scalar
 }
