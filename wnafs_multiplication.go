@@ -88,8 +88,7 @@ func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 	}
 }
 
-func linearComboVarFixedVt(
-	working *twExtensible, scalarVar, scalarPre scalar32, precmp []*twNiels) {
+func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre scalar32, precmp []*twNiels) {
 	tableBitsVar := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
 	nbitsVar := uint(446)
 	nbitsPre := uint(446)
@@ -166,21 +165,11 @@ func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scal
 	contp := 0
 	contv := 0
 
-	identity := &twExtendedPoint{
-		&bigNumber{0x00},
-		&bigNumber{0x01},
-		&bigNumber{0x01},
-		&bigNumber{0x00},
-	}
 	index := controlVar[0].addend >> 1
 
 	i := controlVar[0].power
 
-	if i < 0 { // use setIndentity?
-		combo := identity.copy()
-		return combo
-
-	} else if i > controlPre[0].power {
+	if i > controlPre[0].power {
 		combo = precmpVar[index].twExtendedPoint()
 		contv++
 	} else if i == controlPre[0].power && i >= 0 {
@@ -195,6 +184,11 @@ func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scal
 		contp++
 	}
 
+	if i < 0 {
+		combo.setIdentity()
+		return combo
+	}
+
 	for i--; i >= 0; i-- {
 
 		cv := i == controlVar[contv].power
@@ -206,7 +200,7 @@ func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scal
 			if controlVar[contv].addend > 0 {
 				combo.addProjectiveNielsToExtended(precmpVar[controlVar[contv].addend>>1], (i != 0 && !cp))
 			} else {
-				combo.subProjectiveNielsFromExtendedPoint(precmpVar[(-controlVar[contv].addend)>>1], (i == 0 && !cp))
+				combo.subProjectiveNielsFromExtendedPoint(precmpVar[(-controlVar[contv].addend)>>1], (i != 0 && !cp))
 			}
 			contv++
 		}
@@ -215,7 +209,7 @@ func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scal
 			if controlPre[contp].addend > 0 {
 				combo.addNielsToExtended(decafWnafsTable[controlPre[contp].addend>>1], i != 0)
 			} else {
-				combo.subNielsFromExtendedPoint(decafWnafsTable[(-controlPre[contp].addend)>>1], i == 0)
+				combo.subNielsFromExtendedPoint(decafWnafsTable[(-controlPre[contp].addend)>>1], i != 0)
 			}
 			contp++
 		}

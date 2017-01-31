@@ -4,8 +4,23 @@ type twExtendedPoint struct {
 	x, y, z, t *bigNumber
 }
 
+func (p *twExtendedPoint) copy() *twExtendedPoint {
+	n := &twExtendedPoint{}
+	n.x = p.x.copy()
+	n.y = p.y.copy()
+	n.z = p.z.copy()
+	n.t = p.t.copy()
+	return n
+}
+
+func (p *twExtendedPoint) setIdentity() {
+	p.x.setUI(0)
+	p.y.setUI(1)
+	p.z.setUI(1)
+	p.t.setUI(0)
+}
+
 // Based on Hisil's formula 5.1.3: Doubling in E^e
-// XXX: Find out if double is always a double of itself
 func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	c.square(p.x)
@@ -97,15 +112,6 @@ func decafDecode(ser serialized, identity uint64) (*twExtendedPoint, uint64) {
 	p.y[0] -= uint32(zero)
 
 	return p, ok
-}
-
-func (p *twExtendedPoint) copy() *twExtendedPoint {
-	n := &twExtendedPoint{}
-	n.x = p.x.copy()
-	n.y = p.y.copy()
-	n.z = p.z.copy()
-	n.t = p.t.copy()
-	return n
 }
 
 func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
