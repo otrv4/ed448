@@ -105,8 +105,13 @@ func (s *scalar32) scalarEquals(x *scalar32) uint32 {
 	return uint32(((uint64(diff)) - 1) >> wordBits)
 }
 
-func (s *scalar32) Decode(serial []byte) {
+func (s *scalar32) halve(a, b Scalar) {
+	s.scalarHalve(a.(*scalar32), b.(*scalar32))
+}
+
+func (s *scalar32) Decode(serial []byte) error {
 	barrettDeserializeAndReduce(s[:], serial, &curvePrimeOrder)
+	return nil
 }
 
 func (s *scalar32) Encode(dst []byte) {

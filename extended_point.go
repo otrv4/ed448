@@ -193,16 +193,16 @@ func (p *twExtendedPoint) twPNiels() *twPNiels {
 	}
 }
 
-func (c *curveT) precomputedScalarMul(scalar *scalar32) *twExtendedPoint {
+func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
 	p := &twExtendedPoint{
 		new(bigNumber),
 		new(bigNumber),
 		new(bigNumber),
 		new(bigNumber),
 	}
-	scalar2 := &scalar32{}
-	scalar2.scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
-	scalar2.scalarHalve(scalar2, scalarQ)
+	scalar2 := NewScalar()
+	scalar2.Add(scalar, decafPrecompTable.scalarAdjustment)
+	scalar2.halve(scalar2, scalarQ)
 
 	var ni *twNiels
 	for i := int(decafCombSpacing - 1); i >= 0; i-- {
@@ -215,7 +215,7 @@ func (c *curveT) precomputedScalarMul(scalar *scalar32) *twExtendedPoint {
 			for k := uintZero; k < decafCombTeeth; k++ {
 				bit := uint(i) + decafCombSpacing*(k+j*decafCombTeeth)
 				if bit < scalarBits {
-					tab |= (scalar2[bit/wordBits] >> (bit % wordBits) & 1) << k
+					tab |= (scalar2.(*scalar32)[bit/wordBits] >> (bit % wordBits) & 1) << k
 				}
 			}
 
@@ -239,8 +239,8 @@ func (c *curveT) precomputedScalarMul(scalar *scalar32) *twExtendedPoint {
 }
 
 func pointDoubleScalarMul(
-	pointB *twExtendedPoint, scalarB *scalar32,
-	pointC *twExtendedPoint, scalarC *scalar32,
+	pointB *twExtendedPoint, scalarB Scalar,
+	pointC *twExtendedPoint, scalarC Scalar,
 ) *twExtendedPoint {
 	const decafWindowBits = 5
 	const window = decafWindowBits       //5
@@ -248,23 +248,23 @@ func pointDoubleScalarMul(
 	const windowTMask = windowMask >> 1  //0x0000f 15
 	const nTable = 1 << (window - 1)     //0x00010 16
 
-	scalar1x := &scalar32{}
-	scalar1x.scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
-	scalar1x.scalarHalve(scalar1x, scalarQ)
-	scalar2x := &scalar32{}
-	scalar2x.scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
-	scalar2x.scalarHalve(scalar2x, scalarQ)
+	scalar1x := NewScalar()
+	scalar1x.Add(scalarB, decafPrecompTable.scalarAdjustment)
+	scalar1x.halve(scalar1x, scalarQ)
+	scalar2x := NewScalar()
+	scalar2x.Add(scalarC, decafPrecompTable.scalarAdjustment)
+	scalar2x.halve(scalar2x, scalarQ)
 
 	multiples1 := pointB.prepareFixedWindow(nTable)
 	multiples2 := pointC.prepareFixedWindow(nTable)
 	out := &twExtendedPoint{}
 	first := true
 	for i := scalarBits - ((scalarBits - 1) % window) - 1; i >= 0; i -= window {
-		bits1 := scalar1x[i/wordBits] >> uint(i%wordBits)
-		bits2 := scalar2x[i/wordBits] >> uint(i%wordBits)
+		bits1 := scalar1x.(*scalar32)[i/wordBits] >> uint(i%wordBits)
+		bits2 := scalar2x.(*scalar32)[i/wordBits] >> uint(i%wordBits)
 		if i%wordBits >= wordBits-window && i/wordBits < scalarWords-1 {
-			bits1 ^= scalar1x[i/wordBits+1] << uint(wordBits-(i%wordBits))
-			bits2 ^= scalar2x[i/wordBits+1] << uint(wordBits-(i%wordBits))
+			bits1 ^= scalar1x.(*scalar32)[i/wordBits+1] << uint(wordBits-(i%wordBits))
+			bits2 ^= scalar2x.(*scalar32)[i/wordBits+1] << uint(wordBits-(i%wordBits))
 		}
 		bits1 &= windowMask
 		bits2 &= windowMask

@@ -5,8 +5,10 @@ type Scalar interface {
 	Mul(a, b Scalar)
 	Sub(a, b Scalar)
 	Add(a, b Scalar)
-	Decode(src []byte)
+	Decode(src []byte) error
 	Encode(dst []byte)
 	Copy() Scalar
 	Equals(a Scalar) bool
+	// unexposed funcs
+	halve(a, b Scalar)
 }

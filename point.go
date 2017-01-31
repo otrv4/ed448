@@ -5,8 +5,16 @@ import (
 	"fmt"
 )
 
-func maskToBoolean(m uint32) bool {
-	return m == lmask
+// Point is a interface of Ed448 point
+type Point interface {
+	ScalarMul(a Scalar, b Point)
+	DoubleScalarMul(a Scalar, b Point, c Scalar, d Point)
+	Sub(a, b Point)
+	Add(a, b Point)
+	Decode(src []byte) error
+	Encode(dst []byte)
+	Copy() Point
+	Equals(a Point) bool
 }
 
 //XXX This should probably receive []byte{}
