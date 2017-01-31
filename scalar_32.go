@@ -110,3 +110,8 @@ func (s *scalar32) Copy() Scalar {
 	copy(out[:], s[:])
 	return out
 }
+
+func NewScalar() Scalar {
+	out := &scalar32{}
+	return out
+}
