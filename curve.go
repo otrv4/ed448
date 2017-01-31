@@ -404,3 +404,23 @@ func (c *curveT) decafDeriveTemporarySignature(nonce *scalar32) (dst [fieldBytes
 	point.decafEncode(dst[:])
 	return
 }
+
+func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
+	secretKeyWords := scalar32{}
+	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
+		err = errors.New("corrupted private key")
+		return
+	}
+
+	nonce := decafDeriveNonce(msg, k.symKey())
+	tmpSignature := c.decafDeriveTemporarySignature(&nonce)
+	challenge := decafDeriveChallenge(k.publicKey(), tmpSignature, msg)
+
+	challenge.scalarMul(&challenge, &secretKeyWords)
+	nonce.scalarSub(&nonce, &challenge)
+
+	copy(sig[:fieldBytes], tmpSignature[:])
+	nonce.serialize(sig[fieldBytes:])
+
+	return
+}

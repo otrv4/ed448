@@ -27,6 +27,19 @@ func (s *scalar32) scalarAdd(a, b *scalar32) {
 	copy(s[:], out[:])
 }
 
+// unexposed methods for decafSign as an internal method
+// XXX: remove these methods when what is needed is exposed
+func (s *scalar32) scalarSub(x, y *scalar32) {
+	noExtra := uint32(0)
+	s.scalarSubExtra(x, y, noExtra)
+}
+
+// XXX: remove these methods when what is needed is exposed
+func (s *scalar32) scalarMul(x, y *scalar32) {
+	s.montgomeryMultiply(x, y)
+	s.montgomeryMultiply(s, scalarR2)
+}
+
 func (s *scalar32) scalarSubExtra(minuend *scalar32, subtrahend *scalar32, carry uint32) {
 	out := &scalar32{}
 	var chain int64
