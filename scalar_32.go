@@ -124,8 +124,9 @@ func (s *scalar32) Copy() Scalar {
 	return out
 }
 
-// NewScalar returns a Scalar object of Ed448 depends on arch
-func NewScalar() Scalar {
+// NewScalar returns a Scalar in Ed448 depending on the arch
+func NewScalar(in [fieldBytes]byte) Scalar {
 	out := &scalar32{}
+	barrettDeserializeAndReduce(out[:], in[:], &curvePrimeOrder)
 	return out
 }

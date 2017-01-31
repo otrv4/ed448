@@ -200,7 +200,7 @@ func (c *curveT) precomputedScalarMul(scalar *scalar32) *twExtendedPoint {
 		new(bigNumber),
 		new(bigNumber),
 	}
-	scalar2 := NewScalar()
+	scalar2 := NewScalar([fieldBytes]byte{})
 	scalar2.Add(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2.halve(scalar2, scalarQ)
 
@@ -248,10 +248,10 @@ func pointDoubleScalarMul(
 	const windowTMask = windowMask >> 1  //0x0000f 15
 	const nTable = 1 << (window - 1)     //0x00010 16
 
-	scalar1x := NewScalar()
+	scalar1x := NewScalar([fieldBytes]byte{})
 	scalar1x.Add(scalarB, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x, scalarQ)
-	scalar2x := NewScalar()
+	scalar2x := NewScalar([fieldBytes]byte{})
 	scalar2x.Add(scalarC, decafPrecompTable.scalarAdjustment)
 	scalar2x.halve(scalar2x, scalarQ)
 

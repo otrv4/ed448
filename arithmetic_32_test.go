@@ -64,7 +64,7 @@ func (s *Ed448Suite) Test_PointAdd(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarCopyEquals(c *C) {
-	a := NewScalar()
+	a := NewScalar([fieldBytes]byte{})
 	b := a.Copy()
 	c.Assert(a.Equals(b), Equals, true)
 }
