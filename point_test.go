@@ -319,7 +319,7 @@ func (s *Ed448Suite) Test_HighBit(c *C) {
 
 	h := highBit(n)
 
-	c.Assert(h, Equals, uint64(0))
+	c.Assert(h, Equals, dword(0))
 }
 
 func (s *Ed448Suite) TestDecafEncode(c *C) {
@@ -376,7 +376,7 @@ func (s *Ed448Suite) TestDecafEncode(c *C) {
 }
 
 func (s *Ed448Suite) TestDecafDecode(c *C) {
-	identity := uint64(1)
+	identity := dword(1)
 
 	point, ok := decafDecode(serialized{
 		0xe4, 0xb2, 0xa1, 0xa1, 0x43, 0x95, 0xb5,
@@ -429,7 +429,7 @@ func (s *Ed448Suite) TestDecafDecode(c *C) {
 		0x01a99835, 0x0ea08056,
 		0x0abbf763, 0x03826c2f,
 	})
-	c.Assert(ok, Equals, uint64(lmask))
+	c.Assert(ok, Equals, dword(lmask))
 }
 
 func (s *Ed448Suite) Test_twPNielsToExtended(c *C) {

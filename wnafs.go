@@ -208,6 +208,6 @@ func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
 }
 
 // XXX Security: this should be constant time
-func constTimeLookup(table []*twPNiels, idx uint32) *twPNiels {
+func constTimeLookup(table []*twPNiels, idx word) *twPNiels {
 	return table[idx]
 }

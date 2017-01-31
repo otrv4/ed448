@@ -61,12 +61,12 @@ func mustNewPoint(x, y serialized) *homogeneousProjective {
 	return p
 }
 
-func (c *curveT) multiplyMontgomery(in *bigNumber, scalar scalar32, nbits, extraDoubles int) (*bigNumber, uint32) {
+func (c *curveT) multiplyMontgomery(in *bigNumber, scalar decafScalar, nbits, extraDoubles int) (*bigNumber, word) {
 	mont := new(montgomery)
 	mont.deserialize(in)
 	var i, j, n int
 	n = (nbits - 1) % wordBits
-	pflip := uint32(0)
+	pflip := word(0)
 
 	for j = (nbits+wordBits-1)/wordBits - 1; j >= 0; j-- {
 		w := scalar[j]
@@ -90,10 +90,10 @@ func (c *curveT) multiplyMontgomery(in *bigNumber, scalar scalar32, nbits, extra
 	}
 
 	out, ok := mont.serialize(in)
-	return out, uint32(ok)
+	return out, word(ok)
 }
 
-func (c *curveT) multiplyByBase(scalar scalar32) *twExtensible {
+func (c *curveT) multiplyByBase(scalar decafScalar) *twExtensible {
 	out := &twExtensible{
 		new(bigNumber),
 		new(bigNumber),
@@ -106,7 +106,7 @@ func (c *curveT) multiplyByBase(scalar scalar32) *twExtensible {
 	t := combTeeth
 	s := combSpacing
 
-	schedule := make([]uint32, scalarWords)
+	schedule := make([]word, scalarWords)
 	scheduleScalarForCombs(schedule, scalar)
 
 	var ni *twNiels
@@ -117,7 +117,7 @@ func (c *curveT) multiplyByBase(scalar scalar32) *twExtensible {
 		}
 
 		for j := uint(0); j < n; j++ {
-			tab := uint32(0)
+			tab := word(0)
 
 			for k := uint(0); k < t; k++ {
 				bit := (s - 1 - i) + k*s + j*(s*t)
@@ -126,7 +126,7 @@ func (c *curveT) multiplyByBase(scalar scalar32) *twExtensible {
 				}
 			}
 
-			invert := uint32(tab>>(t-1)) - 1
+			invert := word(tab>>(t-1)) - 1
 			tab ^= invert
 			tab &= (1 << (t - 1)) - 1
 
@@ -147,7 +147,7 @@ func (c *curveT) multiplyByBase(scalar scalar32) *twExtensible {
 }
 
 // Deserializes an array of bytes (little-endian) into an array of words
-func bytesToWords(dst []uint32, src []byte) {
+func bytesToWords(dst []word, src []byte) {
 	wordBytes := uint(wordBits / 8)
 	srcLen := uint(len(src))
 
@@ -157,9 +157,9 @@ func bytesToWords(dst []uint32, src []byte) {
 	}
 
 	for i := uint(0); i*wordBytes < srcLen; i++ {
-		out := uint32(0)
+		out := word(0)
 		for j := uint(0); j < wordBytes && wordBytes*i+j < srcLen; j++ {
-			out |= uint32(src[wordBytes*i+j]) << (8 * j)
+			out |= word(src[wordBytes*i+j]) << (8 * j)
 		}
 
 		dst[i] = out
@@ -185,7 +185,7 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 	copy(k.symKey(), symmetricKey[:])
 
 	skb := pseudoRandomFunction(symmetricKey)
-	secretKey := scalar32{}
+	secretKey := decafScalar{}
 	secretKey.Decode(skb)
 	secretKey.serialize(k.secretKey())
 
@@ -207,16 +207,16 @@ func (c *curveT) generateKey(read io.Reader) (k privateKey, err error) {
 
 //XXX Is private only the secret part of the privateKey?
 func (c *curveT) computeSecret(private, public []byte) []byte {
-	var sk scalar32
+	var sk decafScalar
 	var pub serialized
 	copy(pub[:], public)
 
-	msucc := uint32(lmask)
+	msucc := word(lmask)
 	pk, succ := deserializeReturnMask(pub)
 
 	msucc &= barrettDeserializeReturnMask(sk[:], private, &curvePrimeOrder)
 
-	ok := uint32(0)
+	ok := word(0)
 	pk, ok = c.multiplyMontgomery(pk, sk, scalarBits, 1)
 	succ &= ok
 
@@ -230,7 +230,7 @@ func (c *curveT) computeSecret(private, public []byte) []byte {
 }
 
 func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, err error) {
-	secretKeyWords := scalar32{}
+	secretKeyWords := decafScalar{}
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		//XXX SECURITY should we wipe secretKeyWords?
 		err = errors.New("corrupted private key")
@@ -262,7 +262,7 @@ func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, err er
 	return
 }
 
-func (c *curveT) deriveTemporarySignature(nonce scalar32) (dst [fieldBytes]byte) {
+func (c *curveT) deriveTemporarySignature(nonce decafScalar) (dst [fieldBytes]byte) {
 	// tmpSig = 4 * nonce * basePoint
 	fourTimesGTimesNonce := c.multiplyByBase(nonce).double().untwistAndDoubleAndSerialize()
 	serialize(dst[:], fourTimesGTimesNonce)
@@ -270,7 +270,7 @@ func (c *curveT) deriveTemporarySignature(nonce scalar32) (dst [fieldBytes]byte)
 }
 
 //XXX Should pubKey have a fixed size here?
-func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst scalar32) {
+func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst decafScalar) {
 	h := sha512.New()
 	h.Write(pubKey)
 	h.Write(tmpSignature[:])
@@ -281,7 +281,7 @@ func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (
 	return
 }
 
-func deriveNonce(msg []byte, symKey []byte) (dst scalar32) {
+func deriveNonce(msg []byte, symKey []byte) (dst decafScalar) {
 	h := sha512.New()
 	h.Write([]byte("signonce"))
 	h.Write(symKey)
@@ -301,7 +301,7 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 		return false
 	}
 
-	nonce := scalar32{}
+	nonce := decafScalar{}
 	ok = barrettDeserialize(nonce[:], signature[fieldBytes:2*fieldBytes], &curvePrimeOrder)
 	if !ok {
 		return false

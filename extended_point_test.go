@@ -348,7 +348,7 @@ func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
 }
 
 func (s *Ed448Suite) Test_PrecomputedScalarMultiplication(c *C) {
-	scalar := &scalar32{0}
+	scalar := &decafScalar{0}
 
 	p := curve.precomputedScalarMul(scalar)
 
@@ -1236,7 +1236,7 @@ func (s *Ed448Suite) Test_PointDoubleScalarmul(c *C) {
 			0x05c88e97, 0x026ce314},
 	}
 
-	s1 := &scalar32{
+	s1 := &decafScalar{
 		0x9a1044c6, 0x92f78393,
 		0x68cea2bc, 0x5f23f942,
 		0xd4384e9e, 0x76969060,
@@ -1284,7 +1284,7 @@ func (s *Ed448Suite) Test_PointDoubleScalarmul(c *C) {
 			0x0f3eba42, 0x04409402},
 	}
 
-	s2 := &scalar32{
+	s2 := &decafScalar{
 		0x3aad8a3d, 0x7cbae122,
 		0xed340da1, 0x1e37d7eb,
 		0x2a2e914d, 0xcae48b24,

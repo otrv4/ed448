@@ -3,7 +3,7 @@ package ed448
 import "fmt"
 
 type combTables []*twNiels
-type adjustmentsTable [2 * scalarWords]uint32
+type adjustmentsTable [2 * scalarWords]word
 
 // A precomputed table for fixed-base scalar multiplication.
 // This uses a signed combs format.

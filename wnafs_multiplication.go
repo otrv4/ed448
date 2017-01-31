@@ -4,7 +4,7 @@ type smvtControl struct {
 	power, addend int
 }
 
-func recodeWnaf(control []smvtControl, scalar scalar32, nBits, tableBits uint) (position uint32) {
+func recodeWnaf(control []smvtControl, scalar decafScalar, nBits, tableBits uint) (position word) {
 	current := 0
 	var i, j int
 	position = 0
@@ -21,7 +21,7 @@ func recodeWnaf(control []smvtControl, scalar scalar32, nBits, tableBits uint) (
 		 * ceil((nbits+1) / (tableBits+1)) + 2 = floor((nbits)/(tableBits+1)) + 2.
 		 * There's also the stopper with power -1, for a total of +3.
 		 */
-		if current >= (2<<uint32(tableBits)) || current <= -1-(2<<uint32(tableBits)) {
+		if current >= (2<<word(tableBits)) || current <= -1-(2<<word(tableBits)) {
 			delta := (current + 1) >> 1 /* |delta| < 2^tablebits */
 			current = -(current & 1)
 
@@ -88,7 +88,7 @@ func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 	}
 }
 
-func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre scalar32, precmp []*twNiels) {
+func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre decafScalar, precmp []*twNiels) {
 	tableBitsVar := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
 	nbitsVar := uint(446)
 	nbitsPre := uint(446)
@@ -150,7 +150,7 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre scalar32,
 }
 
 // XXX: check the if/else cases and check if bool value can be set to false
-func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar scalar32) *twExtendedPoint {
+func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar decafScalar) *twExtendedPoint {
 	tableBitsVar := uint(3) // DECAF_WNAF_VAR_TABLE_BITS
 	tableBitsPre := uint(5) // DECAF_WNAF_FIXED_TABLE_BITS
 

@@ -1,20 +1,20 @@
 package ed448
 
-func scheduleScalarForCombs(schedule []uint32, scalar scalar32) {
+func scheduleScalarForCombs(schedule []word, scalar decafScalar) {
 	table := baseTable
-	tmp := make([]uint32, len(schedule))
+	tmp := make([]word, len(schedule))
 	copy(tmp, scalar[:])
 
-	tmp[len(tmp)-1] &= (uint32(1) << (scalarBits % wordBits)) - 1
+	tmp[len(tmp)-1] &= (word(1) << (scalarBits % wordBits)) - 1
 
 	convertToSignedWindowForm(schedule, tmp, table.adjustments[:])
 }
 
-func convertToSignedWindowForm(out []uint32, scalar []uint32, preparedData []uint32) {
-	mask := uint32(uint64(-(scalar[0] & 1)) & lmask)
+func convertToSignedWindowForm(out []word, scalar []word, preparedData []word) {
+	mask := word(dword(-(scalar[0] & 1)) & lmask)
 
-	carry := addExtPacked(out, scalar, preparedData[:scalarWords], uint32(^mask))
-	carry += addExtPacked(out, out, preparedData[scalarWords:], uint32(mask))
+	carry := addExtPacked(out, scalar, preparedData[:scalarWords], word(^mask))
+	carry += addExtPacked(out, out, preparedData[scalarWords:], word(mask))
 
 	for i := 0; i < scalarWords-1; i++ {
 		out[i] >>= 1

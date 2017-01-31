@@ -22,7 +22,7 @@ func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error
 	copy(k.symKey(), sym[:])
 
 	skb := decafPseudoRandomFunction(sym[:])
-	secretKey := &scalar32{}
+	secretKey := &decafScalar{}
 
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
 	secretKey.serialize(k.secretKey())
@@ -43,7 +43,7 @@ func (c *curveT) decafGenerateKeys(r io.Reader) (k privateKey, err error) {
 	return c.decafDerivePrivateKey(symKey)
 }
 
-func decafDeriveNonce(msg []byte, symKey []byte) (dst scalar32) {
+func decafDeriveNonce(msg []byte, symKey []byte) (dst decafScalar) {
 	h := sha3.NewShake256()
 	h.Write(msg)
 	h.Write(symKey)
@@ -56,7 +56,7 @@ func decafDeriveNonce(msg []byte, symKey []byte) (dst scalar32) {
 	return
 }
 
-func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst scalar32) {
+func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst decafScalar) {
 	h := sha3.NewShake256()
 	h.Write(msg)
 	h.Write(pubKey)
@@ -69,14 +69,14 @@ func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []by
 	return
 }
 
-func (c *curveT) decafDeriveTemporarySignature(nonce *scalar32) (dst [fieldBytes]byte) {
+func (c *curveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBytes]byte) {
 	point := c.precomputedScalarMul(nonce)
 	point.decafEncode(dst[:])
 	return
 }
 
 func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
-	secretKeyWords := scalar32{}
+	secretKeyWords := decafScalar{}
 	//XXX: should secret words be destroyed?
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		err = errors.New("Corrupted private key")

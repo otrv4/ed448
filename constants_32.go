@@ -6,7 +6,7 @@ const (
 	// For 32 arch
 	limbs     = 16
 	radix     = 28
-	radixMask = uint32(0xfffffff)
+	radixMask = word(0xfffffff)
 
 	// The size of the Goldilocks field, in bits.
 	fieldBits = 448
@@ -48,7 +48,7 @@ const (
 
 	uintZero = uint(0)
 
-	montgomeryFactor = uint32(0xae918bc5)
+	montgomeryFactor = word(0xae918bc5)
 )
 
 var (
@@ -66,7 +66,7 @@ var (
 		0x49, 0x7a, 0x5b, 0xb2, 0xc0, 0xc0, 0xfe, 0x12,
 	})
 
-	scalarQ = &scalar32{
+	scalarQ = &decafScalar{
 		0xab5844f3, 0x2378c292,
 		0x8dc58f55, 0x216cc272,
 		0xaed63690, 0xc44edb49,
@@ -76,7 +76,7 @@ var (
 		0xffffffff, 0x3fffffff,
 	}
 
-	scalarR2 = &scalar32{
+	scalarR2 = &decafScalar{
 		0x049b9b60, 0xe3539257,
 		0xc1b195d9, 0x7af32c4b,
 		0x88ea1859, 0x0d66de23,

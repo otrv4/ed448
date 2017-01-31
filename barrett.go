@@ -1,30 +1,22 @@
 package ed448
 
 type barrettPrime struct {
-	wordsInP uint32
-	pShift   uint32
-	lowWords []uint32
+	wordsInP word
+	pShift   word
+	lowWords []word
 }
 
 var curvePrimeOrder = barrettPrime{
-	wordsInP: 14,
-	pShift:   30,
-	lowWords: []uint32{
-		0x54a7bb0d,
-		0xdc873d6d,
-		0x723a70aa,
-		0xde933d8d,
-		0x5129c96f,
-		0x3bb124b6,
-		0x8335dc16,
-	},
+	wordsInP: wordsInP,
+	pShift:   pShift,
+	lowWords: lowWords,
 }
 
-func barrettDeserialize(dst []uint32, serial []byte, p *barrettPrime) bool {
+func barrettDeserialize(dst []word, serial []byte, p *barrettPrime) bool {
 	return barrettDeserializeReturnMask(dst, serial, p) != 0
 }
 
-func barrettDeserializeReturnMask(dst []uint32, serial []byte, p *barrettPrime) uint32 {
+func barrettDeserializeReturnMask(dst []word, serial []byte, p *barrettPrime) word {
 	s := p.wordsInP * wordBits / 8
 	if p.pShift != 0 {
 		s -= (wordBits - p.pShift) / 8
@@ -32,12 +24,12 @@ func barrettDeserializeReturnMask(dst []uint32, serial []byte, p *barrettPrime) 
 
 	bytesToWords(dst, serial[:s])
 
-	carry := uint64(0)
+	carry := dword(0)
 	for i, wi := range dst {
 		carry >>= wordBits
-		carry += uint64(wi)
+		carry += dword(wi)
 		if i < len(p.lowWords) {
-			carry += uint64(p.lowWords[i])
+			carry += dword(p.lowWords[i])
 		}
 	}
 
@@ -47,39 +39,39 @@ func barrettDeserializeReturnMask(dst []uint32, serial []byte, p *barrettPrime) 
 		carry >>= wordBits
 	}
 
-	scarry := int64(carry)
+	scarry := sdword(carry)
 	scarry = -scarry
 	scarry >>= wordBits
 	scarry >>= wordBits
 
-	return uint32(^scarry)
+	return word(^scarry)
 }
 
-func barrettDeserializeAndReduce(dst []uint32, serial []byte, p *barrettPrime) {
+func barrettDeserializeAndReduce(dst []word, serial []byte, p *barrettPrime) {
 	wordLen := wordBits / 8
 	size := (len(serial) + wordLen - 1) / wordLen
 	if size < int(p.wordsInP) {
 		size = int(p.wordsInP)
 	}
 
-	tmp := make([]uint32, size)
+	tmp := make([]word, size)
 	bytesToWords(tmp[:], serial[:])
 	barrettReduce(tmp[:], 0, p)
 
-	for i := uint32(0); i < p.wordsInP; i++ {
+	for i := word(0); i < p.wordsInP; i++ {
 		dst[i] = tmp[i]
 	}
 }
 
-func barrettReduce(dst []uint32, carry uint32, p *barrettPrime) {
-	for wordsLeft := uint32(len(dst)); wordsLeft >= p.wordsInP; wordsLeft-- {
+func barrettReduce(dst []word, carry word, p *barrettPrime) {
+	for wordsLeft := word(len(dst)); wordsLeft >= p.wordsInP; wordsLeft-- {
 		//XXX PERF unroll
 		for repeat := 0; repeat < 2; repeat++ {
 			mand := dst[wordsLeft-1] >> p.pShift
-			dst[wordsLeft-1] &= (uint32(1) << p.pShift) - 1
+			dst[wordsLeft-1] &= (word(1) << p.pShift) - 1
 
 			if p.pShift != 0 && repeat == 0 {
-				if wordsLeft < uint32(len(dst)) {
+				if wordsLeft < word(len(dst)) {
 					mand |= dst[wordsLeft] << (wordBits - p.pShift)
 					dst[wordsLeft] = 0
 				} else {
@@ -97,90 +89,90 @@ func barrettReduce(dst []uint32, carry uint32, p *barrettPrime) {
 
 	if p.pShift != 0 {
 		cout = (cout << (wordBits - p.pShift)) + (dst[p.wordsInP-1] >> p.pShift)
-		dst[p.wordsInP-1] &= uint32(1)<<p.pShift - 1
+		dst[p.wordsInP-1] &= word(1)<<p.pShift - 1
 	}
 
 	/* mask = carry-1: if no carry then do sub, otherwise don't */
 	subExtPacked(dst, dst[:p.wordsInP], p.lowWords, cout-1)
 }
 
-func addExtPacked(dst, x, y []uint32, mask uint32) uint32 {
-	carry := int64(0)
+func addExtPacked(dst, x, y []word, mask word) word {
+	carry := sdword(0)
 	for i := 0; i < len(y); i++ {
-		carry += int64(x[i]) + int64(y[i]&mask)
-		dst[i] = uint32(carry)
+		carry += sdword(x[i]) + sdword(y[i]&mask)
+		dst[i] = word(carry)
 		carry >>= wordBits
 	}
 
 	for i := len(y); i < len(x); i++ {
-		carry += int64(x[i])
-		dst[i] = uint32(carry)
+		carry += sdword(x[i])
+		dst[i] = word(carry)
 		carry >>= wordBits
 	}
 
-	return uint32(carry)
+	return word(carry)
 }
 
-func subExtPacked(dst, x, y []uint32, mask uint32) uint32 {
-	carry := int64(0)
+func subExtPacked(dst, x, y []word, mask word) word {
+	carry := sdword(0)
 	for i := 0; i < len(y); i++ {
-		carry += int64(x[i]) - (int64(y[i]) & int64(mask))
-		dst[i] = uint32(carry)
+		carry += sdword(x[i]) - (sdword(y[i]) & sdword(mask))
+		dst[i] = word(carry)
 		carry >>= wordBits
 	}
 
 	for i := len(y); i < len(x); i++ {
-		carry += int64(x[i])
-		dst[i] = uint32(carry)
+		carry += sdword(x[i])
+		dst[i] = word(carry)
 		carry >>= wordBits
 	}
 
-	return uint32(carry)
+	return word(carry)
 }
 
 //XXX Is this the same as mulAddVWW_g() ?
-func widemac(accum []uint32, mier []uint32, mand, carry uint32) uint32 {
+func widemac(accum []word, mier []word, mand, carry word) word {
 	for i := 0; i < len(mier); i++ {
-		product := uint64(mand) * uint64(mier[i])
-		product += uint64(accum[i])
-		product += uint64(carry)
+		product := dword(mand) * dword(mier[i])
+		product += dword(accum[i])
+		product += dword(carry)
 
-		accum[i] = uint32(product)
-		carry = uint32(product >> wordBits)
+		accum[i] = word(product)
+		carry = word(product >> wordBits)
 	}
 
 	for i := len(mier); i < len(accum); i++ {
-		sum := uint64(carry) + uint64(accum[i])
-		accum[i] = uint32(sum)
-		carry = uint32(sum >> wordBits)
+		sum := dword(carry) + dword(accum[i])
+		accum[i] = word(sum)
+		carry = word(sum >> wordBits)
 	}
 
 	return carry
 }
 
-func barrettNegate(dst []uint32, p *barrettPrime) {
+func barrettNegate(dst []word, p *barrettPrime) {
 	barrettReduce(dst, 0, p)
 
-	carry := int64(0)
+	carry := sdword(0)
 	for i := 0; i < len(p.lowWords); i++ {
-		carry = carry - int64(p.lowWords[i]) - int64(dst[i])
-		dst[i] = uint32(carry)
+		carry = carry - sdword(p.lowWords[i]) - sdword(dst[i])
+		dst[i] = word(carry)
 		carry >>= wordBits
 	}
 
 	for i := len(p.lowWords); i < int(p.wordsInP); i++ {
-		carry = carry - int64(dst[i])
-		dst[i] = uint32(carry)
+		carry = carry - sdword(dst[i])
+		dst[i] = word(carry)
 		if i < int(p.wordsInP-1) {
 			carry >>= wordBits
 		}
 	}
 
-	carry = carry + int64(uint32(1)<<p.pShift)
-	dst[p.wordsInP-1] = uint32(carry)
+	carry = carry + sdword(word(1)<<p.pShift)
+	dst[p.wordsInP-1] = word(carry)
 }
 
-func barrettMac(dst, x, y []uint32, p *barrettPrime) {
+func barrettMac(dst, x, y []word, p *barrettPrime) {
 	nWords := int(p.wordsInP)
 	if nWords < len(x) {
 		nWords = len(x)
@@ -191,7 +183,7 @@ func barrettMac(dst, x, y []uint32, p *barrettPrime) {
 		nWords = len(dst)
 	}
 
-	tmp := make([]uint32, nWords)
+	tmp := make([]word, nWords)
 
 	for bpos := len(y) - 1; bpos >= 0; bpos-- {
 		for idown := nWords - 2; idown >= 0; idown-- {
@@ -216,15 +208,15 @@ func barrettMac(dst, x, y []uint32, p *barrettPrime) {
 	}
 }
 
-func addPacked(dst, x []uint32) uint32 {
-	carry := uint64(0)
+func addPacked(dst, x []word) word {
+	carry := dword(0)
 
 	//dst can be longer than x
 	for i := 0; i < len(x); i++ {
-		carry = carry + uint64(dst[i]) + uint64(x[i])
-		dst[i] = uint32(carry)
+		carry = carry + dword(dst[i]) + dword(x[i])
+		dst[i] = word(carry)
 		carry >>= wordBits
 	}
 
-	return uint32(carry)
+	return word(carry)
 }

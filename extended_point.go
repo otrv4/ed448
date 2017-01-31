@@ -28,12 +28,12 @@ func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	d.addRaw(c, a)
 	p.t.addRaw(p.y, p.x)
 	b.square(p.t)
-	exponentBias := uint32(3)
+	exponentBias := word(3)
 	b.subXBias(b, d, exponentBias)
 	p.t.sub(a, c)
 	p.x.square(p.z)
 	p.z.addRaw(p.x, p.x)
-	exponentBias = uint32(4)
+	exponentBias = word(4)
 	a.subXBias(p.z, p.t, exponentBias)
 	p.x.mul(a, b)
 	p.z.mul(p.t, a)
@@ -45,12 +45,12 @@ func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 }
 
 func (p *twExtendedPoint) decafEncode(dst []byte) {
-	t := uint64(0)
-	overT := uint64(0)
+	t := dword(0)
+	overT := dword(0)
 	serialize(dst, p.deisogenize(t, overT))
 }
 
-func (p *twExtendedPoint) deisogenize(t, overT uint64) *bigNumber {
+func (p *twExtendedPoint) deisogenize(t, overT dword) *bigNumber {
 	a, b, c, d, s := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.mulWSignedCurveConstant(p.y, 1-(edwardsD))
 	c.mul(a, p.t)
@@ -75,7 +75,7 @@ func (p *twExtendedPoint) deisogenize(t, overT uint64) *bigNumber {
 	return s
 }
 
-func decafDecode(ser serialized, identity uint64) (*twExtendedPoint, uint64) {
+func decafDecode(ser serialized, identity dword) (*twExtendedPoint, dword) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	p := &twExtendedPoint{
 		x: &bigNumber{},
@@ -85,7 +85,7 @@ func decafDecode(ser serialized, identity uint64) (*twExtendedPoint, uint64) {
 	}
 
 	n, succ := deserializeReturnMask(ser)
-	ok := uint64(succ)
+	ok := dword(succ)
 
 	zero := decafEq(n, bigZero)
 	ok &= identity | ^zero
@@ -109,7 +109,7 @@ func decafDecode(ser serialized, identity uint64) (*twExtendedPoint, uint64) {
 	a.mul(b, c)
 	p.y.mul(a, p.z)
 	p.t.mul(p.x, a)
-	p.y[0] -= uint32(zero)
+	p.y[0] -= word(zero)
 
 	return p, ok
 }
@@ -193,14 +193,14 @@ func (p *twExtendedPoint) twPNiels() *twPNiels {
 	}
 }
 
-func (c *curveT) precomputedScalarMul(scalar *scalar32) *twExtendedPoint {
+func (c *curveT) precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	p := &twExtendedPoint{
 		new(bigNumber),
 		new(bigNumber),
 		new(bigNumber),
 		new(bigNumber),
 	}
-	scalar2 := NewScalar([fieldBytes]byte{})
+	scalar2 := NewDecafScalar([fieldBytes]byte{})
 	scalar2.Add(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2.halve(scalar2, scalarQ)
 
@@ -211,21 +211,21 @@ func (c *curveT) precomputedScalarMul(scalar *scalar32) *twExtendedPoint {
 		}
 
 		for j := uintZero; j < decafCombNumber; j++ {
-			var tab uint32
+			var tab word
 			for k := uintZero; k < decafCombTeeth; k++ {
 				bit := uint(i) + decafCombSpacing*(k+j*decafCombTeeth)
 				if bit < scalarBits {
-					tab |= (scalar2.(*scalar32)[bit/wordBits] >> (bit % wordBits) & 1) << k
+					tab |= (scalar2.(*decafScalar)[bit/wordBits] >> (bit % wordBits) & 1) << k
 				}
 			}
 
-			invert := (int32(tab) >> (decafCombTeeth - 1)) - 1
-			tab ^= uint32(invert)
+			invert := (sword(tab) >> (decafCombTeeth - 1)) - 1
+			tab ^= word(invert)
 			tab &= (1 << (decafCombTeeth - 1)) - 1
 
 			ni = decafPrecompTable.lookup(j, decafCombTeeth, uint(tab))
 
-			ni.conditionalNegate(uint32(invert))
+			ni.conditionalNegate(word(invert))
 
 			if i != int(decafCombSpacing-1) || j != 0 {
 				p.addNielsToExtended(ni, j == decafCombNumber-1 && i != 0)
@@ -248,10 +248,10 @@ func pointDoubleScalarMul(
 	const windowTMask = windowMask >> 1  //0x0000f 15
 	const nTable = 1 << (window - 1)     //0x00010 16
 
-	scalar1x := NewScalar([fieldBytes]byte{})
+	scalar1x := NewDecafScalar([fieldBytes]byte{})
 	scalar1x.Add(scalarB, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x, scalarQ)
-	scalar2x := NewScalar([fieldBytes]byte{})
+	scalar2x := NewDecafScalar([fieldBytes]byte{})
 	scalar2x.Add(scalarC, decafPrecompTable.scalarAdjustment)
 	scalar2x.halve(scalar2x, scalarQ)
 
@@ -260,11 +260,11 @@ func pointDoubleScalarMul(
 	out := &twExtendedPoint{}
 	first := true
 	for i := scalarBits - ((scalarBits - 1) % window) - 1; i >= 0; i -= window {
-		bits1 := scalar1x.(*scalar32)[i/wordBits] >> uint(i%wordBits)
-		bits2 := scalar2x.(*scalar32)[i/wordBits] >> uint(i%wordBits)
+		bits1 := scalar1x.(*decafScalar)[i/wordBits] >> uint(i%wordBits)
+		bits2 := scalar2x.(*decafScalar)[i/wordBits] >> uint(i%wordBits)
 		if i%wordBits >= wordBits-window && i/wordBits < scalarWords-1 {
-			bits1 ^= scalar1x.(*scalar32)[i/wordBits+1] << uint(wordBits-(i%wordBits))
-			bits2 ^= scalar2x.(*scalar32)[i/wordBits+1] << uint(wordBits-(i%wordBits))
+			bits1 ^= scalar1x.(*decafScalar)[i/wordBits+1] << uint(wordBits-(i%wordBits))
+			bits2 ^= scalar2x.(*decafScalar)[i/wordBits+1] << uint(wordBits-(i%wordBits))
 		}
 		bits1 &= windowMask
 		bits2 &= windowMask

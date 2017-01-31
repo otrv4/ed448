@@ -31,21 +31,21 @@ func PointAddition(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
 	return out
 }
 
-func (dst *scalar32) Mul(x, y Scalar) {
-	dst.montgomeryMultiply(x.(*scalar32), y.(*scalar32))
+func (dst *decafScalar) Mul(x, y Scalar) {
+	dst.montgomeryMultiply(x.(*decafScalar), y.(*decafScalar))
 	dst.montgomeryMultiply(dst, scalarR2)
 }
 
-func (dst *scalar32) Sub(x, y Scalar) {
-	noExtra := uint32(0)
-	dst.scalarSubExtra(x.(*scalar32), y.(*scalar32), noExtra)
+func (dst *decafScalar) Sub(x, y Scalar) {
+	noExtra := word(0)
+	dst.scalarSubExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
 }
 
-func (dst *scalar32) Add(x, y Scalar) {
-	dst.scalarAdd(x.(*scalar32), y.(*scalar32))
+func (dst *decafScalar) Add(x, y Scalar) {
+	dst.scalarAdd(x.(*decafScalar), y.(*decafScalar))
 }
 
-func (dst *scalar32) Equals(x Scalar) bool {
-	eq := dst.scalarEquals(x.(*scalar32))
+func (dst *decafScalar) Equals(x Scalar) bool {
+	eq := dst.scalarEquals(x.(*decafScalar))
 	return maskToBoolean(eq)
 }

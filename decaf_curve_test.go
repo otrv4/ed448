@@ -129,7 +129,7 @@ func (s *Ed448Suite) Test_DecafDeriveNonce(c *C) {
 		0x23, 0x4f, 0xf2, 0x4a, 0x96, 0x94, 0x52, 0x3e,
 	}
 
-	expectedNonce := scalar32{
+	expectedNonce := decafScalar{
 		0x358a567a, 0x1b623fd7,
 		0x1c37439c, 0xb8713abb,
 		0x6e7de9d9, 0xb3c4e14e,
@@ -166,7 +166,7 @@ func (s *Ed448Suite) Test_DecafDeriveChallenge(c *C) {
 		0xcd, 0xc8, 0xd6, 0xf2, 0x7c, 0x71, 0x87, 0x61,
 	}
 
-	expectedChallenge := scalar32{
+	expectedChallenge := decafScalar{
 		0x4b91949b, 0x8366b93a,
 		0xea749b37, 0x94751b8c,
 		0xe11471b6, 0xae84f274,
@@ -183,7 +183,7 @@ func (s *Ed448Suite) Test_DecafDeriveChallenge(c *C) {
 
 func (s *Ed448Suite) Test_DecafDeriveTemporarySignature(c *C) {
 
-	nonce := &scalar32{
+	nonce := &decafScalar{
 		0x358a567a, 0x1b623fd7,
 		0x1c37439c, 0xb8713abb,
 		0x6e7de9d9, 0xb3c4e14e,

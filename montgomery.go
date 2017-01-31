@@ -30,7 +30,7 @@ func (a *montgomery) montgomeryStep() {
 	a.zd.mul(L0, L1)
 }
 
-func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok uint32) {
+func (a *montgomery) serialize(sbz *bigNumber) (b *bigNumber, ok word) {
 	L0 := new(bigNumber)
 	L1 := new(bigNumber)
 	L2 := new(bigNumber)

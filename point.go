@@ -206,7 +206,7 @@ func (p *twNiels) copy() *twNiels {
 	}
 }
 
-func (p *twNiels) conditionalNegate(neg uint32) {
+func (p *twNiels) conditionalNegate(neg word) {
 	p.a.conditionalSwap(p.b, neg)
 	p.c = p.c.conditionalNegate(neg)
 }

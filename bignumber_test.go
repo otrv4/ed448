@@ -173,7 +173,7 @@ func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
 		0x072318d2, 0x0fff8007,
 	}
 
-	n.decafCondNegate(uint64(lmask))
+	n.decafCondNegate(dword(lmask))
 
 	c.Assert(n, DeepEquals, expected)
 }
@@ -211,7 +211,7 @@ func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
 		0x072318d2, 0x0fff8007,
 	}
 
-	neg := uint64(lmask)
+	neg := dword(lmask)
 
 	n.decafConstTimeSel(n, y, neg)
 
@@ -222,8 +222,8 @@ func (s *Ed448Suite) TestZeroMask(c *C) {
 	zero := &bigNumber{}
 	one := &bigNumber{1}
 
-	c.Assert(zero.zeroMask(), Equals, uint32(lmask))
-	c.Assert(one.zeroMask(), Equals, uint32(0))
+	c.Assert(zero.zeroMask(), Equals, word(lmask))
+	c.Assert(one.zeroMask(), Equals, word(0))
 }
 
 func (s *Ed448Suite) TestSquareN(c *C) {
@@ -300,6 +300,6 @@ func (s *Ed448Suite) Test_DecafEq(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	})
 
-	c.Assert(decafEq(x, x), Equals, uint64(lmask))
-	c.Assert(decafEq(x, y), Equals, uint64(0))
+	c.Assert(decafEq(x, x), Equals, dword(lmask))
+	c.Assert(decafEq(x, y), Equals, dword(0))
 }
