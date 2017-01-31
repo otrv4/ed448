@@ -149,6 +149,7 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre scalar32,
 	}
 }
 
+// XXX: check the if/else cases and check if bool value can be set to false
 func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar scalar32) *twExtendedPoint {
 	tableBitsVar := uint(3) // DECAF_WNAF_VAR_TABLE_BITS
 	tableBitsPre := uint(5) // DECAF_WNAF_FIXED_TABLE_BITS
@@ -177,7 +178,6 @@ func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scal
 		combo.addNielsToExtended(decafWnafsTable[controlPre[0].addend>>1], i == 0)
 		contv++
 		contp++
-
 	} else {
 		i = controlPre[0].power
 		combo.nielsToExtended(decafWnafsTable[controlPre[0].addend>>1])

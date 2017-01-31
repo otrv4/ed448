@@ -371,3 +371,30 @@ func (c *curveT) decafGenerateKeys(r io.Reader) (k privateKey, e error) {
 
 	return c.decafDerivePrivateKey(symKey)
 }
+
+//Is it necessary for us to pass the message here?
+func decafDeriveNonce(msg []byte, symKey []byte) (dst scalar32) {
+	h := sha3.NewShake256()
+	h.Write(msg)
+	h.Write(symKey)
+	h.Write([]byte("decaf_448_sign_shake"))
+	var out [64]byte
+	h.Read(out[:])
+
+	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
+
+	return
+}
+
+func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst scalar32) {
+	h := sha3.NewShake256()
+	h.Write(msg)
+	h.Write(pubKey)
+	h.Write(tmpSignature[:])
+	var out [64]byte
+	h.Read(out[:])
+
+	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
+
+	return
+}
