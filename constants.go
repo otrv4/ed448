@@ -44,9 +44,6 @@ const (
 	decafCombTeeth   = uint(5)
 	decafCombSpacing = uint(18)
 
-	// Size512 is byte size of a SHA3-512 checksum
-	Size512 = 64
-
 	uintZero = uint(0)
 
 	montgomeryFactor = uint32(0xae918bc5)
