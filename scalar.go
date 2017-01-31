@@ -7,4 +7,5 @@ type Scalar interface {
 	Add(a, b Scalar)
 	Decode([]byte)
 	Encode([]byte)
+	Copy() Scalar
 }

@@ -104,3 +104,9 @@ func (s *scalar32) Decode(serial []byte) {
 func (s *scalar32) Encode(dst []byte) {
 	s.serialize(dst)
 }
+
+func (s *scalar32) Copy() Scalar {
+	out := &scalar32{}
+	copy(out[:], s[:])
+	return out
+}
