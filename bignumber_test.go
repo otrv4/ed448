@@ -153,7 +153,8 @@ func (s *Ed448Suite) TestConditionalNegateNumber(c *C) {
 }
 
 func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
-	n := &bigNumber{0x08db85c2, 0x0fd2361e,
+	n := &bigNumber{
+		0x08db85c2, 0x0fd2361e,
 		0x0ce2105d, 0x06a17729,
 		0x0a137aa5, 0x0e3ca84d,
 		0x0985ee61, 0x05a26d64,
@@ -161,7 +162,8 @@ func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
 		0x01d955b7, 0x03160ecd,
 		0x0a59046d, 0x0c32cf71,
 		0x98dce72d, 0x00007fff}
-	expected := &bigNumber{0x07247a3d, 0x002dc9e1,
+	expected := &bigNumber{
+		0x07247a3d, 0x002dc9e1,
 		0x031defa2, 0x095e88d6,
 		0x05ec855a, 0x01c357b2,
 		0x067a119e, 0x0a5d929b,
@@ -177,7 +179,8 @@ func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
 }
 
 func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
-	n := &bigNumber{0x08db85c2, 0x0fd2361e,
+	n := &bigNumber{
+		0x08db85c2, 0x0fd2361e,
 		0x0ce2105d, 0x06a17729,
 		0x0e3ca84d, 0x0a137aa5,
 		0x0985ee61, 0x05a26d64,
@@ -187,7 +190,8 @@ func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
 		0x98dce72d, 0x00007fff,
 	}
 
-	y := &bigNumber{0x07247a3d, 0x002dc9e1,
+	y := &bigNumber{
+		0x07247a3d, 0x002dc9e1,
 		0x031defa2, 0x095e88d6,
 		0x01c357b2, 0x05ec855a,
 		0x067a119e, 0x0a5d929b,
@@ -196,7 +200,8 @@ func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
 		0x05a6fb92, 0x03cd308e,
 		0x072318d2, 0x0fff8007,
 	}
-	expected := &bigNumber{0x07247a3d, 0x002dc9e1,
+	expected := &bigNumber{
+		0x07247a3d, 0x002dc9e1,
 		0x031defa2, 0x095e88d6,
 		0x01c357b2, 0x05ec855a,
 		0x067a119e, 0x0a5d929b,

@@ -1,6 +1,6 @@
 package ed448
 
-// compare to current table
+// XXX: prob better in byte
 var decafWnafsTable = [32]*twNiels{
 	//0
 	&twNiels{

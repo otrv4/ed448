@@ -16,7 +16,8 @@ func (s *Ed448Suite) Test_DecafLookup(c *C) {
 		0x0ff0b680, 0x08967778,
 	}
 
-	expB := &bigNumber{0x0dc6c9c3, 0x06400c4c,
+	expB := &bigNumber{
+		0x0dc6c9c3, 0x06400c4c,
 		0x0691083f, 0x01e8c978,
 		0x0f68e0c5, 0x0ad74f01,
 		0x072b5f6a, 0x0f7feb03,
@@ -25,7 +26,8 @@ func (s *Ed448Suite) Test_DecafLookup(c *C) {
 		0x071f244e, 0x0fcfea8a,
 		0x0e45ded2, 0x0dea6660,
 	}
-	expC := &bigNumber{0x0a8d6752, 0x02585b4a,
+	expC := &bigNumber{
+		0x0a8d6752, 0x02585b4a,
 		0x015a2089, 0x0e62da76,
 		0x01f39b68, 0x010c1c74,
 		0x0ced9f65, 0x0569bb1e,

@@ -812,7 +812,6 @@ func (s *Ed448Suite) TestDecafPrepareTable(c *C) {
 }
 
 func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
-
 	p := &twExtendedPoint{
 		&bigNumber{0x00},
 		&bigNumber{0x00},

@@ -2,6 +2,7 @@ package ed448
 
 import (
 	"crypto/rand"
+
 	"golang.org/x/crypto/sha3"
 )
 
