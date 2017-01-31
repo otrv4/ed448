@@ -53,3 +53,11 @@ func (dst *scalar32) Sub(x, y Scalar) {
 func (dst *scalar32) Add(x, y Scalar) {
 	dst.scalarAdd(x.(*scalar32), y.(*scalar32))
 }
+
+func (dst *scalar32) Equals(x Scalar) bool {
+	eq := dst.scalarEquals(x.(*scalar32))
+	if eq != 0 {
+		return true
+	}
+	return false
+}

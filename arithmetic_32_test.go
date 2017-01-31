@@ -65,7 +65,7 @@ func (s *Ed448Suite) Test_PointMul(c *C) {
 	c.Assert(val, IsNil)
 }
 
-func (s *Ed448Suite) Test_Add(c *C) {
+func (s *Ed448Suite) Test_PointAdd(c *C) {
 	valuePlusOne := [fieldBytes]byte{
 		0x04, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
 		0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x32, 0xc2,
@@ -93,58 +93,8 @@ func (s *Ed448Suite) Test_Add(c *C) {
 	c.Assert(val, IsNil)
 }
 
-func (s *Ed448Suite) Test_ScalarAdd(c *C) {
-	one := &scalar32{0x1}
-	two := &scalar32{0x2}
-	three := &scalar32{0x3}
-
-	result := &scalar32{}
-	result.Add(one, two)
-
-	c.Assert(result, DeepEquals, three)
-}
-
-func (s *Ed448Suite) Test_ScalarSub(c *C) {
-	twelve := &scalar32{0xc}
-	thirteen := &scalar32{0xd}
-	one := &scalar32{0x1}
-
-	result := &scalar32{}
-	result.Sub(thirteen, twelve)
-
-	c.Assert(result, DeepEquals, one)
-}
-
-func (s *Ed448Suite) Test_ScalarMul(c *C) {
-	x := &scalar32{
-		0xffb823a3, 0xc96a3c35,
-		0x7f8ed27d, 0x087b8fb9,
-		0x1d9ac30a, 0x74d65764,
-		0xc0be082e, 0xa8cb0ae8,
-		0xa8fa552b, 0x2aae8688,
-		0x2c3dc273, 0x47cf8cac,
-		0x3b089f07, 0x1e63e807,
-	}
-
-	y := &scalar32{
-		0xd8bedc42, 0x686eb329,
-		0xe416b899, 0x17aa6d9b,
-		0x1e30b38b, 0x188c6b1a,
-		0xd099595b, 0xbc343bcb,
-		0x1adaa0e7, 0x24e8d499,
-		0x8e59b308, 0x0a92de2d,
-		0xcae1cb68, 0x16c5450a,
-	}
-
-	expected := &scalar32{
-		0xa18d010a, 0x1f5b3197,
-		0x994c9c2b, 0x6abd26f5,
-		0x08a3a0e4, 0x36a14920,
-		0x74e9335f, 0x07bcd931,
-		0xf2d89c1e, 0xb9036ff6,
-		0x203d424b, 0xfccd61b3,
-		0x4ca389ed, 0x31e055c1,
-	}
-	x.Mul(x, y)
-	c.Assert(x, DeepEquals, expected)
+func (s *Ed448Suite) Test_ScalarCopyEquals(c *C) {
+	a := NewScalar()
+	b := a.Copy()
+	c.Assert(a.Equals(b), Equals, true)
 }

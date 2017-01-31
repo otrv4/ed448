@@ -8,4 +8,5 @@ type Scalar interface {
 	Decode(src []byte)
 	Encode(dst []byte)
 	Copy() Scalar
+	Equals(a Scalar) bool
 }

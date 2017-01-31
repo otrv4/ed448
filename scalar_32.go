@@ -97,6 +97,14 @@ func (s *scalar32) montgomeryMultiply(x, y *scalar32) {
 	copy(s[:], out[:])
 }
 
+func (s *scalar32) scalarEquals(x *scalar32) uint32 {
+	diff := uint32(0)
+	for i := uintZero; i < scalarWords; i++ {
+		diff |= s[i] ^ x[i]
+	}
+	return uint32(((uint64(diff)) - 1) >> wordBits)
+}
+
 func (s *scalar32) Decode(serial []byte) {
 	barrettDeserializeAndReduce(s[:], serial, &curvePrimeOrder)
 }
