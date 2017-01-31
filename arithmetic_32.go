@@ -1,14 +1,5 @@
 package ed448
 
-// ModQ produces a byte array mod Q (prime order)
-func ModQ(serial []byte) []byte {
-	words := scalar32{}
-	words.Decode(serial)
-	out := make([]byte, fieldBytes)
-	words.Encode(out)
-	return out
-}
-
 // PointMul multiplies a point x with a scalar y
 // PointMul automatically reduces the output by P
 func PointMul(x [fieldBytes]byte, y [fieldBytes]byte) (out []byte) {
