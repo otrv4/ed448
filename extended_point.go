@@ -193,7 +193,7 @@ func (p *twExtendedPoint) twPNiels() *twPNiels {
 	}
 }
 
-func (c *curveT) precomputedScalarMul(scalar Scalar) *twExtendedPoint {
+func (c *curveT) precomputedScalarMul(scalar *scalar32) *twExtendedPoint {
 	p := &twExtendedPoint{
 		new(bigNumber),
 		new(bigNumber),

@@ -398,3 +398,9 @@ func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []by
 
 	return
 }
+
+func (c *curveT) decafDeriveTemporarySignature(nonce *scalar32) (dst [fieldBytes]byte) {
+	point := c.precomputedScalarMul(nonce)
+	point.decafEncode(dst[:])
+	return
+}
