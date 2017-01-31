@@ -8,7 +8,7 @@ import (
 
 func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 	tableSize := uint(4)
-	expected := [16]*twPNiels{
+	exp := [16]*twPNiels{
 		//0
 		newTwistedPNiels(
 			[fieldBytes]byte{0x5f, 0xee, 0x87, 0xbc, 0x27, 0x10, 0xa9, 0xd4, 0x39, 0x2d, 0xf7, 0xe0, 0xa6, 0x34, 0x46, 0x07, 0x45, 0x97, 0x84, 0xd0, 0x5f, 0x91, 0xbb, 0xa6, 0x8b, 0x64, 0xe9, 0x76, 0x7a, 0x5d, 0xaa, 0x64, 0x0d, 0x68, 0xd9, 0xc7, 0xc7, 0xfc, 0xc6, 0x32, 0x0d, 0x73, 0xd9, 0x61, 0xd6, 0x9f, 0x8b, 0x04, 0x95, 0x67, 0x66, 0xd1, 0xfd, 0xc7, 0x8d, 0xd9},
@@ -157,7 +157,7 @@ func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 	prepareWnafTable(dst, p, tableSize)
 
 	for i, di := range dst {
-		c.Assert(di.equals(expected[i]), Equals, true)
+		c.Assert(di.equals(exp[i]), Equals, true)
 	}
 }
 
@@ -201,7 +201,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 	pz, _ = hex.DecodeString("2d35e8b251eb6b421291cf3a466597759059e01b7cc89f332f96f801ced244299f4da20b9fcedbaa66c5fd3508dcb61888e2b89bee4fea45")
 	pt, _ = hex.DecodeString("8713cc3806a247771ae8567b3b73dd874a8261a610de7c34202fab877f15213120e2fd14e5b191663c1e62d404c54b9f63e1e2e3d98eafb2")
 	pu, _ = hex.DecodeString("eafb1cd470e2728ee254c7a312092e820656c14a993f2896479aa211b0a1bb515deee36d06acee20a40a1cad5dc5cc38072cdd63447587e9")
-	expectedP := &twExtensible{
+	exp := &twExtensible{
 		new(bigNumber).setBytes(px),
 		new(bigNumber).setBytes(py),
 		new(bigNumber).setBytes(pz),
@@ -211,7 +211,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 
 	linearComboVarFixedVt(p, x, y, wnfsTable[:])
 
-	c.Assert(p.equals(expectedP), Equals, true)
+	c.Assert(p.equals(exp), Equals, true)
 }
 
 func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
@@ -254,7 +254,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 	pz, _ = hex.DecodeString("8365faf96687fb3419ed919ab8e995d3cf77b9dcec47bdc5b51d10f6110eb60c19be4daf24a1e0cdb0cef9f10b9bdbf19ae3d433a60c93a2")
 	pt, _ = hex.DecodeString("6221c6e5950a608b30063f8b83d7eef50ccc97fbf8b5c20de61eadebb734b10143965090f5cdbedea08afee791819a25269b63d764b29d89")
 	pu, _ = hex.DecodeString("8b8ee5a52914b36d6b04fc18bdb7dbd826efe424e074c2799e83e43ae3da3357df975d158228bfa5b52fdaac1f637c5cb1bb27bce0367f6f")
-	expectedP := &twExtensible{
+	exp := &twExtensible{
 		new(bigNumber).setBytes(px),
 		new(bigNumber).setBytes(py),
 		new(bigNumber).setBytes(pz),
@@ -264,7 +264,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 
 	linearComboVarFixedVt(p, x, y, wnfsTable[:])
 
-	c.Assert(p.equals(expectedP), Equals, true)
+	c.Assert(p.equals(exp), Equals, true)
 }
 
 func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
@@ -278,8 +278,6 @@ func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
 		0x738313e3, 0x12a2866a,
 	}
 
-	//This is tricky, because even if controlVar has too much space, it does
-	//not matter
 	controlVar := make([]smvtControl, 92)
 	pos := recodeWnaf(controlVar, x, scalarBits, 4)
 
@@ -353,8 +351,7 @@ func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
 	})
 }
 
-func (s *Ed448Suite) TestRecodeWnafForS0(c *C) {
-	//nbitsVar := 446
+func (s *Ed448Suite) TestRecodeWnafForScalarZero(c *C) {
 	nbitsPre := uint(446)
 	tableBitsPre := uint(5)
 	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
@@ -393,7 +390,7 @@ func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
 	c.Assert(control[position].addend, Equals, 0)
 }
 
-func (s *Ed448Suite) TestRecodeWnafForDecaf(c *C) {
+func (s *Ed448Suite) TestDecafRecodeWnafFull(c *C) {
 	x := scalar32{
 		0x120854c7, 0x6a241ba0,
 		0x41468997, 0x11e8f8aa,
@@ -484,8 +481,7 @@ func (s *Ed448Suite) TestRecodeWnafForDecaf(c *C) {
 	})
 }
 
-func (s *Ed448Suite) TestDecafRecodeWnafForS0(c *C) {
-	//nbitsVar := 446, equal to scalarBits
+func (s *Ed448Suite) TestDecafRecodeWnafForScalarZero(c *C) {
 	tableBitsPre := uint(5)
 	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
 	controlLen := scalarBits/(tableBitsPre+1) + 3
@@ -549,7 +545,7 @@ func (s *Ed448Suite) TestDecafPrepareTable(c *C) {
 	size := uint(5)
 	dst := make([]*twPNiels, 1<<size)
 
-	expected := [32]*twPNiels{
+	exp := [32]*twPNiels{
 		//0
 		&twPNiels{
 			&twNiels{
@@ -811,13 +807,13 @@ func (s *Ed448Suite) TestDecafPrepareTable(c *C) {
 	decafPrepareWnafTable(dst, p, size)
 
 	for i, di := range dst {
-		c.Assert(di.equals(expected[i]), Equals, true)
+		c.Assert(di.equals(exp[i]), Equals, true)
 	}
 }
 
 func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
 
-	combo := &twExtendedPoint{
+	p := &twExtendedPoint{
 		&bigNumber{0x00},
 		&bigNumber{0x00},
 		&bigNumber{0x00},
@@ -867,7 +863,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
 		},
 	}
 
-	s1 := scalar32{
+	x := scalar32{
 		0xd9436800, 0x1290c087,
 		0x33c051b3, 0xf9e8460f,
 		0xfcbb9385, 0x78d7514f,
@@ -877,7 +873,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
 		0xf5ca959a, 0x1be183fc,
 	}
 
-	s2 := scalar32{
+	y := scalar32{
 		0x2378c292, 0x216cc272,
 		0xc44edb49, 0xffffffff,
 		0xffffffff, 0xffffffff,
@@ -930,10 +926,10 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
 		},
 	}
 
-	result := decafDoubleNonSecretScalarMul(combo, base, s1, s2)
+	r := decafDoubleNonSecretScalarMul(p, base, x, y)
 
-	c.Assert(result.x, DeepEquals, exp.x)
-	c.Assert(result.y, DeepEquals, exp.y)
-	c.Assert(result.z, DeepEquals, exp.z)
-	c.Assert(result.t, DeepEquals, exp.t)
+	c.Assert(r.x, DeepEquals, exp.x)
+	c.Assert(r.y, DeepEquals, exp.y)
+	c.Assert(r.z, DeepEquals, exp.z)
+	c.Assert(r.t, DeepEquals, exp.t)
 }
