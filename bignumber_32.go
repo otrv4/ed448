@@ -251,3 +251,10 @@ func (n *bigNumber) mulW(x *bigNumber, w uint64) *bigNumber {
 
 	return n
 }
+
+func highBit(x *bigNumber) uint64 {
+	y := &bigNumber{}
+	y.add(x, x)
+	y.strongReduce()
+	return uint64(-(y[0] & 1))
+}

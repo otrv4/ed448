@@ -631,11 +631,3 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 
 	return a, !ret
 }
-
-//TODO: MOVE ME TO BIGNUM
-func highBit(x *bigNumber) uint64 {
-	y := &bigNumber{}
-	y.add(x, x)
-	y.strongReduce()
-	return uint64(-(y[0] & 1))
-}
