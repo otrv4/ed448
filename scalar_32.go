@@ -119,6 +119,7 @@ func (s *scalar32) Copy() Scalar {
 	return out
 }
 
+// NewScalar returns a Scalar object of Ed448 depends on arch
 func NewScalar() Scalar {
 	out := &scalar32{}
 	return out
