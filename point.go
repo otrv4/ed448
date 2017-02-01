@@ -8,13 +8,15 @@ import (
 // Point is a interface of Ed448 point
 type Point interface {
 	ScalarMul(a Scalar, b Point)
+	PrecomputedScalarMul(a Scalar, b Point)
 	DoubleScalarMul(a Scalar, b Point, c Scalar, d Point)
-	Sub(a, b Point)
 	Add(a, b Point)
-	Decode(src []byte) error
+	Sub(a, b Point)
 	Encode(dst []byte)
+	Decode(src []byte) error
 	Copy() Point
 	Equals(a Point) bool
+	Valid(a Point)
 }
 
 //XXX This should probably receive []byte{}
@@ -35,7 +37,7 @@ type extensibleCoordinates struct {
 	x, y, z, t, u *bigNumber
 }
 
-//Affina(x,y) => extensible(X, Y, Z, T, U)
+//Affine(x,y) => extensible(X, Y, Z, T, U)
 func newExtensible(px, py *bigNumber) *extensibleCoordinates {
 	x := px.copy()
 	y := py.copy()
