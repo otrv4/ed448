@@ -5,18 +5,33 @@ import (
 	"fmt"
 )
 
-// Point is a interface of Ed448 point
+// Point is a interface of an Ed448 point
 type Point interface {
-	ScalarMul(a Scalar, b Point)
-	PrecomputedScalarMul(a Scalar, b Point)
-	DoubleScalarMul(a Scalar, b Point, c Scalar, d Point)
-	Add(a, b Point)
-	Sub(a, b Point)
-	Encode(dst []byte)
-	Decode(src []byte) error
-	Copy() Point
-	Equals(a Point) bool
-	Valid(a Point)
+	//DoubleScalarMul(a Scalar, b Point, c Scalar, d Point)
+	//ScalarMul(a Scalar, b Point)
+	//Sub(a, b Point)
+	//Decode(src []byte) error
+	//Encode(dst []byte)
+	//Copy() Point
+	//Equals(a Point) bool
+	//Valid(a Point)
+}
+
+func failure(status dword) bool {
+	if status == 0 {
+		return true
+	}
+	return false
+}
+
+// NewPoint returns an Ed448 Point
+// The Identity is not a valid point
+func NewPoint(x [fieldBytes]byte) (Point, error) {
+	d, status := decafDecode(serialized(x), dword(0))
+	if failure(status) {
+		return nil, errors.New("ed448: the serialized input could not be decoded as a valid point")
+	}
+	return d, nil
 }
 
 //XXX This should probably receive []byte{}

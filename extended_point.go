@@ -44,6 +44,7 @@ func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	return p
 }
 
+// TODO: this will panic if byte array is not 56
 func (p *twExtendedPoint) decafEncode(dst []byte) {
 	t := dword(0)
 	overT := dword(0)
@@ -75,9 +76,25 @@ func (p *twExtendedPoint) deisogenize(t, overT dword) *bigNumber {
 	return s
 }
 
-func decafDecode(ser serialized, identity dword) (*twExtendedPoint, dword) {
+/**
+ * Decode a point from a sequence of bytes.
+ *
+ * Every point has a unique encoding, so not every
+ * sequence of bytes is a valid encoding.  If an invalid
+ * encoding is given, the output is undefined.
+ *
+ * @param [in] ser The serialized version of the point.
+ * @param [in] allow_identity DECAF_TRUE (-1) if the identity is a legal input.
+ *
+ * Returns:
+ * out - The decoded point.
+ * ok  - Whether the decoding succeeded
+ *       Success: uint64(-1)
+ *       Failure: uint64( 0) if the base does not represent a point
+ */
+func decafDecode(ser serialized, allowIdentity dword) (*twExtendedPoint, dword) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	p := &twExtendedPoint{
+	out := &twExtendedPoint{
 		x: &bigNumber{},
 		y: &bigNumber{},
 		z: &bigNumber{},
@@ -88,11 +105,11 @@ func decafDecode(ser serialized, identity dword) (*twExtendedPoint, dword) {
 	ok := dword(succ)
 
 	zero := decafEq(n, bigZero)
-	ok &= identity | ^zero
+	ok &= allowIdentity | ^zero
 	ok &= ^highBit(n)
 	a.square(n)
-	p.z.sub(bigOne, a)
-	b.square(p.z)
+	out.z.sub(bigOne, a)
+	b.square(out.z)
 	c.mulWSignedCurveConstant(a, 4-4*(edwardsD))
 	c.add(c, b)
 	b.mul(c, a)
@@ -103,15 +120,15 @@ func decafDecode(ser serialized, identity dword) (*twExtendedPoint, dword) {
 	ok &= ^decafEq(a, bigZero)
 	b.mul(c, d)
 	d.decafCondNegate(highBit(b))
-	p.x.add(n, n)
+	out.x.add(n, n)
 	c.mul(d, n)
-	b.sub(bigTwo, p.z)
+	b.sub(bigTwo, out.z)
 	a.mul(b, c)
-	p.y.mul(a, p.z)
-	p.t.mul(p.x, a)
-	p.y[0] -= word(zero)
+	out.y.mul(a, out.z)
+	out.t.mul(out.x, a)
+	out.y[0] -= word(zero)
 
-	return p, ok
+	return out, ok
 }
 
 func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
