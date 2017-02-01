@@ -255,10 +255,20 @@ func (c *curveT) precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	return p
 }
 
-func (p *twExtendedPoint) DoubleScalarMul(s1 Scalar, p1 Point, s2 Scalar, p2 Point) {
-	p = doubleScalarMul(p1.(*twExtendedPoint), s1, p2.(*twExtendedPoint), s2).copy()
-}
-
+/**
+ * Multiply two base points by two scalars:
+ * out = scalar1*base1 + scalar2*base2.
+ *
+ * Equivalent to two calls to decaf_448_point_scalarmul, but may be
+ * faster.
+ *
+ * @param [in] point1 A first point to be scaled.
+ * @param [in] scalar1 A first scalar to multiply by.
+ * @param [in] point2 A second point to be scaled.
+ * @param [in] scalar2 A second scalar to multiply by.
+ *
+ * returns the linear combination scalar1*base1 + scalar2*base2.
+ */
 func doubleScalarMul(
 	pointB *twExtendedPoint, scalarB Scalar,
 	pointC *twExtendedPoint, scalarC Scalar,

@@ -7,7 +7,6 @@ import (
 
 // Point is a interface of an Ed448 point
 type Point interface {
-	DoubleScalarMul(s1 Scalar, p1 Point, s2 Scalar, p2 Point)
 	//ScalarMul(a Scalar, b Point)
 	//Sub(a, b Point)
 	//Decode(src []byte) error
@@ -38,6 +37,12 @@ func NewPoint(x [fieldBytes]byte) (Point, error) {
 		return nil, errors.New("ed448: the serialized input could not be decoded as a valid point")
 	}
 	return d, nil
+}
+
+// DoubleScalarMul will multiply two base points by two scalars:
+//     out = point1*scalar1 + point2*scalar2
+func DoubleScalarMul(p1 Point, s1 Scalar, p2 Point, s2 Scalar) Point {
+	return doubleScalarMul(p1.(*twExtendedPoint), s1, p2.(*twExtendedPoint), s2)
 }
 
 //XXX This should probably receive []byte{}
