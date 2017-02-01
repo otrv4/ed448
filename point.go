@@ -18,14 +18,14 @@ type Point interface {
 }
 
 //XXX This should probably receive []byte{}
-func newPoint(x serialized, y serialized) (p *homogeneousProjective, e error) {
+func newPoint(x serialized, y serialized) (p *homogeneousProjective, err error) {
 	xN, ok1 := deserialize(x)
 	yN, ok2 := deserialize(y)
 
 	p = newHomogeneousProjective(xN, yN)
 
 	if !(ok1 && ok2) {
-		e = errors.New("invalid coordinates")
+		err = errors.New("invalid coordinates")
 	}
 
 	return

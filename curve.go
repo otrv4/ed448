@@ -229,11 +229,11 @@ func (c *curveT) computeSecret(private, public []byte) []byte {
 	return gxy
 }
 
-func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, e error) {
+func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, err error) {
 	secretKeyWords := scalar32{}
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		//XXX SECURITY should we wipe secretKeyWords?
-		e = errors.New("corrupted private key")
+		err = errors.New("corrupted private key")
 		return
 	}
 
