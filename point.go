@@ -7,7 +7,7 @@ import (
 
 // Point is a interface of an Ed448 point
 type Point interface {
-	//DoubleScalarMul(a Scalar, b Point, c Scalar, d Point)
+	DoubleScalarMul(s1 Scalar, p1 Point, s2 Scalar, p2 Point)
 	//ScalarMul(a Scalar, b Point)
 	//Sub(a, b Point)
 	//Decode(src []byte) error

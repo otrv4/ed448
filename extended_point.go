@@ -255,7 +255,11 @@ func (c *curveT) precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	return p
 }
 
-func pointDoubleScalarMul(
+func (p *twExtendedPoint) DoubleScalarMul(s1 Scalar, p1 Point, s2 Scalar, p2 Point) {
+	p = doubleScalarMul(p1.(*twExtendedPoint), s1, p2.(*twExtendedPoint), s2).copy()
+}
+
+func doubleScalarMul(
 	pointB *twExtendedPoint, scalarB Scalar,
 	pointC *twExtendedPoint, scalarC Scalar,
 ) *twExtendedPoint {

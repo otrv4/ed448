@@ -1332,7 +1332,7 @@ func (s *Ed448Suite) Test_PointDoubleScalarmul(c *C) {
 			0x0a2a5944, 0x00fc5ac9},
 	}
 
-	out := pointDoubleScalarMul(p1, s1, p2, s2)
+	out := doubleScalarMul(p1, s1, p2, s2)
 
 	c.Assert(out.x, DeepEquals, expected.x)
 	c.Assert(out.y, DeepEquals, expected.y)
