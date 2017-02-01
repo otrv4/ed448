@@ -4,8 +4,6 @@ import (
 	"crypto/sha512"
 	"errors"
 	"io"
-
-	"golang.org/x/crypto/sha3"
 )
 
 var (
@@ -333,94 +331,4 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 	pk = pkPoint.untwistAndDoubleAndSerialize()
 
 	return eph.equals(pk)
-}
-
-func decafPseudoRandomFunction(sym []byte) []byte {
-	hash := sha3.NewShake256()
-	hash.Write(sym[:])
-	hash.Write([]byte("decaf_448_derive_private_key"))
-	var out [64]byte
-	hash.Read(out[:])
-	return out[:]
-}
-
-/// XXX: return a proper error for this method
-func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error) {
-
-	k := privateKey{}
-	copy(k.symKey(), sym[:])
-
-	skb := decafPseudoRandomFunction(sym[:])
-	secretKey := &scalar32{}
-
-	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
-	secretKey.serialize(k.secretKey())
-
-	publicKey := c.precomputedScalarMul(secretKey)
-
-	publicKey.decafEncode(k.publicKey())
-
-	return k, nil
-}
-
-func (c *curveT) decafGenerateKeys(r io.Reader) (k privateKey, e error) {
-	symKey, err := generateSymmetricKey(r)
-	if err != nil {
-		return
-	}
-
-	return c.decafDerivePrivateKey(symKey)
-}
-
-//Is it necessary for us to pass the message here?
-func decafDeriveNonce(msg []byte, symKey []byte) (dst scalar32) {
-	h := sha3.NewShake256()
-	h.Write(msg)
-	h.Write(symKey)
-	h.Write([]byte("decaf_448_sign_shake"))
-	var out [64]byte
-	h.Read(out[:])
-
-	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
-
-	return
-}
-
-func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst scalar32) {
-	h := sha3.NewShake256()
-	h.Write(msg)
-	h.Write(pubKey)
-	h.Write(tmpSignature[:])
-	var out [64]byte
-	h.Read(out[:])
-
-	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
-
-	return
-}
-
-func (c *curveT) decafDeriveTemporarySignature(nonce *scalar32) (dst [fieldBytes]byte) {
-	point := c.precomputedScalarMul(nonce)
-	point.decafEncode(dst[:])
-	return
-}
-
-func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
-	secretKeyWords := scalar32{}
-	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
-		err = errors.New("corrupted private key")
-		return
-	}
-
-	nonce := decafDeriveNonce(msg, k.symKey())
-	tmpSignature := c.decafDeriveTemporarySignature(&nonce)
-	challenge := decafDeriveChallenge(k.publicKey(), tmpSignature, msg)
-
-	challenge.scalarMul(&challenge, &secretKeyWords)
-	nonce.scalarSub(&nonce, &challenge)
-
-	copy(sig[:fieldBytes], tmpSignature[:])
-	nonce.serialize(sig[fieldBytes:])
-
-	return
 }
