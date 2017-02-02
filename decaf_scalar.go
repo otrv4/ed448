@@ -150,6 +150,25 @@ func (s *decafScalar) decodeShort(b []byte, size uint) {
 	}
 }
 
+func (s *decafScalar) Mul(x, y Scalar) {
+	s.montgomeryMultiply(x.(*decafScalar), y.(*decafScalar))
+	s.montgomeryMultiply(s, scalarR2)
+}
+
+func (s *decafScalar) Sub(x, y Scalar) {
+	noExtra := word(0)
+	s.scalarSubExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
+}
+
+func (s *decafScalar) Add(x, y Scalar) {
+	s.scalarAdd(x.(*decafScalar), y.(*decafScalar))
+}
+
+func (s *decafScalar) Equals(x Scalar) bool {
+	eq := s.scalarEquals(x.(*decafScalar))
+	return maskToBoolean(eq)
+}
+
 func (s *decafScalar) Decode(src []byte) error {
 	if len(src) < fieldBytes {
 		return fmt.Errorf("src length smaller than fieldBytes")

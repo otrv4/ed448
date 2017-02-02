@@ -62,9 +62,3 @@ func (s *Ed448Suite) Test_PointAdd(c *C) {
 	val = PointAddition(zero, primeSerial)
 	c.Assert(val, IsNil)
 }
-
-func (s *Ed448Suite) Test_ScalarCopyEquals(c *C) {
-	a := NewDecafScalar([fieldBytes]byte{})
-	b := a.Copy()
-	c.Assert(a.Equals(b), Equals, true)
-}
