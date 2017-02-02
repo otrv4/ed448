@@ -119,22 +119,22 @@ func (n *bigNumber) weakReduce() *bigNumber {
 }
 
 func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg word) {
-	n[0] = (x[0] & word(^neg)) | (y[0] & word(neg))
-	n[1] = (x[1] & word(^neg)) | (y[1] & word(neg))
-	n[2] = (x[2] & word(^neg)) | (y[2] & word(neg))
-	n[3] = (x[3] & word(^neg)) | (y[3] & word(neg))
-	n[4] = (x[4] & word(^neg)) | (y[4] & word(neg))
-	n[5] = (x[5] & word(^neg)) | (y[5] & word(neg))
-	n[6] = (x[6] & word(^neg)) | (y[6] & word(neg))
-	n[7] = (x[7] & word(^neg)) | (y[7] & word(neg))
-	n[8] = (x[8] & word(^neg)) | (y[8] & word(neg))
-	n[9] = (x[9] & word(^neg)) | (y[9] & word(neg))
-	n[10] = (x[10] & word(^neg)) | (y[10] & word(neg))
-	n[11] = (x[11] & word(^neg)) | (y[11] & word(neg))
-	n[12] = (x[12] & word(^neg)) | (y[12] & word(neg))
-	n[13] = (x[13] & word(^neg)) | (y[13] & word(neg))
-	n[14] = (x[14] & word(^neg)) | (y[14] & word(neg))
-	n[15] = (x[15] & word(^neg)) | (y[15] & word(neg))
+	n[0] = (x[0] & (^neg)) | (y[0] & (neg))
+	n[1] = (x[1] & (^neg)) | (y[1] & (neg))
+	n[2] = (x[2] & (^neg)) | (y[2] & (neg))
+	n[3] = (x[3] & (^neg)) | (y[3] & (neg))
+	n[4] = (x[4] & (^neg)) | (y[4] & (neg))
+	n[5] = (x[5] & (^neg)) | (y[5] & (neg))
+	n[6] = (x[6] & (^neg)) | (y[6] & (neg))
+	n[7] = (x[7] & (^neg)) | (y[7] & (neg))
+	n[8] = (x[8] & (^neg)) | (y[8] & (neg))
+	n[9] = (x[9] & (^neg)) | (y[9] & (neg))
+	n[10] = (x[10] & (^neg)) | (y[10] & (neg))
+	n[11] = (x[11] & (^neg)) | (y[11] & (neg))
+	n[12] = (x[12] & (^neg)) | (y[12] & (neg))
+	n[13] = (x[13] & (^neg)) | (y[13] & (neg))
+	n[14] = (x[14] & (^neg)) | (y[14] & (neg))
+	n[15] = (x[15] & (^neg)) | (y[15] & (neg))
 }
 
 func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
@@ -285,8 +285,8 @@ func serialize(dst []byte, n *bigNumber) {
 }
 
 func (n *bigNumber) bias(b word) *bigNumber {
-	var co1 = radixMask * word(b)
-	var co2 = co1 - word(b)
+	var co1 = radixMask * b
+	var co2 = co1 - b
 	lo := [4]word{co1, co1, co1, co1}
 	hi := [4]word{co2, co1, co1, co1}
 
