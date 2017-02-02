@@ -42,7 +42,7 @@ func NewPoint(x [fieldBytes]byte) (Point, error) {
 // DoubleScalarMul will multiply two base points by two scalars:
 //     out = point1*scalar1 + point2*scalar2
 func DoubleScalarMul(p1 Point, s1 Scalar, p2 Point, s2 Scalar) Point {
-	return doubleScalarMul(p1.(*twExtendedPoint), s1, p2.(*twExtendedPoint), s2)
+	return doubleScalarMul(p1.(*twExtendedPoint), s1.(*decafScalar), p2.(*twExtendedPoint), s2.(*decafScalar))
 }
 
 //XXX This should probably receive []byte{}

@@ -149,6 +149,21 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre decafScal
 	}
 }
 
+/**
+ * Multiply two base points by two scalars:
+ * scaled = scalar1*decaf_448_point_base + scalar2*base2.
+ *
+ * Otherwise equivalent to decaf_448_point_double_scalarmul, but may be
+ * faster at the ***expense of being variable time.***
+ *
+ * @param [out] combo The linear combination scalar1*base + scalar2*base2.
+ * @param [in] scalar1 A first scalar to multiply by.
+ * @param [in] base2 A second point to be scaled.
+ * @param [in] scalar2 A second scalar to multiply by.
+ *
+ * @warning: This function takes variable time, and may leak the scalars
+ * used.  It is designed for signature verification.
+ */
 // XXX: check the if/else cases and check if bool value can be set to false
 func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar decafScalar) *twExtendedPoint {
 	tableBitsVar := uint(3) // DECAF_WNAF_VAR_TABLE_BITS

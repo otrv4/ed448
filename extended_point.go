@@ -270,8 +270,8 @@ func (c *curveT) precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
  * returns the linear combination scalar1*base1 + scalar2*base2.
  */
 func doubleScalarMul(
-	pointB *twExtendedPoint, scalarB Scalar,
-	pointC *twExtendedPoint, scalarC Scalar,
+	pointB *twExtendedPoint, scalarB *decafScalar,
+	pointC *twExtendedPoint, scalarC *decafScalar,
 ) *twExtendedPoint {
 	const decafWindowBits = 5
 	const window = decafWindowBits       //5
@@ -279,11 +279,11 @@ func doubleScalarMul(
 	const windowTMask = windowMask >> 1  //0x0000f 15
 	const nTable = 1 << (window - 1)     //0x00010 16
 
-	scalar1x := NewDecafScalar([fieldBytes]byte{})
-	scalar1x.Add(scalarB, decafPrecompTable.scalarAdjustment)
+	scalar1x := &decafScalar{}
+	scalar1x.scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x, scalarQ)
-	scalar2x := NewDecafScalar([fieldBytes]byte{})
-	scalar2x.Add(scalarC, decafPrecompTable.scalarAdjustment)
+	scalar2x := &decafScalar{}
+	scalar2x.scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
 	scalar2x.halve(scalar2x, scalarQ)
 
 	multiples1 := pointB.prepareFixedWindow(nTable)
@@ -291,11 +291,11 @@ func doubleScalarMul(
 	out := &twExtendedPoint{}
 	first := true
 	for i := scalarBits - ((scalarBits - 1) % window) - 1; i >= 0; i -= window {
-		bits1 := scalar1x.(*decafScalar)[i/wordBits] >> uint(i%wordBits)
-		bits2 := scalar2x.(*decafScalar)[i/wordBits] >> uint(i%wordBits)
+		bits1 := scalar1x[i/wordBits] >> uint(i%wordBits)
+		bits2 := scalar2x[i/wordBits] >> uint(i%wordBits)
 		if i%wordBits >= wordBits-window && i/wordBits < scalarWords-1 {
-			bits1 ^= scalar1x.(*decafScalar)[i/wordBits+1] << uint(wordBits-(i%wordBits))
-			bits2 ^= scalar2x.(*decafScalar)[i/wordBits+1] << uint(wordBits-(i%wordBits))
+			bits1 ^= scalar1x[i/wordBits+1] << uint(wordBits-(i%wordBits))
+			bits2 ^= scalar2x[i/wordBits+1] << uint(wordBits-(i%wordBits))
 		}
 		bits1 &= windowMask
 		bits2 &= windowMask
