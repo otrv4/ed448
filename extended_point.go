@@ -24,7 +24,7 @@ func (p *twExtendedPoint) equals(q *twExtendedPoint) word {
 	a, b := &bigNumber{}, &bigNumber{}
 	a.mul(p.y, q.x)
 	b.mul(q.y, p.x)
-	return decafEq(a, b)
+	return a.decafEq(b)
 }
 
 // Based on Hisil's formula 5.1.3: Doubling in E^e
@@ -104,7 +104,7 @@ func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
 	n, succ := deserializeReturnMask(ser)
-	zero := decafEq(n, bigZero)
+	zero := n.decafEq(bigZero)
 	succ &= identity | ^zero
 	succ &= ^highBit(n)
 	a.square(n)
@@ -117,7 +117,7 @@ func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
 	e.square(d)
 	a.mul(e, b)
 	a.add(a, bigOne)
-	succ &= ^decafEq(a, bigZero)
+	succ &= ^(a.decafEq(bigZero))
 	b.mul(c, d)
 	d.decafCondNegate(highBit(b))
 	p.x.add(n, n)

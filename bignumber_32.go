@@ -1,25 +1,5 @@
 package ed448
 
-func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
-	n[0] = x[0] + y[0]
-	n[1] = x[1] + y[1]
-	n[2] = x[2] + y[2]
-	n[3] = x[3] + y[3]
-	n[4] = x[4] + y[4]
-	n[5] = x[5] + y[5]
-	n[6] = x[6] + y[6]
-	n[7] = x[7] + y[7]
-	n[8] = x[8] + y[8]
-	n[9] = x[9] + y[9]
-	n[10] = x[10] + y[10]
-	n[11] = x[11] + y[11]
-	n[12] = x[12] + y[12]
-	n[13] = x[13] + y[13]
-	n[14] = x[14] + y[14]
-	n[15] = x[15] + y[15]
-	return n
-}
-
 func (n *bigNumber) setUI(y dword) *bigNumber {
 	n[0] = word(y) & radixMask
 	n[1] = word(y >> radix)
@@ -38,6 +18,26 @@ func (n *bigNumber) setUI(y dword) *bigNumber {
 	n[14] = 0
 	n[15] = 0
 
+	return n
+}
+
+func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
+	n[0] = x[0] + y[0]
+	n[1] = x[1] + y[1]
+	n[2] = x[2] + y[2]
+	n[3] = x[3] + y[3]
+	n[4] = x[4] + y[4]
+	n[5] = x[5] + y[5]
+	n[6] = x[6] + y[6]
+	n[7] = x[7] + y[7]
+	n[8] = x[8] + y[8]
+	n[9] = x[9] + y[9]
+	n[10] = x[10] + y[10]
+	n[11] = x[11] + y[11]
+	n[12] = x[12] + y[12]
+	n[13] = x[13] + y[13]
+	n[14] = x[14] + y[14]
+	n[15] = x[15] + y[15]
 	return n
 }
 
@@ -181,6 +181,32 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	r |= x[15] ^ y[15]
 
 	return r == 0
+}
+
+func (n *bigNumber) decafEq(x *bigNumber) word {
+	y := &bigNumber{}
+	y.sub(n, x)
+	y.strongReduce()
+
+	var ret word
+
+	ret |= y[0]
+	ret |= y[1]
+	ret |= y[2]
+	ret |= y[3]
+	ret |= y[4]
+	ret |= y[5]
+	ret |= y[6]
+	ret |= y[7]
+	ret |= y[8]
+	ret |= y[9]
+	ret |= y[10]
+	ret |= y[11]
+	ret |= y[12]
+	ret |= y[13]
+	ret |= y[14]
+
+	return word((dword(ret) - 1) >> 32)
 }
 
 func (n *bigNumber) zeroMask() word {

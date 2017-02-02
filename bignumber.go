@@ -120,19 +120,6 @@ func (n *bigNumber) set(x *bigNumber) *bigNumber {
 	return n
 }
 
-func decafEq(x, y *bigNumber) word {
-	n := &bigNumber{}
-	n.sub(x, y)
-	n.strongReduce()
-
-	var ret word
-
-	for i := uint(0); i < limbs; i++ {
-		ret |= n[i]
-	}
-	return word((dword(ret) - 1) >> 32)
-}
-
 func (n *bigNumber) zero() (eq bool) {
 	return n.zeroMask() == lmask
 }
