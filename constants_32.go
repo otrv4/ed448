@@ -4,9 +4,10 @@ const (
 	lmask = 0xffffffff
 
 	// For 32 arch
-	limbs     = 16
-	radix     = 28
-	radixMask = word(0xfffffff)
+	limbs       = 16
+	scalarLimbs = 14
+	radix       = 28
+	radixMask   = word(0xfffffff)
 
 	// The size of the Goldilocks field, in bits.
 	fieldBits = 448

@@ -75,6 +75,7 @@ func (c *curveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBy
 	return
 }
 
+// pass by value here, not by reference
 func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
 	secretKeyWords := decafScalar{}
 	//XXX: should secret words be destroyed?
@@ -95,4 +96,38 @@ func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte,
 
 	//XXX: should nonce and challenge be destroyed?
 	return
+}
+
+// is it good to use pubkey as a type?
+func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
+
+	serPubkey := serialized(*k)
+
+	tmpSig := [fieldBytes]byte{}
+	copy(tmpSig[:], signature[:])
+	challenge := decafDeriveChallenge(serPubkey[:], tmpSig, msg)
+
+	point := &twExtendedPoint{
+		x: &bigNumber{},
+		y: &bigNumber{},
+		z: &bigNumber{},
+		t: &bigNumber{},
+	}
+	pkPoint := &twExtendedPoint{
+		x: &bigNumber{},
+		y: &bigNumber{},
+		z: &bigNumber{},
+		t: &bigNumber{},
+	}
+
+	var response decafScalar
+	ret := decafDecode(point, tmpSig, 1)
+	ret &= decafDecode(pkPoint, serPubkey, 0)
+	ret &= response.decode(signature[56:])
+
+	pkPoint = decafDoubleNonSecretScalarMul(pkPoint, pkPoint, response, challenge)
+
+	ret &= pkPoint.equals(point)
+
+	return ret == word(0xffffffff)
 }

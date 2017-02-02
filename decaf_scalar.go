@@ -144,7 +144,7 @@ func (s *decafScalar) decode(b []byte) word {
 
 func (s *decafScalar) decodeShort(b []byte, size uint) {
 	k := uint(0)
-	for i := uint(0); i < 14; i++ { //change to const
+	for i := uint(0); i < scalarLimbs; i++ {
 		out := word(0)
 		for j := uint(0); j < 4 && k < size; j, k = j+1, k+1 {
 			out |= (word(b[k])) << (8 * j)
