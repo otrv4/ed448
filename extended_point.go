@@ -99,17 +99,16 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
  *       Success: word(-1)
  *       Failure: word( 0) if the base does not represent a point
  */
-// XXX: name this dst?
-func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
+func decafDecode(dst *twExtendedPoint, src serialized, identity word) word {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
-	n, succ := deserializeReturnMask(ser)
+	n, succ := deserializeReturnMask(src)
 	zero := n.decafEq(bigZero)
 	succ &= identity | ^zero
 	succ &= ^highBit(n)
 	a.square(n)
-	p.z.sub(bigOne, a)
-	b.square(p.z)
+	dst.z.sub(bigOne, a)
+	b.square(dst.z)
 	c.mulWSignedCurveConstant(a, 4-4*(edwardsD))
 	c.add(c, b)
 	b.mul(c, a)
@@ -120,13 +119,13 @@ func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
 	succ &= ^(a.decafEq(bigZero))
 	b.mul(c, d)
 	d.decafCondNegate(highBit(b))
-	p.x.add(n, n)
+	dst.x.add(n, n)
 	c.mul(d, n)
-	b.sub(bigTwo, p.z)
+	b.sub(bigTwo, dst.z)
 	a.mul(b, c)
-	p.y.mul(a, p.z)
-	p.t.mul(p.x, a)
-	p.y[0] -= zero
+	dst.y.mul(a, dst.z)
+	dst.t.mul(dst.x, a)
+	dst.y[0] -= zero
 
 	return succ
 }
@@ -255,20 +254,20 @@ func (c *curveT) precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	return p
 }
 
-/**
- * Multiply two base points by two scalars:
- * out = scalar1*base1 + scalar2*base2.
- *
- * Equivalent to two calls to decaf_448_point_scalarmul, but may be
- * faster.
- *
- * @param [in] point1 A first point to be scaled.
- * @param [in] scalar1 A first scalar to multiply by.
- * @param [in] point2 A second point to be scaled.
- * @param [in] scalar2 A second scalar to multiply by.
- *
- * returns the linear combination scalar1*base1 + scalar2*base2.
- */
+/*
+  Multiply two base points by two scalars:
+  out = scalar1*base1 + scalar2*base2.
+
+  Equivalent to two calls to decaf_448_point_scalarmul, but may be
+  faster.
+
+  @param [in] point1 A first point to be scaled.
+  @param [in] scalar1 A first scalar to multiply by.
+  @param [in] point2 A second point to be scaled.
+  @param [in] scalar2 A second scalar to multiply by.
+
+  returns the linear combination scalar1*base1 + scalar2*base2.
+*/
 func doubleScalarMul(
 	pointB *twExtendedPoint, scalarB *decafScalar,
 	pointC *twExtendedPoint, scalarC *decafScalar,

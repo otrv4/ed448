@@ -271,7 +271,6 @@ func deserialize(in serialized) (n *bigNumber, ok bool) {
 	return
 }
 
-//XXX dst should have fieldBytes size
 func serialize(dst []byte, n *bigNumber) {
 	src := n.copy()
 	src.strongReduce()

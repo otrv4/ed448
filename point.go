@@ -46,7 +46,7 @@ func DoubleScalarMul(p1 Point, s1 Scalar, p2 Point, s2 Scalar) Point {
 }
 
 //XXX This should probably receive []byte{}
-func newPoint(x serialized, y serialized) (p *homogeneousProjective, err error) {
+func newPoint(x, y serialized) (p *homogeneousProjective, err error) {
 	xN, ok1 := deserialize(x)
 	yN, ok2 := deserialize(y)
 
@@ -476,10 +476,6 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 	l2.mul(b, l0)
 	l0.isr(l2)
 	l1.mul(b, l0)
-
-	//XXX This is included in the original code, but it seems not to be used
-	//b = b.square(l0)
-	//l0 = l0.mul(l2, b)
 
 	return b.mul(l1, l3)
 }

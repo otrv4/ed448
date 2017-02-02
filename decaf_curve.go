@@ -120,7 +120,7 @@ func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publ
 	}
 
 	var response decafScalar
-	ret := decafDecode(point, tmpSig, word(0xffffffff))
+	ret := decafDecode(point, tmpSig, word(lmask))
 	ret &= decafDecode(pkPoint, serPubkey, word(0x00))
 	ret &= response.decode(signature[56:])
 
@@ -128,5 +128,5 @@ func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publ
 
 	ret &= pkPoint.equals(point)
 
-	return ret == word(0xffffffff)
+	return ret == word(lmask)
 }

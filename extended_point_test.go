@@ -85,11 +85,8 @@ func (s *Ed448Suite) Test_PointEquality(c *C) {
 			0x0f3eba42, 0x04409402},
 	}
 
-	result := p.equals(p)
-	falseResult := p.equals(q)
-
-	c.Assert(result, Equals, word(0xffffffff))
-	c.Assert(falseResult, Equals, word(0x00))
+	c.Assert(p.equals(p), Equals, word(lmask))
+	c.Assert(p.equals(q), Equals, word(0x00))
 }
 
 func (s *Ed448Suite) Test_PointDouble(c *C) {
@@ -224,7 +221,7 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 	c.Assert(w, DeepEquals, expected2)
 }
 
-func (s *Ed448Suite) TestDecafEncode(c *C) {
+func (s *Ed448Suite) Test_DecafEncode(c *C) {
 	point := &twExtendedPoint{
 		&bigNumber{
 			0x0d9a309b, 0x000289cb,
@@ -277,7 +274,7 @@ func (s *Ed448Suite) TestDecafEncode(c *C) {
 	c.Assert(dst[:], DeepEquals, b)
 }
 
-func (s *Ed448Suite) TestDecafDecode(c *C) {
+func (s *Ed448Suite) Test_DecafDecode(c *C) {
 	identity := word(0xffffffff)
 
 	point := &twExtendedPoint{
@@ -341,7 +338,7 @@ func (s *Ed448Suite) TestDecafDecode(c *C) {
 	c.Assert(ok, Equals, word(lmask))
 }
 
-func (s *Ed448Suite) Test_AddNielsToExtended_BeforeDouble(c *C) {
+func (s *Ed448Suite) Test_AddNielsToExtendedBeforeDouble(c *C) {
 	extdPoint := &twExtendedPoint{
 		&bigNumber{},
 		&bigNumber{0x1},
@@ -1184,7 +1181,7 @@ func (s *Ed448Suite) Test_PrepareFixedWindow(c *C) {
 	c.Assert(w[0].n, DeepEquals, expected[0].n)
 }
 
-func (s *Ed448Suite) Test_ExtendedToPNiels(c *C) {
+func (s *Ed448Suite) Test_ConvertExtendedToProjectiveNielsCoordinates(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x0cbc0465, 0x0ae92226,
@@ -1273,7 +1270,7 @@ func (s *Ed448Suite) Test_ExtendedToPNiels(c *C) {
 	c.Assert(twpn.z, DeepEquals, expected.z)
 }
 
-func (s *Ed448Suite) Test_AddPNielsToExtended(c *C) {
+func (s *Ed448Suite) Test_AddProjectiveNielsToExtendedCoordinates(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x065fe00e, 0x070a5e7e,

@@ -26,7 +26,6 @@ func (s *Ed448Suite) TestSumRadix(c *C) {
 	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
 }
 
-//XXX This is broken in 64-bits, but everything else works
 func (s *Ed448Suite) TestSubRadix(c *C) {
 	x := mustDeserialize(serialized{0x57})
 	y := mustDeserialize(serialized{0x83})
