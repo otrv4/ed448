@@ -1,6 +1,9 @@
 package ed448
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type decafScalar [scalarWords]word
 
@@ -8,7 +11,7 @@ type decafScalar [scalarWords]word
 func (s *decafScalar) serialize(dst []byte) error {
 	wordBytes := wordBits / 8
 	if len(dst) < fieldBytes {
-		return fmt.Errorf("dst length smaller than fieldBytes")
+		return errors.New("dst length smaller than fieldBytes")
 	}
 
 	for i := 0; i*wordBytes < fieldBytes; i++ {
