@@ -46,12 +46,12 @@ func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 
 // TODO: this will panic if byte array is not 56
 func (p *twExtendedPoint) decafEncode(dst []byte) {
-	t := dword(0)
-	overT := dword(0)
+	t := word(0x00)
+	overT := word(0x00)
 	serialize(dst, p.deisogenize(t, overT))
 }
 
-func (p *twExtendedPoint) deisogenize(t, overT dword) *bigNumber {
+func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	a, b, c, d, s := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.mulWSignedCurveConstant(p.y, 1-(edwardsD))
 	c.mul(a, p.t)
@@ -92,24 +92,18 @@ func (p *twExtendedPoint) deisogenize(t, overT dword) *bigNumber {
  *       Success: uint64(-1)
  *       Failure: uint64( 0) if the base does not represent a point
  */
-func decafDecode(ser serialized, allowIdentity dword) (*twExtendedPoint, dword) {
+// XXX: name this dst?
+func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	out := &twExtendedPoint{
-		x: &bigNumber{},
-		y: &bigNumber{},
-		z: &bigNumber{},
-		t: &bigNumber{},
-	}
 
 	n, succ := deserializeReturnMask(ser)
-	ok := dword(succ)
-
+	ok := succ // ommit this
 	zero := decafEq(n, bigZero)
-	ok &= allowIdentity | ^zero
+	ok &= identity | ^zero
 	ok &= ^highBit(n)
 	a.square(n)
-	out.z.sub(bigOne, a)
-	b.square(out.z)
+	p.z.sub(bigOne, a)
+	b.square(p.z)
 	c.mulWSignedCurveConstant(a, 4-4*(edwardsD))
 	c.add(c, b)
 	b.mul(c, a)
@@ -120,15 +114,15 @@ func decafDecode(ser serialized, allowIdentity dword) (*twExtendedPoint, dword) 
 	ok &= ^decafEq(a, bigZero)
 	b.mul(c, d)
 	d.decafCondNegate(highBit(b))
-	out.x.add(n, n)
+	p.x.add(n, n)
 	c.mul(d, n)
-	b.sub(bigTwo, out.z)
+	b.sub(bigTwo, p.z)
 	a.mul(b, c)
-	out.y.mul(a, out.z)
-	out.t.mul(out.x, a)
-	out.y[0] -= word(zero)
+	p.y.mul(a, p.z)
+	p.t.mul(p.x, a)
+	p.y[0] -= zero
 
-	return out, ok
+	return ok
 }
 
 func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {

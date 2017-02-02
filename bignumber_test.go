@@ -173,7 +173,7 @@ func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
 		0x072318d2, 0x0fff8007,
 	}
 
-	n.decafCondNegate(dword(lmask))
+	n.decafCondNegate(lmask)
 
 	c.Assert(n, DeepEquals, expected)
 }
@@ -211,7 +211,7 @@ func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
 		0x072318d2, 0x0fff8007,
 	}
 
-	neg := dword(lmask)
+	neg := word(lmask)
 
 	n.decafConstTimeSel(n, y, neg)
 
@@ -300,6 +300,6 @@ func (s *Ed448Suite) Test_DecafEq(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	})
 
-	c.Assert(decafEq(x, x), Equals, dword(lmask))
-	c.Assert(decafEq(x, y), Equals, dword(0))
+	c.Assert(decafEq(x, x), Equals, word(lmask))
+	c.Assert(decafEq(x, y), Equals, word(0))
 }

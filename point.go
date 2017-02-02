@@ -17,7 +17,7 @@ type Point interface {
 	//Valid(a Point)
 }
 
-func failure(status dword) bool {
+func failure(status word) bool {
 	if status == 0 {
 		return true
 	}
@@ -27,7 +27,13 @@ func failure(status dword) bool {
 // NewPoint returns an Ed448 Point
 // The Identity is not a valid point
 func NewPoint(x [fieldBytes]byte) (Point, error) {
-	d, status := decafDecode(serialized(x), dword(0))
+	d := &twExtendedPoint{
+		x: &bigNumber{},
+		y: &bigNumber{},
+		z: &bigNumber{},
+		t: &bigNumber{},
+	}
+	status := decafDecode(d, serialized(x), word(0))
 	if failure(status) {
 		return nil, errors.New("ed448: the serialized input could not be decoded as a valid point")
 	}

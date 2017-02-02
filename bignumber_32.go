@@ -118,7 +118,7 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	return n
 }
 
-func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg dword) {
+func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg word) {
 	n[0] = (x[0] & word(^neg)) | (y[0] & word(neg))
 	n[1] = (x[1] & word(^neg)) | (y[1] & word(neg))
 	n[2] = (x[2] & word(^neg)) | (y[2] & word(neg))
@@ -475,9 +475,10 @@ func (n *bigNumber) mulW(x *bigNumber, w dword) *bigNumber {
 	return n
 }
 
-func highBit(x *bigNumber) dword {
+//XXX: check if this does not need dword
+func highBit(x *bigNumber) word {
 	y := &bigNumber{}
 	y.add(x, x)
 	y.strongReduce()
-	return dword(-(y[0] & 1))
+	return word(-(y[0] & 1))
 }

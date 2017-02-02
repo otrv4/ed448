@@ -103,7 +103,7 @@ func (n *bigNumber) conditionalSwap(x *bigNumber, swap word) *bigNumber {
 	return n
 }
 
-func (n *bigNumber) decafCondNegate(neg dword) {
+func (n *bigNumber) decafCondNegate(neg word) {
 	y := &bigNumber{}
 	y.sub(&bigNumber{0}, n)
 	n.decafConstTimeSel(n, y, neg)
@@ -120,17 +120,17 @@ func (n *bigNumber) set(x *bigNumber) *bigNumber {
 	return n
 }
 
-func decafEq(x, y *bigNumber) dword {
+func decafEq(x, y *bigNumber) word {
 	n := &bigNumber{}
 	n.sub(x, y)
 	n.strongReduce()
 
 	var ret word
 
-	for i := 0; i < limbs; i++ {
+	for i := uint(0); i < limbs; i++ {
 		ret |= n[i]
 	}
-	return ((dword(ret) - 1) >> 32)
+	return word((dword(ret) - 1) >> 32)
 }
 
 func (n *bigNumber) zero() (eq bool) {
