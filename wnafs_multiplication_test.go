@@ -811,7 +811,7 @@ func (s *Ed448Suite) TestDecafPrepareTable(c *C) {
 	}
 }
 
-func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulFirstCase(c *C) {
+func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreNotEqual(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{0x00},
 		&bigNumber{0x00},
@@ -933,7 +933,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulFirstCase(c *C) {
 	c.Assert(r.t, DeepEquals, exp.t)
 }
 
-func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulSecondCase(c *C) {
+func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreEqual(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x0c952b64, 0x0307a3ee,
@@ -1034,6 +1034,64 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulSecondCase(c *C) {
 			0x023f8427, 0x0a7a9f6a,
 			0x0b5527ac, 0x0204b2c3,
 		},
+	}
+
+	r := decafDoubleNonSecretScalarMul(p, p, x, y)
+
+	c.Assert(r.x, DeepEquals, exp.x)
+	c.Assert(r.y, DeepEquals, exp.y)
+	c.Assert(r.z, DeepEquals, exp.z)
+	c.Assert(r.t, DeepEquals, exp.t)
+}
+
+func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarsAreZero(c *C) {
+	p := &twExtendedPoint{
+		&bigNumber{
+			0x0c952b64, 0x0307a3ee,
+			0x08575407, 0x01131197,
+			0x0cfaa41c, 0x0296d6ea,
+			0x02172610, 0x013ee179,
+			0x089e9f01, 0x06ecb185,
+			0x0f6173ba, 0x0adc2c5b,
+			0x01dd3801, 0x074430ab,
+			0x0d62faac, 0x0ae14e02},
+		&bigNumber{
+			0x0204e031, 0x0f927234,
+			0x0d231a69, 0x02a9a6f0,
+			0x0dcc3871, 0x034c052e,
+			0x09544c07, 0x0fb39581,
+			0x0ada007d, 0x0fd6faa3,
+			0x0e139ceb, 0x073de8cf,
+			0x00905a05, 0x0bd5354d,
+			0x0da2a332, 0x032ca741},
+		&bigNumber{
+			0x01de2d68, 0x0a447283,
+			0x0f406826, 0x022c2937,
+			0x037d4a2c, 0x08d9be10,
+			0x01c35bb1, 0x00bacc27,
+			0x032c3c42, 0x0078d73c,
+			0x0d4ef1d1, 0x0fd497ff,
+			0x0f4a0d66, 0x0d62745d,
+			0x0d479efd, 0x012686f6},
+		&bigNumber{
+			0x0b1c2096, 0x032e3855,
+			0x01c1105f, 0x0bf1556f,
+			0x0bb9f535, 0x0e3d45c0,
+			0x0e954acd, 0x0cba31b2,
+			0x05b931f9, 0x00920cdd,
+			0x064f93a9, 0x02d91281,
+			0x0674f3d0, 0x0a720afd,
+			0x09be71a7, 0x0d495629},
+	}
+
+	x := decafScalar{0x00}
+	y := decafScalar{0x00}
+
+	exp := &twExtendedPoint{
+		&bigNumber{0x00},
+		&bigNumber{0x01},
+		&bigNumber{0x01},
+		&bigNumber{0x00},
 	}
 
 	r := decafDoubleNonSecretScalarMul(p, p, x, y)
