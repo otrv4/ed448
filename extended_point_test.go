@@ -278,7 +278,7 @@ func (s *Ed448Suite) TestDecafEncode(c *C) {
 }
 
 func (s *Ed448Suite) TestDecafDecode(c *C) {
-	identity := word(1)
+	identity := word(0xffffffff)
 
 	point := &twExtendedPoint{
 		x: &bigNumber{},

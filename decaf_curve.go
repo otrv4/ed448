@@ -120,8 +120,8 @@ func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publ
 	}
 
 	var response decafScalar
-	ret := decafDecode(point, tmpSig, 1)
-	ret &= decafDecode(pkPoint, serPubkey, 0)
+	ret := decafDecode(point, tmpSig, word(0xffffffff))
+	ret &= decafDecode(pkPoint, serPubkey, word(0x00))
 	ret &= response.decode(signature[56:])
 
 	pkPoint = decafDoubleNonSecretScalarMul(pkPoint, pkPoint, response, challenge)

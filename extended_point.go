@@ -91,23 +91,22 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
  * encoding is given, the output is undefined.
  *
  * @param [in] ser The serialized version of the point.
- * @param [in] allow_identity DECAF_TRUE (-1) if the identity is a legal input.
+ * @param [in] allow_identity -1 (0xffffffff) if the identity is a legal input.
  *
  * Returns:
  * out - The decoded point.
  * ok  - Whether the decoding succeeded
- *       Success: uint64(-1)
- *       Failure: uint64( 0) if the base does not represent a point
+ *       Success: word(-1)
+ *       Failure: word( 0) if the base does not represent a point
  */
 // XXX: name this dst?
 func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
 	n, succ := deserializeReturnMask(ser)
-	ok := succ // ommit this
 	zero := decafEq(n, bigZero)
-	ok &= identity | ^zero
-	ok &= ^highBit(n)
+	succ &= identity | ^zero
+	succ &= ^highBit(n)
 	a.square(n)
 	p.z.sub(bigOne, a)
 	b.square(p.z)
@@ -118,7 +117,7 @@ func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
 	e.square(d)
 	a.mul(e, b)
 	a.add(a, bigOne)
-	ok &= ^decafEq(a, bigZero)
+	succ &= ^decafEq(a, bigZero)
 	b.mul(c, d)
 	d.decafCondNegate(highBit(b))
 	p.x.add(n, n)
@@ -129,7 +128,7 @@ func decafDecode(p *twExtendedPoint, ser serialized, identity word) word {
 	p.t.mul(p.x, a)
 	p.y[0] -= zero
 
-	return ok
+	return succ
 }
 
 func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
