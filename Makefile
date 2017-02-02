@@ -15,6 +15,9 @@ vet:
 	go vet ./...
 
 test:
+	go test ./...
+
+test-v:
 	go test -check.vv -cover ./...
 
 bench:
