@@ -128,6 +128,31 @@ func (s *decafScalar) halve(a, b Scalar) {
 	s.scalarHalve(a.(*decafScalar), b.(*decafScalar))
 }
 
+func (s *decafScalar) decode(b []byte) word {
+	s.decodeShort(b, scalarBytes)
+
+	accum := dword(0)
+	for i := 0; i < 14; i++ {
+		accum += (dword(s[i]) - dword(scalarQ[i]))
+		accum >>= wordBits
+	}
+
+	s.scalarMul(s, &decafScalar{0x01})
+
+	return word(accum)
+}
+
+func (s *decafScalar) decodeShort(b []byte, size uint) {
+	k := uint(0)
+	for i := uint(0); i < 14; i++ { //change to const
+		out := word(0)
+		for j := uint(0); j < 4 && k < size; j, k = j+1, k+1 {
+			out |= (word(b[k])) << (8 * j)
+		}
+		s[i] = out
+	}
+}
+
 func (s *decafScalar) Decode(src []byte) error {
 	if len(src) < fieldBytes {
 		return fmt.Errorf("src length smaller than fieldBytes")

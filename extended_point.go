@@ -20,6 +20,13 @@ func (p *twExtendedPoint) setIdentity() {
 	p.t.setUI(0)
 }
 
+func (p *twExtendedPoint) equals(q *twExtendedPoint) word {
+	a, b := &bigNumber{}, &bigNumber{}
+	a.mul(p.y, q.x)
+	b.mul(q.y, p.x)
+	return decafEq(a, b)
+}
+
 // Based on Hisil's formula 5.1.3: Doubling in E^e
 func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
