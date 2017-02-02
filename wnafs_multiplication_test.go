@@ -811,7 +811,7 @@ func (s *Ed448Suite) TestDecafPrepareTable(c *C) {
 	}
 }
 
-func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
+func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulFirstCase(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{0x00},
 		&bigNumber{0x00},
@@ -926,6 +926,117 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMul(c *C) {
 	}
 
 	r := decafDoubleNonSecretScalarMul(p, base, x, y)
+
+	c.Assert(r.x, DeepEquals, exp.x)
+	c.Assert(r.y, DeepEquals, exp.y)
+	c.Assert(r.z, DeepEquals, exp.z)
+	c.Assert(r.t, DeepEquals, exp.t)
+}
+
+func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulSecondCase(c *C) {
+	p := &twExtendedPoint{
+		&bigNumber{
+			0x0c952b64, 0x0307a3ee,
+			0x08575407, 0x01131197,
+			0x0cfaa41c, 0x0296d6ea,
+			0x02172610, 0x013ee179,
+			0x089e9f01, 0x06ecb185,
+			0x0f6173ba, 0x0adc2c5b,
+			0x01dd3801, 0x074430ab,
+			0x0d62faac, 0x0ae14e02},
+		&bigNumber{
+			0x0204e031, 0x0f927234,
+			0x0d231a69, 0x02a9a6f0,
+			0x0dcc3871, 0x034c052e,
+			0x09544c07, 0x0fb39581,
+			0x0ada007d, 0x0fd6faa3,
+			0x0e139ceb, 0x073de8cf,
+			0x00905a05, 0x0bd5354d,
+			0x0da2a332, 0x032ca741},
+		&bigNumber{
+			0x01de2d68, 0x0a447283,
+			0x0f406826, 0x022c2937,
+			0x037d4a2c, 0x08d9be10,
+			0x01c35bb1, 0x00bacc27,
+			0x032c3c42, 0x0078d73c,
+			0x0d4ef1d1, 0x0fd497ff,
+			0x0f4a0d66, 0x0d62745d,
+			0x0d479efd, 0x012686f6},
+		&bigNumber{
+			0x0b1c2096, 0x032e3855,
+			0x01c1105f, 0x0bf1556f,
+			0x0bb9f535, 0x0e3d45c0,
+			0x0e954acd, 0x0cba31b2,
+			0x05b931f9, 0x00920cdd,
+			0x064f93a9, 0x02d91281,
+			0x0674f3d0, 0x0a720afd,
+			0x09be71a7, 0x0d495629},
+	}
+
+	x := decafScalar{
+		0x08ed77fa, 0x85c49151,
+		0xa0dd2874, 0x7188bced,
+		0x9a34c3bd, 0xab1aeece,
+		0xea37a24c, 0x8dd2eab4,
+		0x8610f125, 0xb3eb60c0,
+		0x8aaa9ab0, 0xf19e004b,
+		0x78fe2593, 0x3aa1dd0f,
+	}
+
+	y := decafScalar{
+		0x4b91949b, 0x8366b93a,
+		0xea749b37, 0x94751b8c,
+		0xe11471b6, 0xae84f274,
+		0xa0f9e9df, 0x6f6684b1,
+		0x1b7da377, 0xd27c53a6,
+		0x140a1a92, 0x5c6e4d8a,
+		0xa8aeeb36, 0x0733d7f9,
+	}
+
+	exp := &twExtendedPoint{
+		&bigNumber{
+			0x0efe5817, 0x03d50203,
+			0x02535af4, 0x01256ee7,
+			0x0ab40831, 0x057fedc6,
+			0x0cba105f, 0x0348025c,
+			0x049f289c, 0x03e9d4ff,
+			0x06063334, 0x09915621,
+			0x06d4558e, 0x0eb9882e,
+			0x06f546bb, 0x03c160d3,
+		},
+		&bigNumber{
+			0x0a395202, 0x06d52470,
+			0x0551c852, 0x08691ef6,
+			0x059dd0c0, 0x04114326,
+			0x0c464a6d, 0x0e50cd21,
+			0x02dc30f9, 0x05260942,
+			0x00ced0cf, 0x075bead2,
+			0x0a8bdd0f, 0x0c1f1862,
+			0x036c6174, 0x08a29a10,
+		},
+		&bigNumber{
+			0x05ba0247, 0x013f8315,
+			0x0884e488, 0x0b0006ba,
+			0x0f03ea93, 0x05a87785,
+			0x05fa4e4d, 0x0651c139,
+			0x025be82d, 0x00c397ea,
+			0x09d4ab79, 0x0be86643,
+			0x00ad1d5d, 0x008b23b2,
+			0x0225d7ac, 0x0741df41,
+		},
+		&bigNumber{
+			0x0be7442e, 0x07280338,
+			0x0f7c71d4, 0x0769d336,
+			0x0f4566d2, 0x0f96c2bc,
+			0x0f6b6021, 0x01284f3e,
+			0x07cdfa03, 0x0a8d4eff,
+			0x0ec7ef75, 0x032f5cb5,
+			0x023f8427, 0x0a7a9f6a,
+			0x0b5527ac, 0x0204b2c3,
+		},
+	}
+
+	r := decafDoubleNonSecretScalarMul(p, p, x, y)
 
 	c.Assert(r.x, DeepEquals, exp.x)
 	c.Assert(r.y, DeepEquals, exp.y)
