@@ -175,7 +175,7 @@ func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scal
 		contv++
 	} else if i == controlPre[0].power && i >= 0 {
 		combo = precmpVar[index].twExtendedPoint()
-		combo.addNielsToExtended(decafWnafsTable[controlPre[0].addend>>1], i == 0)
+		combo.addNielsToExtended(decafWnafsTable[controlPre[0].addend>>1], i != 0)
 		contv++
 		contp++
 	} else {
