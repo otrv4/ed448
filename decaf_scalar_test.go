@@ -234,7 +234,7 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 
 	ok := x.decode(buf)
 	c.Assert(x, DeepEquals, expected)
-	c.Assert(ok, Equals, word(0))
+	c.Assert(ok, Equals, word(0x00))
 
 	x1 := &decafScalar{0x00}
 
@@ -247,7 +247,8 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 		0x8aaa9ab0, 0xf19e004b,
 		0x78fe2593, 0x3aa1dd0f,
 	}
-	buf2 := []byte{
+
+	buf1 := []byte{
 		0xfa, 0x77, 0xed, 0x08, 0x51, 0x91, 0xc4, 0x85,
 		0x74, 0x28, 0xdd, 0xa0, 0xed, 0xbc, 0x88, 0x71,
 		0xbd, 0xc3, 0x34, 0x9a, 0xce, 0xee, 0x1a, 0xab,
@@ -257,7 +258,7 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 		0x93, 0x25, 0xfe, 0x78, 0x0f, 0xdd, 0xa1, 0x3a,
 	}
 
-	ok2 := x1.decode(buf2)
+	ok2 := x1.decode(buf1)
 	c.Assert(x1, DeepEquals, expected1)
 	c.Assert(ok2, Equals, word(0xffffffff))
 }

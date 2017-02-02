@@ -84,3 +84,11 @@ func (s *Ed448Suite) TestSerialize(c *C) {
 	//0 because serialize reduces mod p
 	c.Assert(dst, DeepEquals, [fieldBytes]byte{})
 }
+
+func (s *Ed448Suite) Test_HighBit(c *C) {
+	n := &bigNumber{0xdeadbeef}
+
+	h := highBit(n)
+
+	c.Assert(h, Equals, word(0x00))
+}

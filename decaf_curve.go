@@ -98,7 +98,6 @@ func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte,
 	return
 }
 
-// is it good to use pubkey as a type?
 func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
 
 	serPubkey := serialized(*k)

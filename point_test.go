@@ -447,14 +447,6 @@ func compareNumbers(label string, n *bigNumber, b *big.Int) {
 	}
 }
 
-func (s *Ed448Suite) Test_HighBit(c *C) {
-	n := &bigNumber{0xdeadbeef}
-
-	h := highBit(n)
-
-	c.Assert(h, Equals, word(0x00))
-}
-
 func (s *Ed448Suite) Test_twPNielsToExtended(c *C) {
 	pn := &twPNiels{
 		&twNiels{

@@ -475,7 +475,6 @@ func (n *bigNumber) mulW(x *bigNumber, w dword) *bigNumber {
 	return n
 }
 
-//XXX: check if this does not need dword
 func highBit(x *bigNumber) word {
 	y := &bigNumber{}
 	y.add(x, x)

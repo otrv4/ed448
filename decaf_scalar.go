@@ -33,14 +33,11 @@ func (s *decafScalar) scalarAdd(a, b *decafScalar) {
 	copy(s[:], out[:])
 }
 
-// unexposed methods for decafSign as an internal method
-// XXX: remove these methods when what is needed is exposed
 func (s *decafScalar) scalarSub(x, y *decafScalar) {
 	noExtra := word(0)
 	s.scalarSubExtra(x, y, noExtra)
 }
 
-// XXX: remove these methods when what is needed is exposed
 func (s *decafScalar) scalarMul(x, y *decafScalar) {
 	s.montgomeryMultiply(x, y)
 	s.montgomeryMultiply(s, scalarR2)
