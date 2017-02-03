@@ -271,6 +271,7 @@ func deserialize(in serialized) (n *bigNumber, ok bool) {
 	return
 }
 
+//TODO: this will panic when dst has a length < 56
 func serialize(dst []byte, n *bigNumber) {
 	src := n.copy()
 	src.strongReduce()

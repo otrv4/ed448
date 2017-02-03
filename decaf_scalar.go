@@ -2,7 +2,6 @@ package ed448
 
 import (
 	"errors"
-	"fmt"
 )
 
 type decafScalar [scalarWords]word
@@ -175,7 +174,7 @@ func (s *decafScalar) Equals(x Scalar) bool {
 //TODO: what happens if src is > fieldBytes?
 func (s *decafScalar) Decode(src []byte) error {
 	if len(src) < fieldBytes {
-		return fmt.Errorf("src length smaller than fieldBytes")
+		return errors.New("src length smaller than fieldBytes")
 	}
 	barrettDeserializeAndReduce(s[:], src, &curvePrimeOrder)
 	return nil

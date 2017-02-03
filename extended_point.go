@@ -5,7 +5,7 @@ type twExtendedPoint struct {
 }
 
 func (p *twExtendedPoint) Encode() []byte {
-	out := []byte{}
+	out := make([]byte, 56)
 	p.decafEncode(out)
 	return out
 }
