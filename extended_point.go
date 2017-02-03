@@ -4,6 +4,12 @@ type twExtendedPoint struct {
 	x, y, z, t *bigNumber
 }
 
+func (p *twExtendedPoint) Encode() []byte {
+	out := []byte{}
+	p.decafEncode(out)
+	return out
+}
+
 //XXX: no return
 func (p *twExtendedPoint) copy() *twExtendedPoint {
 	n := &twExtendedPoint{}

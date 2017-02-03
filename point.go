@@ -7,10 +7,9 @@ import (
 
 // Point is a interface of an Ed448 point
 type Point interface {
-	//ScalarMul(a Scalar, b Point)
+	Encode() []byte
 	//Sub(a, b Point)
 	//Decode(src []byte) error
-	//Encode(dst []byte)
 	//Copy() Point
 	//Equals(a Point) bool
 	//Valid(a Point)

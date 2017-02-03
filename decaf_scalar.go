@@ -172,6 +172,7 @@ func (s *decafScalar) Equals(x Scalar) bool {
 	return maskToBoolean(eq)
 }
 
+//TODO: what happens if src is > fieldBytes?
 func (s *decafScalar) Decode(src []byte) error {
 	if len(src) < fieldBytes {
 		return fmt.Errorf("src length smaller than fieldBytes")
@@ -180,8 +181,11 @@ func (s *decafScalar) Decode(src []byte) error {
 	return nil
 }
 
-func (s *decafScalar) Encode(dst []byte) error {
-	return s.serialize(dst)
+//TODO: what happens if dst is < or > fieldBytes?
+func (s *decafScalar) Encode() []byte {
+	dst := make([]byte, 56)
+	s.serialize(dst)
+	return dst
 }
 
 func (s *decafScalar) Copy() Scalar {
