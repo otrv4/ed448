@@ -27,7 +27,7 @@ func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
 	secretKey.serialize(k.secretKey())
 
-	publicKey := c.precomputedScalarMul(secretKey)
+	publicKey := precomputedScalarMul(secretKey)
 
 	publicKey.decafEncode(k.publicKey())
 
@@ -56,7 +56,7 @@ func decafDeriveNonce(msg []byte, symKey []byte) (dst decafScalar) {
 	return
 }
 
-func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst decafScalar) {
+func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) *decafScalar {
 	h := sha3.NewShake256()
 	h.Write(msg)
 	h.Write(pubKey)
@@ -64,13 +64,18 @@ func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []by
 	var out [64]byte
 	h.Read(out[:])
 
+	dst := decafScalar{}
+
 	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
 
-	return
+	s := &decafScalar{}
+	*s = dst
+
+	return s
 }
 
 func (c *curveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBytes]byte) {
-	point := c.precomputedScalarMul(nonce)
+	point := precomputedScalarMul(nonce)
 	point.decafEncode(dst[:])
 	return
 }
@@ -88,8 +93,8 @@ func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte,
 	tmpSignature := c.decafDeriveTemporarySignature(&nonce)
 	challenge := decafDeriveChallenge(k.publicKey(), tmpSignature, msg)
 
-	challenge.scalarMul(&challenge, &secretKeyWords)
-	nonce.scalarSub(&nonce, &challenge)
+	challenge.scalarMul(challenge, &secretKeyWords)
+	nonce.scalarSub(&nonce, challenge)
 
 	copy(sig[:fieldBytes], tmpSignature[:])
 	nonce.serialize(sig[fieldBytes:])
@@ -119,9 +124,9 @@ func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publ
 		t: &bigNumber{},
 	}
 
-	var response decafScalar
 	ret := decafDecode(point, tmpSig, word(lmask))
 	ret &= decafDecode(pkPoint, serPubkey, word(0x00))
+	response := &decafScalar{}
 	ret &= response.decode(signature[56:])
 
 	pkPoint = decafDoubleNonSecretScalarMul(pkPoint, pkPoint, response, challenge)

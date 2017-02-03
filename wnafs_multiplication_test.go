@@ -176,7 +176,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	x := decafScalar{
+	x := &decafScalar{
 		0x6c226d73, 0x70edcfc3,
 		0x44156c47, 0x084f4695,
 		0xe72606ac, 0x9d0ce5e5,
@@ -186,7 +186,7 @@ func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
 		0x48ba4461, 0x34eb2031,
 	}
 
-	y := decafScalar{
+	y := &decafScalar{
 		0x2118b8c6, 0x4356acd5,
 		0x26d7e73c, 0x459174b7,
 		0xf10bea31, 0x83e528bb,
@@ -229,7 +229,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	x := decafScalar{
+	x := &decafScalar{
 		0x150252d4, 0x91f90541,
 		0xfbc32870, 0x5055d9f0,
 		0x3e5d3a5c, 0xec7fe32d,
@@ -239,7 +239,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 		0xf2ce123c, 0xfb54751,
 	}
 
-	y := decafScalar{
+	y := &decafScalar{
 		0xc6a3102f, 0xe9e887ee,
 		0x393be2cb, 0xd6dbb642,
 		0x3a20bf34, 0x8a75ad11,
@@ -268,7 +268,7 @@ func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
 }
 
 func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
-	x := decafScalar{
+	x := &decafScalar{
 		0x120854c7, 0x6a241ba0,
 		0x41468997, 0x11e8f8aa,
 		0x1c0815bf, 0xea9551e7,
@@ -357,7 +357,7 @@ func (s *Ed448Suite) TestRecodeWnafForScalarZero(c *C) {
 	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
 	controlLen := nbitsPre/(tableBitsPre+1) + 3
 	controlPre := make([]smvtControl, controlLen)
-	sig := decafScalar{
+	sig := &decafScalar{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	}
 
@@ -373,7 +373,7 @@ func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
 	tableBits := uint(4)
 	controlLen := nbits/(tableBits+1) + 3
 	control := make([]smvtControl, controlLen)
-	challenge := decafScalar{
+	challenge := &decafScalar{
 		0xfd27ffdd, 0xa4a42c92,
 		0xd9464f36, 0xac8078dd,
 		0x91e922f8, 0x76ebe5e8,
@@ -391,7 +391,7 @@ func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
 }
 
 func (s *Ed448Suite) TestDecafRecodeWnafFull(c *C) {
-	x := decafScalar{
+	x := &decafScalar{
 		0x120854c7, 0x6a241ba0,
 		0x41468997, 0x11e8f8aa,
 		0x1c0815bf, 0xea9551e7,
@@ -486,7 +486,7 @@ func (s *Ed448Suite) TestDecafRecodeWnafForScalarZero(c *C) {
 	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
 	controlLen := scalarBits/(tableBitsPre+1) + 3
 	controlPre := make([]smvtControl, controlLen)
-	sig := decafScalar{
+	sig := &decafScalar{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	}
 
@@ -862,7 +862,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreNotEqua
 		},
 	}
 
-	x := decafScalar{
+	x := &decafScalar{
 		0xd9436800, 0x1290c087,
 		0x33c051b3, 0xf9e8460f,
 		0xfcbb9385, 0x78d7514f,
@@ -872,7 +872,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreNotEqua
 		0xf5ca959a, 0x1be183fc,
 	}
 
-	y := decafScalar{
+	y := &decafScalar{
 		0x2378c292, 0x216cc272,
 		0xc44edb49, 0xffffffff,
 		0xffffffff, 0xffffffff,
@@ -973,7 +973,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreEqual(c
 			0x09be71a7, 0x0d495629},
 	}
 
-	x := decafScalar{
+	x := &decafScalar{
 		0x08ed77fa, 0x85c49151,
 		0xa0dd2874, 0x7188bced,
 		0x9a34c3bd, 0xab1aeece,
@@ -983,7 +983,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreEqual(c
 		0x78fe2593, 0x3aa1dd0f,
 	}
 
-	y := decafScalar{
+	y := &decafScalar{
 		0x4b91949b, 0x8366b93a,
 		0xea749b37, 0x94751b8c,
 		0xe11471b6, 0xae84f274,
@@ -1084,8 +1084,8 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarsAreZero(c *C) {
 			0x09be71a7, 0x0d495629},
 	}
 
-	x := decafScalar{0x00}
-	y := decafScalar{0x00}
+	x := &decafScalar{0x00}
+	y := &decafScalar{0x00}
 
 	exp := &twExtendedPoint{
 		&bigNumber{0x00},

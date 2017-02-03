@@ -270,15 +270,20 @@ func (c *curveT) deriveTemporarySignature(nonce decafScalar) (dst [fieldBytes]by
 }
 
 //XXX Should pubKey have a fixed size here?
-func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) (dst decafScalar) {
+func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) *decafScalar {
 	h := sha512.New()
 	h.Write(pubKey)
 	h.Write(tmpSignature[:])
 	h.Write(msg)
 
+	dst := decafScalar{}
+
 	barrettDeserializeAndReduce(dst[:], h.Sum(nil), &curvePrimeOrder)
 
-	return
+	s := &decafScalar{}
+	*s = dst
+
+	return s
 }
 
 func deriveNonce(msg []byte, symKey []byte) (dst decafScalar) {
@@ -301,7 +306,7 @@ func (c *curveT) verify(signature [signatureBytes]byte, msg []byte, k *publicKey
 		return false
 	}
 
-	nonce := decafScalar{}
+	nonce := &decafScalar{}
 	ok = barrettDeserialize(nonce[:], signature[fieldBytes:2*fieldBytes], &curvePrimeOrder)
 	if !ok {
 		return false

@@ -101,7 +101,7 @@ func (s *Ed448Suite) TestDeriveChallenge(c *C) {
 		0x0e, 0x0a, 0x31, 0x5a, 0x05, 0x5d, 0xe6, 0x47,
 	}
 
-	expectedChallenge := decafScalar{
+	expectedChallenge := &decafScalar{
 		0x6c226d73, 0x70edcfc3,
 		0x44156c47, 0x084f4695,
 		0xe72606ac, 0x9d0ce5e5,

@@ -4,7 +4,7 @@ type smvtControl struct {
 	power, addend int
 }
 
-func recodeWnaf(control []smvtControl, scalar decafScalar, nBits, tableBits uint) (position word) {
+func recodeWnaf(control []smvtControl, scalar *decafScalar, nBits, tableBits uint) (position word) {
 	current := 0
 	var i, j int
 	position = 0
@@ -88,7 +88,7 @@ func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 	}
 }
 
-func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre decafScalar, precmp []*twNiels) {
+func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre *decafScalar, precmp []*twNiels) {
 	tableBitsVar := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
 	nbitsVar := uint(446)
 	nbitsPre := uint(446)
@@ -149,22 +149,32 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre decafScal
 	}
 }
 
-/*
-  Multiply two base points by two scalars:
-  scaled = scalar1*basePoint + scalar2*base2.
+func DoubleScalarMulNonsecret(s1 Scalar, b2 Point, s2 Scalar) Point {
+	combo := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+	return decafDoubleNonSecretScalarMul(combo, b2.(*twExtendedPoint), s1.(*decafScalar), s2.(*decafScalar))
+}
 
-  Otherwise equivalent to doubleScalarMul, but may be
-  faster at the ***expense of being variable time.***
-
-  @param [out] combo The linear combination scalar1*base + scalar2*base2.
-  @param [in] scalarPre A first scalar to multiply by.
-  @param [in] base A second point to be scaled.
-  @param [in] scalarVar A second scalar to multiply by.
-
-  @warning: This function takes variable time, and may leak the scalars
-  used.  It is designed for signature verification.
-*/
-func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar decafScalar) *twExtendedPoint {
+/**
+ * Multiply two base points by two scalars:
+ * scaled = scalar1*decaf_448_point_base + scalar2*base2.
+ *
+ * Otherwise equivalent to decaf_448_point_double_scalarmul, but may be
+ * faster at the ***expense of being variable time.***
+ *
+ * @param [out] combo The linear combination scalar1*base + scalar2*base2.
+ * @param [in] scalar1 A first scalar to multiply by.
+ * @param [in] base2 A second point to be scaled.
+ * @param [in] scalar2 A second scalar to multiply by.
+ *
+ * @warning: This function takes variable time, and may leak the scalars
+ * used.  It is designed for signature verification.
+ */
+func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar *decafScalar) *twExtendedPoint {
 	tableBitsVar := uint(3) // DECAF_WNAF_VAR_TABLE_BITS
 	tableBitsPre := uint(5) // DECAF_WNAF_FIXED_TABLE_BITS
 

@@ -552,7 +552,7 @@ func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
 func (s *Ed448Suite) Test_PrecomputedScalarMultiplication(c *C) {
 	scalar := &decafScalar{0}
 
-	p := curve.precomputedScalarMul(scalar)
+	p := precomputedScalarMul(scalar)
 
 	expP := &twExtendedPoint{
 		&bigNumber{
