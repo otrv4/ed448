@@ -89,7 +89,6 @@ func (s *Ed448Suite) Test_PointEquality(c *C) {
 	c.Assert(p.equals(q), Equals, word(0x00))
 }
 
-//XXX: delete the other one
 func (s *Ed448Suite) Test_PointAdd(c *C) {
 
 	p := &twExtendedPoint{

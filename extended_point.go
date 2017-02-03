@@ -10,7 +10,6 @@ func (p *twExtendedPoint) Encode() []byte {
 	return out
 }
 
-//XXX: no return
 func (p *twExtendedPoint) copy() *twExtendedPoint {
 	n := &twExtendedPoint{}
 	n.x = p.x.copy()
@@ -56,7 +55,6 @@ func (p *twExtendedPoint) add(q *twExtendedPoint, r *twExtendedPoint) {
 	p.t.mul(b, c)
 }
 
-//XXX: we probably don't need return here
 // Based on Hisil's formula 5.1.3: Doubling in E^e
 func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
@@ -239,6 +237,7 @@ func (p *twExtendedPoint) twPNiels() *twPNiels {
 	}
 }
 
+//PrecomputedScalarMul mutiplies a precomputed point to a scalar
 func PrecomputedScalarMul(s Scalar) Point {
 	return precomputedScalarMul(s.(*decafScalar))
 }
