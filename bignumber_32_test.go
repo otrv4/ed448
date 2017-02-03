@@ -60,10 +60,13 @@ func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
 	}
 
 	neg := word(lmask)
-
 	n.decafConstTimeSel(n, x, neg)
-
 	c.Assert(n, DeepEquals, expected)
+
+	nonNeg := word(0)
+
+	n.decafConstTimeSel(n, x, nonNeg)
+	c.Assert(n, DeepEquals, n)
 }
 
 func (s *Ed448Suite) TestEquals(c *C) {
@@ -113,18 +116,16 @@ func (s *Ed448Suite) Test_DecafEq(c *C) {
 }
 
 func (s *Ed448Suite) TestZeroMask(c *C) {
-	zero := &bigNumber{}
-	one := &bigNumber{1}
 
-	c.Assert(zero.zeroMask(), Equals, word(lmask))
-	c.Assert(one.zeroMask(), Equals, word(0))
+	c.Assert(bigZero.zeroMask(), Equals, word(lmask))
+	c.Assert(bigOne.zeroMask(), Equals, word(0))
 }
 
 func (s *Ed448Suite) TestDeserialize(c *C) {
 	ser := serialized{0x1}
 	n, ok := deserialize(ser)
 
-	c.Assert(n, DeepEquals, &bigNumber{1})
+	c.Assert(n, DeepEquals, bigOne)
 	c.Assert(ok, Equals, true)
 
 	ser = serialized{
@@ -180,8 +181,7 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 func (s *Ed448Suite) TestSerialize(c *C) {
 	dst := [fieldBytes]byte{}
 
-	one := &bigNumber{0x01}
-	serialize(dst[:], one)
+	serialize(dst[:], bigOne)
 	c.Assert(dst, DeepEquals, [fieldBytes]byte{1})
 
 	p := &bigNumber{
@@ -216,7 +216,7 @@ func (s *Ed448Suite) TestStrongReduce(c *C) {
 	//p = p mod p = 0
 	p.strongReduce()
 
-	c.Assert(p, DeepEquals, &bigNumber{})
+	c.Assert(p, DeepEquals, bigZero)
 
 	n := mustDeserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,

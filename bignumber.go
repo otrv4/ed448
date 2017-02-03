@@ -104,9 +104,7 @@ func (n *bigNumber) conditionalSwap(x *bigNumber, swap word) *bigNumber {
 }
 
 func (n *bigNumber) decafCondNegate(neg word) {
-	y := &bigNumber{}
-	y.sub(&bigNumber{0}, n)
-	n.decafConstTimeSel(n, y, neg)
+	n.decafConstTimeSel(n, new(bigNumber).sub(bigZero, n), neg)
 }
 
 func (n *bigNumber) copy() *bigNumber {
