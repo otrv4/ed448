@@ -259,6 +259,51 @@ func (p *twExtendedPoint) twPNiels() *twPNiels {
 	}
 }
 
+func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
+	const decafWindowBits = 5            //move this to const file
+	const window = decafWindowBits       //5
+	const windowMask = (1 << window) - 1 //0x0001f 31
+	const windowTMask = windowMask >> 1  //0x0000f 15
+	const nTable = 1 << (window - 1)     //0x00010 16
+
+	out := &twExtendedPoint{}
+
+	scalar1x := &decafScalar{}
+	scalar1x.scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
+	scalar1x.halve(scalar1x, scalarQ)
+
+	multiples := pointA.prepareFixedWindow(nTable)
+
+	first := true
+	for i := scalarBits - ((scalarBits - 1) % window) - 1; i >= 0; i -= window {
+		bits := scalar1x[i/wordBits] >> uint(i%wordBits)
+		if i%wordBits >= wordBits-window && i/wordBits < scalarWords-1 {
+			bits ^= scalar1x[i/wordBits+1] << uint(wordBits-(i%wordBits))
+		}
+		bits &= windowMask
+		inv := (bits >> (window - 1)) - 1
+		bits ^= inv
+
+		//Add in from table.  Compute out.t (point) only on last iteration.
+		pNeg := constTimeLookup(multiples, bits&windowTMask).copy()
+		pNeg.n.conditionalNegate(inv)
+
+		if first {
+			out = pNeg.twExtendedPoint()
+			first = false
+		} else {
+			// Using Hisil et al's lookahead method instead of extensible here for no particular reason.  Double 5 (window) times, but only compute out.t on the last one.
+			for j := 0; j < window-1; j++ {
+				out.double(true)
+			}
+			out.double(false)
+			out.addProjectiveNielsToExtended(pNeg, false)
+			// is this ok? i ? -1 : 0
+		}
+	}
+	return out
+}
+
 //PrecomputedScalarMul mutiplies a precomputed point to a scalar
 func PrecomputedScalarMul(s Scalar) Point {
 	return precomputedScalarMul(s.(*decafScalar))
@@ -380,6 +425,7 @@ func doubleScalarMul(
 			out.addProjectiveNielsToExtended(mul2pn, true)
 		} else {
 			out.addProjectiveNielsToExtended(mul2pn, false)
+			// is this ok? i ? -1 : 0
 		}
 	}
 	return out
