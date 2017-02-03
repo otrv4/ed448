@@ -35,7 +35,8 @@ func (s *Ed448Suite) Test_PointMul(c *C) {
 	c.Assert(val, IsNil)
 }
 
-func (s *Ed448Suite) Test_PointAdd(c *C) {
+// is this necessary?
+func (s *Ed448Suite) Test_ByteAdd(c *C) {
 	valuePlusOne := [fieldBytes]byte{
 		0x04, 0x44, 0x58, 0xab, 0x92, 0xc2, 0x78,
 		0x23, 0x55, 0x8f, 0xc5, 0x8d, 0x32, 0xc2,
