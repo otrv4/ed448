@@ -7,12 +7,13 @@ import (
 
 // Point is a interface of an Ed448 point
 type Point interface {
+	IsValid() bool
+	Copy() Point
+	Equals(q Point) bool
+	Add(q, r Point)
+	Sub(q, r Point)
 	Encode() []byte
-	//Sub(a, b Point)
 	//Decode(src []byte) error
-	//Copy() Point
-	//Equals(a Point) bool
-	//Valid(a Point)
 }
 
 func failure(status word) bool {

@@ -4,12 +4,6 @@ type twExtendedPoint struct {
 	x, y, z, t *bigNumber
 }
 
-func (p *twExtendedPoint) Encode() []byte {
-	out := make([]byte, 56)
-	p.decafEncode(out)
-	return out
-}
-
 func (p *twExtendedPoint) isValidPoint() bool {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.mul(p.x, p.y)
@@ -51,7 +45,7 @@ func (p *twExtendedPoint) equals(q *twExtendedPoint) word {
 	return a.decafEq(b)
 }
 
-func (p *twExtendedPoint) add(q *twExtendedPoint, r *twExtendedPoint) {
+func (p *twExtendedPoint) add(q, r *twExtendedPoint) {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.sub(q.y, q.x)
 	c.sub(r.y, r.x)
@@ -446,5 +440,38 @@ func doubleScalarMul(
 			// is this ok? i ? -1 : 0
 		}
 	}
+	return out
+}
+
+// exposed methods
+
+func (p *twExtendedPoint) IsValid() bool {
+	return p.isValidPoint()
+}
+
+func (p *twExtendedPoint) Copy() Point {
+	p.copy()
+	return Point(p)
+}
+
+func (p *twExtendedPoint) Equals(q Point) bool {
+	valid := p.equals(q.(*twExtendedPoint))
+	if valid == word(0xfffffff) {
+		return true
+	}
+	return false
+}
+
+func (p *twExtendedPoint) Add(q, r Point) {
+	p.add(q.(*twExtendedPoint), r.(*twExtendedPoint))
+}
+
+func (p *twExtendedPoint) Sub(q, r Point) {
+	p.sub(q.(*twExtendedPoint), r.(*twExtendedPoint))
+}
+
+func (p *twExtendedPoint) Encode() []byte {
+	out := make([]byte, 56)
+	p.decafEncode(out)
 	return out
 }
