@@ -149,16 +149,6 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre *decafSca
 	}
 }
 
-func DoubleScalarMulNonsecret(s1 Scalar, b2 Point, s2 Scalar) Point {
-	combo := &twExtendedPoint{
-		&bigNumber{},
-		&bigNumber{},
-		&bigNumber{},
-		&bigNumber{},
-	}
-	return decafDoubleNonSecretScalarMul(combo, b2.(*twExtendedPoint), s1.(*decafScalar), s2.(*decafScalar))
-}
-
 /**
  * Multiply two base points by two scalars:
  * scaled = scalar1*decaf_448_point_base + scalar2*base2.

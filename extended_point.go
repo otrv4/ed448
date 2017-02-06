@@ -470,6 +470,10 @@ func (p *twExtendedPoint) Sub(q, r Point) {
 	p.sub(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
+func (p *twExtendedPoint) DoubleScalarMulNonsecret(s1, s2 Scalar, b2 Point) {
+	decafDoubleNonSecretScalarMul(p, b2.(*twExtendedPoint), s1.(*decafScalar), s2.(*decafScalar))
+}
+
 func (p *twExtendedPoint) Encode() []byte {
 	out := make([]byte, 56)
 	p.decafEncode(out)

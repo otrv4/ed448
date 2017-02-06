@@ -12,6 +12,7 @@ type Point interface {
 	Copy() Point
 	Add(q, r Point)
 	Sub(q, r Point)
+	DoubleScalarMulNonsecret(a, b Scalar, q Point)
 	Encode() []byte
 	Decode(src []byte, identity bool)
 }
