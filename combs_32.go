@@ -12,11 +12,9 @@ type fixedBaseTable struct {
 	adjustments adjustmentsTable
 }
 
-//XXX SECURITY this lookup should be done in constant time
 func (table *fixedBaseTable) lookup(j, t, idx uint) *twNiels {
 	nin := j << (t - 1)
-	in := table.combs[nin:] //this is not constant time
-	return in[idx].copy()
+	return table.combs[nin+idx].copy()
 }
 
 var baseTable = &fixedBaseTable{}
