@@ -94,8 +94,8 @@ func (s *Ed448Suite) Test_IsValidPoint(c *C) {
 			0xffffffff, 0xffffffff,
 		},
 	}
-	c.Assert(p.isValidPoint(), Equals, word(lmask))
-	c.Assert(q.isValidPoint(), Equals, word(0x00))
+	c.Assert(p.isValidPoint(), Equals, true)
+	c.Assert(q.isValidPoint(), Equals, false)
 }
 
 func (s *Ed448Suite) Test_PointEquality(c *C) {

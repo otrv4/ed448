@@ -10,7 +10,7 @@ func (p *twExtendedPoint) Encode() []byte {
 	return out
 }
 
-func (p *twExtendedPoint) isValidPoint() word {
+func (p *twExtendedPoint) isValidPoint() bool {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.mul(p.x, p.y)
 	b.mul(p.z, p.t)
@@ -25,7 +25,7 @@ func (p *twExtendedPoint) isValidPoint() word {
 	valid &= a.decafEq(b)
 	valid &= ^(p.z.decafEq(bigZero))
 
-	return valid
+	return valid == word(lmask)
 }
 
 func (p *twExtendedPoint) copy() *twExtendedPoint {
