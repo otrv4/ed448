@@ -310,7 +310,6 @@ func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoi
 			}
 			out.double(false)
 			out.addProjectiveNielsToExtended(pNeg, false)
-			// is this ok? i ? -1 : 0
 		}
 	}
 	return out
@@ -437,7 +436,6 @@ func doubleScalarMul(
 			out.addProjectiveNielsToExtended(mul2pn, true)
 		} else {
 			out.addProjectiveNielsToExtended(mul2pn, false)
-			// is this ok? i ? -1 : 0
 		}
 	}
 	return out
@@ -480,18 +478,9 @@ func (p *twExtendedPoint) Encode() []byte {
 	return out
 }
 
-//XXX: too complicated
 func (p *twExtendedPoint) Decode(src []byte, identity bool) {
-	var wIdentity word
-
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
 
-	if identity == true {
-		wIdentity = word(0xfffffff)
-	} else {
-		wIdentity = word(0x00)
-	}
-
-	decafDecode(p, ser, wIdentity)
+	decafDecode(p, ser, boolToMask(identity))
 }
