@@ -449,17 +449,17 @@ func (p *twExtendedPoint) IsValid() bool {
 	return p.isValidPoint()
 }
 
-func (p *twExtendedPoint) Copy() Point {
-	p.copy()
-	return Point(p)
-}
-
 func (p *twExtendedPoint) Equals(q Point) bool {
 	valid := p.equals(q.(*twExtendedPoint))
 	if valid == word(0xfffffff) {
 		return true
 	}
 	return false
+}
+
+func (p *twExtendedPoint) Copy() Point {
+	p.copy()
+	return Point(p)
 }
 
 func (p *twExtendedPoint) Add(q, r Point) {
@@ -474,4 +474,20 @@ func (p *twExtendedPoint) Encode() []byte {
 	out := make([]byte, 56)
 	p.decafEncode(out)
 	return out
+}
+
+//XXX: too complicated
+func (p *twExtendedPoint) Decode(src []byte, identity bool) {
+	var wIdentity word
+
+	ser := [fieldBytes]byte{}
+	copy(ser[:], src[:])
+
+	if identity == true {
+		wIdentity = word(0xfffffff)
+	} else {
+		wIdentity = word(0x00)
+	}
+
+	decafDecode(p, ser, wIdentity)
 }
