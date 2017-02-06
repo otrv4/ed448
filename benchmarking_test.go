@@ -347,6 +347,6 @@ func (s *Ed448Suite) Benchmark_SecretDoubleScalarMul(c *C) {
 	c.ResetTimer()
 
 	for i := 0; i < c.N; i++ {
-		doubleScalarMul(basePointExtended, x, base, y)
+		doubleScalarMul(basePointExtended, base, x, y)
 	}
 }

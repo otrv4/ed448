@@ -145,22 +145,6 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
-/**
- * Decode a point from a sequence of bytes.
- *
- * Every point has a unique encoding, so not every
- * sequence of bytes is a valid encoding.  If an invalid
- * encoding is given, the output is undefined.
- *
- * @param [in] ser The serialized version of the point.
- * @param [in] allow_identity -1 (0xffffffff) if the identity is a legal input.
- *
- * Returns:
- * out - The decoded point.
- * ok  - Whether the decoding succeeded
- *       Success: word(-1)
- *       Failure: word( 0) if the base does not represent a point
- */
 func decafDecode(dst *twExtendedPoint, src serialized, identity word) word {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -304,7 +288,9 @@ func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoi
 			out = pNeg.twExtendedPoint()
 			first = false
 		} else {
-			// Using Hisil et al's lookahead method instead of extensible here for no particular reason.  Double 5 (window) times, but only compute out.t on the last one.
+			//Using Hisil et al's lookahead method instead of
+			//extensible here for no particular reason.  Double
+			//5 (window) times, but only compute out.t on the last one.
 			for j := 0; j < window-1; j++ {
 				out.double(true)
 			}
@@ -313,11 +299,6 @@ func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoi
 		}
 	}
 	return out
-}
-
-//PrecomputedScalarMul mutiplies a precomputed point to a scalar
-func PrecomputedScalarMul(s Scalar) Point {
-	return precomputedScalarMul(s.(*decafScalar))
 }
 
 func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
@@ -365,24 +346,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	return p
 }
 
-/*
-  Multiply two base points by two scalars:
-  out = scalar1*base1 + scalar2*base2.
-
-  Equivalent to two calls to decaf_448_point_scalarmul, but may be
-  faster.
-
-  @param [in] point1 A first point to be scaled.
-  @param [in] scalar1 A first scalar to multiply by.
-  @param [in] point2 A second point to be scaled.
-  @param [in] scalar2 A second scalar to multiply by.
-
-  returns the linear combination scalar1*base1 + scalar2*base2.
-*/
-func doubleScalarMul(
-	pointB *twExtendedPoint, scalarB *decafScalar,
-	pointC *twExtendedPoint, scalarC *decafScalar,
-) *twExtendedPoint {
+func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafScalar) *twExtendedPoint {
 	const decafWindowBits = 5
 	const window = decafWindowBits       //5
 	const windowMask = (1 << window) - 1 //0x0001f 31
@@ -413,17 +377,16 @@ func doubleScalarMul(
 		inv2 := (bits2 >> (window - 1)) - 1
 		bits1 ^= inv1
 		bits2 ^= inv2
-		/* Add in from table.  Compute t only on last iteration. */
+		//Add in from table.  Compute t only on last iteration.
 		mul1pn := constTimeLookup(multiples1, bits1&windowTMask).copy()
 		mul1pn.n.conditionalNegate(inv1)
 		if first {
 			out = mul1pn.twExtendedPoint()
 			first = false
 		} else {
-			/* Using Hisil et al's lookahead method instead of extensible here
-			 * for no particular reason.  Double WINDOW times, but only compute t on
-			 * the last one.
-			 */
+			//Using Hisil et al's lookahead method instead of extensible here
+			//for no particular reason.  Double WINDOW times, but only compute t on
+			//the last one.
 			for j := 0; j < window-1; j++ {
 				out.double(true)
 			}
@@ -443,10 +406,12 @@ func doubleScalarMul(
 
 // exposed methods
 
+//IsValid tests if a point is valid.
 func (p *twExtendedPoint) IsValid() bool {
 	return p.isValidPoint()
 }
 
+//Equals compares whether two points are equal.
 func (p *twExtendedPoint) Equals(q Point) bool {
 	valid := p.equals(q.(*twExtendedPoint))
 	if valid == word(0xfffffff) {
@@ -455,32 +420,64 @@ func (p *twExtendedPoint) Equals(q Point) bool {
 	return false
 }
 
+//Copy copies a point.
 func (p *twExtendedPoint) Copy() Point {
 	p.copy()
 	return Point(p)
 }
 
+//Add adds two points to produce a thrid point.
 func (p *twExtendedPoint) Add(q, r Point) {
 	p.add(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
+//Sub subtracts two points to produce a thrid point.
 func (p *twExtendedPoint) Sub(q, r Point) {
 	p.sub(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
-func (p *twExtendedPoint) DoubleScalarMulNonsecret(s1, s2 Scalar, b2 Point) {
-	decafDoubleNonSecretScalarMul(p, b2.(*twExtendedPoint), s1.(*decafScalar), s2.(*decafScalar))
-}
-
+//Encode encodes a point as a sequence of bytes.
 func (p *twExtendedPoint) Encode() []byte {
 	out := make([]byte, 56)
 	p.decafEncode(out)
 	return out
 }
 
+//Decode decodes a point from a sequence of bytes.
+//Every point has a unique encoding, so not every
+//sequence of bytes is a valid encoding.  If an invalid
+//encoding is given, the output is undefined.
 func (p *twExtendedPoint) Decode(src []byte, identity bool) {
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
 
 	decafDecode(p, ser, boolToMask(identity))
+}
+
+//PointScalarMul multiplies a base point by a scalar.
+func PointScalarMul(q Point, a Scalar) Point {
+	return pointScalarMul(q.(*twExtendedPoint), a.(*decafScalar))
+}
+
+//PrecomputedScalarMul mutiplies a precomputed point by a scalar.
+func PrecomputedScalarMul(s Scalar) Point {
+	return precomputedScalarMul(s.(*decafScalar))
+}
+
+//DoubleScalarMul multiplies two base points by two scalars.
+func DoubleScalarMul(q, r Point, a, b Scalar) Point {
+	return doubleScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
+}
+
+//DoubleScalarMulNonsecret multiplies two base points by
+//two scalars. It may leak the scalars. Otherwise is
+//equivalent to DoubleScalarMul.
+func DoubleScalarMulNonsecret(s1, s2 Scalar, b2 Point) Point {
+	combo := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+	return decafDoubleNonSecretScalarMul(combo, b2.(*twExtendedPoint), s1.(*decafScalar), s2.(*decafScalar))
 }

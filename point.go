@@ -12,7 +12,6 @@ type Point interface {
 	Copy() Point
 	Add(q, r Point)
 	Sub(q, r Point)
-	DoubleScalarMulNonsecret(a, b Scalar, q Point)
 	Encode() []byte
 	Decode(src []byte, identity bool)
 }
@@ -38,12 +37,6 @@ func NewPoint(x [fieldBytes]byte) (Point, error) {
 		return nil, errors.New("ed448: the serialized input could not be decoded as a valid point")
 	}
 	return d, nil
-}
-
-// DoubleScalarMul will multiply two base points by two scalars:
-//     out = point1*scalar1 + point2*scalar2
-func DoubleScalarMul(p1 Point, s1 Scalar, p2 Point, s2 Scalar) Point {
-	return doubleScalarMul(p1.(*twExtendedPoint), s1.(*decafScalar), p2.(*twExtendedPoint), s2.(*decafScalar))
 }
 
 //XXX This should probably receive []byte{}
