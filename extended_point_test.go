@@ -51,6 +51,7 @@ func (s *Ed448Suite) Test_IsValidPoint(c *C) {
 		},
 	}
 
+	//non-valid point
 	q := &twExtendedPoint{
 		&bigNumber{
 			0xffffffff, 0xffffffff,
@@ -95,7 +96,6 @@ func (s *Ed448Suite) Test_IsValidPoint(c *C) {
 	}
 	c.Assert(p.isValidPoint(), Equals, word(lmask))
 	c.Assert(q.isValidPoint(), Equals, word(0x00))
-
 }
 
 func (s *Ed448Suite) Test_PointEquality(c *C) {

@@ -69,6 +69,33 @@ func (s *Ed448Suite) TestSquareN(c *C) {
 	c.Assert(n.equals(exp), Equals, true)
 }
 
+func (s *Ed448Suite) TestInvert(c *C) {
+	n := &bigNumber{}
+	x := &bigNumber{
+		0x04516644, 0x01430f14,
+		0x072318d2, 0x0b1c2096,
+		0x032e3855, 0x01c1105f,
+		0x0bf1556f, 0x0bb9f535,
+		0x0e3d45c0, 0x0e954acd,
+		0x0cba31b2, 0x05b931f9,
+		0x00920cdd, 0x064f93a9,
+		0x02d91281, 0x0674f3d0,
+	}
+
+	y := &bigNumber{
+		0x03509cef, 0x092c009c,
+		0x04116af4, 0x04bd5cae,
+		0x05c60b66, 0x01da9fbd,
+		0x0e925340, 0x02fffa3f,
+		0x0dd725b2, 0x0c2ae8ae,
+		0x0f4808a9, 0x040ed04c,
+		0x0864dc36, 0x06821f90,
+		0x08099dc5, 0x0cf9ca3d,
+	}
+
+	c.Assert(n.invert(x), DeepEquals, y)
+}
+
 func (s *Ed448Suite) TestNegate(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
 	n := new(bigNumber).setBytes(bs)
