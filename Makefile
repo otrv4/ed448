@@ -1,6 +1,6 @@
 PROFILING_FOLDER = profiling
 
-default: test
+default: test lint
 
 ci: get lint test
 
