@@ -127,6 +127,17 @@ func (s *decafScalar) halve(a, b Scalar) {
 	s.scalarHalve(a.(*decafScalar), b.(*decafScalar))
 }
 
+func (s *decafScalar) decodeShort(b []byte, size uint) {
+	k := uint(0)
+	for i := uint(0); i < scalarLimbs; i++ {
+		out := word(0)
+		for j := uint(0); j < 4 && k < size; j, k = j+1, k+1 {
+			out |= (word(b[k])) << (8 * j)
+		}
+		s[i] = out
+	}
+}
+
 func (s *decafScalar) decode(b []byte) word {
 	s.decodeShort(b, scalarBytes)
 
@@ -139,17 +150,6 @@ func (s *decafScalar) decode(b []byte) word {
 	s.scalarMul(s, &decafScalar{0x01})
 
 	return word(accum)
-}
-
-func (s *decafScalar) decodeShort(b []byte, size uint) {
-	k := uint(0)
-	for i := uint(0); i < scalarLimbs; i++ {
-		out := word(0)
-		for j := uint(0); j < 4 && k < size; j, k = j+1, k+1 {
-			out |= (word(b[k])) << (8 * j)
-		}
-		s[i] = out
-	}
 }
 
 func (s *decafScalar) Mul(x, y Scalar) {
