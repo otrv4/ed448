@@ -163,26 +163,31 @@ func NewDecafScalar(in [fieldBytes]byte) Scalar {
 	return out
 }
 
+//Equals compares two scalars. Returns true if they are the same; false, otherwise.
 func (s *decafScalar) Equals(x Scalar) bool {
 	eq := s.scalarEquals(x.(*decafScalar))
 	return maskToBoolean(eq)
 }
 
+//Copy copies scalars.
 func (s *decafScalar) Copy() Scalar {
 	out := &decafScalar{}
 	copy(out[:], s[:])
 	return out
 }
 
+//Add adds two scalars. The scalar may use the same memory.
 func (s *decafScalar) Add(x, y Scalar) {
 	s.scalarAdd(x.(*decafScalar), y.(*decafScalar))
 }
 
+//Sub subtracts two scalars. The scalar may use the same memory.
 func (s *decafScalar) Sub(x, y Scalar) {
 	noExtra := word(0)
 	s.scalarSubExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
 }
 
+//Mul multiplies two scalars. The scalar may use the same memory.
 func (s *decafScalar) Mul(x, y Scalar) {
 	s.montgomeryMultiply(x.(*decafScalar), y.(*decafScalar))
 	s.montgomeryMultiply(s, scalarR2)
@@ -193,6 +198,7 @@ func (s *decafScalar) halve(a, b Scalar) {
 }
 
 //TODO: what happens if dst is < or > fieldBytes?
+//Encode serializes a scalar to wire format.
 func (s *decafScalar) Encode() []byte {
 	dst := make([]byte, 56)
 	s.serialize(dst)
@@ -200,6 +206,7 @@ func (s *decafScalar) Encode() []byte {
 }
 
 //TODO: what happens if src is > fieldBytes?
+//Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
 func (s *decafScalar) Decode(src []byte) error {
 	if len(src) < fieldBytes {
 		return errors.New("src length smaller than fieldBytes")
