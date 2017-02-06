@@ -17,7 +17,6 @@ func decafPseudoRandomFunction(sym []byte) []byte {
 }
 
 func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error) {
-
 	k := privateKey{}
 	copy(k.symKey(), sym[:])
 
@@ -43,7 +42,7 @@ func (c *curveT) decafGenerateKeys(r io.Reader) (k privateKey, err error) {
 	return c.decafDerivePrivateKey(symKey)
 }
 
-func decafDeriveNonce(msg []byte, symKey []byte) (dst decafScalar) {
+func decafDeriveNonce(msg []byte, symKey []byte) *decafScalar {
 	h := sha3.NewShake256()
 	h.Write(msg)
 	h.Write(symKey)
@@ -51,9 +50,11 @@ func decafDeriveNonce(msg []byte, symKey []byte) (dst decafScalar) {
 	var out [64]byte
 	h.Read(out[:])
 
+	dst := &decafScalar{}
+
 	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
 
-	return
+	return dst
 }
 
 func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) *decafScalar {
@@ -64,14 +65,11 @@ func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []by
 	var out [64]byte
 	h.Read(out[:])
 
-	dst := decafScalar{}
+	dst := &decafScalar{}
 
 	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
 
-	s := &decafScalar{}
-	*s = dst
-
-	return s
+	return dst
 }
 
 func (c *curveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBytes]byte) {
@@ -80,9 +78,8 @@ func (c *curveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBy
 	return
 }
 
-// pass by value here, not by reference
 func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
-	secretKeyWords := decafScalar{}
+	secretKeyWords := &decafScalar{}
 	//XXX: should secret words be destroyed?
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		err = errors.New("Corrupted private key")
@@ -90,11 +87,11 @@ func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte,
 	}
 
 	nonce := decafDeriveNonce(msg, k.symKey())
-	tmpSignature := c.decafDeriveTemporarySignature(&nonce)
+	tmpSignature := c.decafDeriveTemporarySignature(nonce)
 	challenge := decafDeriveChallenge(k.publicKey(), tmpSignature, msg)
 
-	challenge.scalarMul(challenge, &secretKeyWords)
-	nonce.scalarSub(&nonce, challenge)
+	challenge.scalarMul(challenge, secretKeyWords)
+	nonce.scalarSub(nonce, challenge)
 
 	copy(sig[:fieldBytes], tmpSignature[:])
 	nonce.serialize(sig[fieldBytes:])
@@ -103,9 +100,9 @@ func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte,
 	return
 }
 
-func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
+func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k publicKey) bool {
 
-	serPubkey := serialized(*k)
+	serPubkey := serialized(k)
 
 	tmpSig := [fieldBytes]byte{}
 	copy(tmpSig[:], signature[:])

@@ -129,7 +129,7 @@ func (s *Ed448Suite) Test_DecafDeriveNonce(c *C) {
 		0x23, 0x4f, 0xf2, 0x4a, 0x96, 0x94, 0x52, 0x3e,
 	}
 
-	expectedNonce := decafScalar{
+	expectedNonce := &decafScalar{
 		0x358a567a, 0x1b623fd7,
 		0x1c37439c, 0xb8713abb,
 		0x6e7de9d9, 0xb3c4e14e,
@@ -286,7 +286,7 @@ func (s *Ed448Suite) Test_DecafVerify(c *C) {
 		0x93, 0x25, 0xfe, 0x78, 0x0f, 0xdd, 0xa1, 0x3a,
 	}
 
-	valid := curve.decafVerify(signature, msg, &k)
+	valid := curve.decafVerify(signature, msg, k)
 
 	c.Assert(valid, Equals, true)
 }

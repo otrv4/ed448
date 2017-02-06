@@ -6,20 +6,39 @@ import (
 
 type decafScalar [scalarWords]word
 
-// Serializes an array of words into an array of bytes (little-endian)
-func (s *decafScalar) serialize(dst []byte) error {
-	wordBytes := wordBits / 8
-	if len(dst) < fieldBytes {
-		return errors.New("dst length smaller than fieldBytes")
+func (s *decafScalar) copy() *decafScalar {
+	out := &decafScalar{}
+	copy(out[:], s[:])
+	return out
+}
+
+func (s *decafScalar) scalarEquals(x *decafScalar) word {
+	diff := word(0)
+	for i := uintZero; i < scalarWords; i++ {
+		diff |= s[i] ^ x[i]
+	}
+	return word(((dword(diff)) - 1) >> wordBits)
+}
+
+func (s *decafScalar) scalarSubExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
+	out := &decafScalar{}
+	var chain sdword
+
+	for i := uintZero; i < scalarWords; i++ {
+		chain += sdword(minuend[i]) - sdword(subtrahend[i])
+		out[i] = word(chain)
+		chain >>= wordBits
 	}
 
-	for i := 0; i*wordBytes < fieldBytes; i++ {
-		for j := 0; j < wordBytes; j++ {
-			b := s[i] >> uint(8*j)
-			dst[wordBytes*i+j] = byte(b)
-		}
+	borrow := chain + sdword(carry)
+	chain = 0
+
+	for i := uintZero; i < scalarWords; i++ {
+		chain += sdword(out[i]) + (sdword(scalarQ[i]) & borrow)
+		out[i] = word(chain)
+		chain >>= wordBits
 	}
-	return nil
+	copy(s[:], out[:])
 }
 
 func (s *decafScalar) scalarAdd(a, b *decafScalar) {
@@ -45,27 +64,6 @@ func (s *decafScalar) scalarMul(x, y *decafScalar) {
 	s.montgomeryMultiply(s, scalarR2)
 }
 
-func (s *decafScalar) scalarSubExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
-	out := &decafScalar{}
-	var chain sdword
-
-	for i := uintZero; i < scalarWords; i++ {
-		chain += sdword(minuend[i]) - sdword(subtrahend[i])
-		out[i] = word(chain)
-		chain >>= wordBits
-	}
-
-	borrow := chain + sdword(carry)
-	chain = 0
-
-	for i := uintZero; i < scalarWords; i++ {
-		chain += sdword(out[i]) + (sdword(scalarQ[i]) & borrow)
-		out[i] = word(chain)
-		chain >>= wordBits
-	}
-	copy(s[:], out[:])
-}
-
 func (s *decafScalar) scalarHalve(a, b *decafScalar) {
 	out := &decafScalar{}
 	mask := -(a[0] & 1)
@@ -84,6 +82,47 @@ func (s *decafScalar) scalarHalve(a, b *decafScalar) {
 	out[i] = out[i]>>1 | word(chain<<(wordBits-1))
 
 	copy(s[:], out[:])
+}
+
+// Serializes an array of words into an array of bytes (little-endian)
+func (s *decafScalar) serialize(dst []byte) error {
+	wordBytes := wordBits / 8
+	if len(dst) < fieldBytes {
+		return errors.New("dst length smaller than fieldBytes")
+	}
+
+	for i := 0; i*wordBytes < fieldBytes; i++ {
+		for j := 0; j < wordBytes; j++ {
+			b := s[i] >> uint(8*j)
+			dst[wordBytes*i+j] = byte(b)
+		}
+	}
+	return nil
+}
+
+func (s *decafScalar) decodeShort(b []byte, size uint) {
+	k := uint(0)
+	for i := uint(0); i < scalarLimbs; i++ {
+		out := word(0)
+		for j := uint(0); j < 4 && k < size; j, k = j+1, k+1 {
+			out |= (word(b[k])) << (8 * j)
+		}
+		s[i] = out
+	}
+}
+
+func (s *decafScalar) decode(b []byte) word {
+	s.decodeShort(b, scalarBytes)
+
+	accum := dword(0)
+	for i := 0; i < 14; i++ {
+		accum += (dword(s[i]) - dword(scalarQ[i]))
+		accum >>= wordBits
+	}
+
+	s.scalarMul(s, &decafScalar{0x01})
+
+	return word(accum)
 }
 
 func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
@@ -115,55 +154,13 @@ func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 	copy(s[:], out[:])
 }
 
-func (s *decafScalar) scalarEquals(x *decafScalar) word {
-	diff := word(0)
-	for i := uintZero; i < scalarWords; i++ {
-		diff |= s[i] ^ x[i]
-	}
-	return word(((dword(diff)) - 1) >> wordBits)
-}
+//Exported methods
 
-func (s *decafScalar) halve(a, b Scalar) {
-	s.scalarHalve(a.(*decafScalar), b.(*decafScalar))
-}
-
-func (s *decafScalar) decodeShort(b []byte, size uint) {
-	k := uint(0)
-	for i := uint(0); i < scalarLimbs; i++ {
-		out := word(0)
-		for j := uint(0); j < 4 && k < size; j, k = j+1, k+1 {
-			out |= (word(b[k])) << (8 * j)
-		}
-		s[i] = out
-	}
-}
-
-func (s *decafScalar) decode(b []byte) word {
-	s.decodeShort(b, scalarBytes)
-
-	accum := dword(0)
-	for i := 0; i < 14; i++ {
-		accum += (dword(s[i]) - dword(scalarQ[i]))
-		accum >>= wordBits
-	}
-
-	s.scalarMul(s, &decafScalar{0x01})
-
-	return word(accum)
-}
-
-func (s *decafScalar) Mul(x, y Scalar) {
-	s.montgomeryMultiply(x.(*decafScalar), y.(*decafScalar))
-	s.montgomeryMultiply(s, scalarR2)
-}
-
-func (s *decafScalar) Sub(x, y Scalar) {
-	noExtra := word(0)
-	s.scalarSubExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
-}
-
-func (s *decafScalar) Add(x, y Scalar) {
-	s.scalarAdd(x.(*decafScalar), y.(*decafScalar))
+// NewDecafScalar returns a decaf Scalar in Ed448
+func NewDecafScalar(in [fieldBytes]byte) Scalar {
+	out := &decafScalar{}
+	barrettDeserializeAndReduce(out[:], in[:], &curvePrimeOrder)
+	return out
 }
 
 func (s *decafScalar) Equals(x Scalar) bool {
@@ -171,13 +168,28 @@ func (s *decafScalar) Equals(x Scalar) bool {
 	return maskToBoolean(eq)
 }
 
-//TODO: what happens if src is > fieldBytes?
-func (s *decafScalar) Decode(src []byte) error {
-	if len(src) < fieldBytes {
-		return errors.New("src length smaller than fieldBytes")
-	}
-	barrettDeserializeAndReduce(s[:], src, &curvePrimeOrder)
-	return nil
+func (s *decafScalar) Copy() Scalar {
+	out := &decafScalar{}
+	copy(out[:], s[:])
+	return out
+}
+
+func (s *decafScalar) Add(x, y Scalar) {
+	s.scalarAdd(x.(*decafScalar), y.(*decafScalar))
+}
+
+func (s *decafScalar) Sub(x, y Scalar) {
+	noExtra := word(0)
+	s.scalarSubExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
+}
+
+func (s *decafScalar) Mul(x, y Scalar) {
+	s.montgomeryMultiply(x.(*decafScalar), y.(*decafScalar))
+	s.montgomeryMultiply(s, scalarR2)
+}
+
+func (s *decafScalar) halve(a, b Scalar) {
+	s.scalarHalve(a.(*decafScalar), b.(*decafScalar))
 }
 
 //TODO: what happens if dst is < or > fieldBytes?
@@ -187,15 +199,11 @@ func (s *decafScalar) Encode() []byte {
 	return dst
 }
 
-func (s *decafScalar) Copy() Scalar {
-	out := &decafScalar{}
-	copy(out[:], s[:])
-	return out
-}
-
-// NewDecafScalar returns a decaf Scalar in Ed448 depending on the arch
-func NewDecafScalar(in [fieldBytes]byte) Scalar {
-	out := &decafScalar{}
-	barrettDeserializeAndReduce(out[:], in[:], &curvePrimeOrder)
-	return out
+//TODO: what happens if src is > fieldBytes?
+func (s *decafScalar) Decode(src []byte) error {
+	if len(src) < fieldBytes {
+		return errors.New("src length smaller than fieldBytes")
+	}
+	barrettDeserializeAndReduce(s[:], src, &curvePrimeOrder)
+	return nil
 }
