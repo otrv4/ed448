@@ -256,13 +256,13 @@ func constantTimeGreaterOrEqualP(n *bigNumber) word {
 		ge &= n[i]
 	}
 
-	ge = (ge & (n[4] + 1)) | word(isZeroMask(word(n[4]^radixMask)))
+	ge = (ge & (n[4] + 1)) | isZeroMask(word(n[4]^radixMask))
 
 	for i := 5; i < 8; i++ {
 		ge &= n[i]
 	}
 
-	return word(^isZeroMask(word(ge ^ radixMask)))
+	return ^isZeroMask(word(ge ^ radixMask))
 }
 
 func deserialize(in serialized) (n *bigNumber, ok bool) {
@@ -506,4 +506,10 @@ func highBit(x *bigNumber) word {
 	y.add(x, x)
 	y.strongReduce()
 	return word(-(y[0] & 1))
+}
+
+func isZeroMask(n word) word {
+	nn := dword(n)
+	nn = nn - 1
+	return word(nn >> wordBits)
 }

@@ -113,7 +113,7 @@ func (p *extensibleCoordinates) OnCurve() bool {
 	l4 := l0.zeroMask()
 
 	ret := l4 & l5 & (^z.zeroMask())
-	return maskToBoolean(ret)
+	return ret == decafTrue
 }
 
 func (p *extensibleCoordinates) equals(q *extensibleCoordinates) bool {
@@ -131,7 +131,7 @@ func (p *extensibleCoordinates) equals(q *extensibleCoordinates) bool {
 	l0 = l0.sub(l2, l1)
 	l3 := l0.zeroMask()
 
-	return maskToBoolean(l4 & l3)
+	return l4&l3 == decafTrue
 }
 
 type twPNiels struct {
@@ -327,7 +327,7 @@ func (p *twExtensible) OnCurve() bool {
 	l4 := l0.zeroMask()
 
 	ret := l4 & l5 & (^p.z.zeroMask())
-	return maskToBoolean(ret)
+	return ret == decafTrue
 }
 
 func (p *twExtensible) setIdentity() {
@@ -365,7 +365,7 @@ func (p *twExtensible) equals(p2 *twExtensible) bool {
 
 	l3 := l0.zeroMask()
 
-	return maskToBoolean(l4 & l3)
+	return l4&l3 == decafTrue
 }
 
 func (p *twExtensible) double() *twExtensible {

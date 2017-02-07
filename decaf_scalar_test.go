@@ -234,7 +234,7 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 
 	ok := x.decode(buf)
 	c.Assert(x, DeepEquals, expected)
-	c.Assert(ok, Equals, word(0x00))
+	c.Assert(ok, Equals, decafFalse)
 
 	x1 := &decafScalar{0x00}
 
@@ -260,10 +260,10 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 
 	ok2 := x1.decode(buf1)
 	c.Assert(x1, DeepEquals, expected1)
-	c.Assert(ok2, Equals, word(0xffffffff))
+	c.Assert(ok2, Equals, decafTrue)
 }
 
-func (s *Ed448Suite) Test_ScalarCopyEquals(c *C) {
+func (s *Ed448Suite) Test_ScalarEquals(c *C) {
 	a := NewDecafScalar([fieldBytes]byte{})
 	b := a.Copy()
 	c.Assert(a.Equals(b), Equals, true)

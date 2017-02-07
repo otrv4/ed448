@@ -12,12 +12,12 @@ func (s *decafScalar) copy() *decafScalar {
 	return out
 }
 
-func (s *decafScalar) scalarEquals(x *decafScalar) word {
+func (s *decafScalar) scalarEquals(x *decafScalar) bool {
 	diff := word(0)
 	for i := uintZero; i < scalarWords; i++ {
 		diff |= s[i] ^ x[i]
 	}
-	return word(((dword(diff)) - 1) >> wordBits)
+	return word(((dword(diff))-1)>>wordBits) == decafTrue
 }
 
 func (s *decafScalar) scalarSubExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
@@ -165,8 +165,7 @@ func NewDecafScalar(in [fieldBytes]byte) Scalar {
 
 //Equals compares two scalars. Returns true if they are the same; false, otherwise.
 func (s *decafScalar) Equals(x Scalar) bool {
-	eq := s.scalarEquals(x.(*decafScalar))
-	return maskToBoolean(eq)
+	return s.scalarEquals(x.(*decafScalar))
 }
 
 //Copy copies scalars.
