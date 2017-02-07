@@ -121,8 +121,8 @@ func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k 
 		t: &bigNumber{},
 	}
 
-	ret := decafDecode(point, tmpSig, word(lmask))
-	ret &= decafDecode(pkPoint, serPubkey, word(0x00))
+	ret := decafDecode(point, tmpSig, true)
+	ret &= decafDecode(pkPoint, serPubkey, false)
 	response := &decafScalar{}
 	ret &= response.decode(signature[56:])
 

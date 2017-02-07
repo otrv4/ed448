@@ -3,7 +3,9 @@ package ed448
 const (
 	lmask = 0xffffffff
 
-	// For 32 arch
+	decafTrue  = word(0xffffffff)
+	decafFalse = word(0x0)
+
 	limbs       = 16
 	scalarLimbs = 14
 	radix       = 28

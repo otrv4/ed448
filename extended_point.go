@@ -19,7 +19,7 @@ func (p *twExtendedPoint) isValidPoint() bool {
 	valid &= a.decafEq(b)
 	valid &= ^(p.z.decafEq(bigZero))
 
-	return valid == word(lmask)
+	return valid == decafTrue
 }
 
 func (p *twExtendedPoint) copy() *twExtendedPoint {
@@ -145,12 +145,16 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
-func decafDecode(dst *twExtendedPoint, src serialized, identity word) word {
+func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) word {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
 	n, succ := deserializeReturnMask(src)
 	zero := n.decafEq(bigZero)
-	succ &= identity | ^zero
+	if useIdentity {
+		succ &= decafTrue | ^zero
+	} else {
+		succ &= decafFalse | ^zero
+	}
 	succ &= ^highBit(n)
 	a.square(n)
 	dst.z.sub(bigOne, a)
@@ -414,10 +418,7 @@ func (p *twExtendedPoint) IsValid() bool {
 //Equals compares whether two points are equal.
 func (p *twExtendedPoint) Equals(q Point) bool {
 	valid := p.equals(q.(*twExtendedPoint))
-	if valid == word(0xfffffff) {
-		return true
-	}
-	return false
+	return valid == decafTrue
 }
 
 //Copy copies a point.
@@ -447,11 +448,10 @@ func (p *twExtendedPoint) Encode() []byte {
 //Every point has a unique encoding, so not every
 //sequence of bytes is a valid encoding.  If an invalid
 //encoding is given, the output is undefined.
-func (p *twExtendedPoint) Decode(src []byte, identity bool) {
+func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) {
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
-
-	decafDecode(p, ser, boolToMask(identity))
+	decafDecode(p, ser, useIdentity)
 }
 
 //PointScalarMul multiplies a base point by a scalar.

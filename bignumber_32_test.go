@@ -111,8 +111,8 @@ func (s *Ed448Suite) Test_DecafEq(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	})
 
-	c.Assert(x.decafEq(x), Equals, word(lmask))
-	c.Assert(x.decafEq(y), Equals, word(0))
+	c.Assert(x.decafEq(x), Equals, decafTrue)
+	c.Assert(x.decafEq(y), Equals, decafFalse)
 }
 
 func (s *Ed448Suite) TestZeroMask(c *C) {

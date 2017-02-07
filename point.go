@@ -32,7 +32,7 @@ func NewPoint(x [fieldBytes]byte) (Point, error) {
 		z: &bigNumber{},
 		t: &bigNumber{},
 	}
-	status := decafDecode(d, serialized(x), word(0))
+	status := decafDecode(d, serialized(x), false)
 	if failure(status) {
 		return nil, errors.New("ed448: the serialized input could not be decoded as a valid point")
 	}
