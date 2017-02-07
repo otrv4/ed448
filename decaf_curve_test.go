@@ -34,7 +34,7 @@ func (s *Ed448Suite) Test_DecafDerivePrivate(c *C) {
 		0x05, 0xe3, 0x66, 0x30, 0xf8, 0xf0, 0x8f, 0x14,
 	}
 
-	pk, _ := curve.decafDerivePrivateKey(sym)
+	pk, _ := decafCurve.decafDerivePrivateKey(sym)
 
 	expSym := []byte{
 		0xd1, 0x50, 0x0e, 0xf4, 0x1c, 0xa7, 0xbe, 0xe3,
@@ -76,7 +76,7 @@ func (s *Ed448Suite) Test_DecafDerivePrivateWithZeroSymKey(c *C) {
 		0xef, 0x94, 0x67, 0x7b, 0xd3, 0x1e, 0xb5, 0x0e,
 	}
 
-	pk, _ := curve.decafDerivePrivateKey(sym)
+	pk, _ := decafCurve.decafDerivePrivateKey(sym)
 
 	c.Assert(pk.secretKey(), DeepEquals, expPriv)
 	c.Assert(pk.publicKey(), DeepEquals, expPub)
@@ -88,7 +88,7 @@ func (s *Ed448Suite) Test_DecafGenerateKeys(c *C) {
 	buffer[0] = 0x10
 	r := bytes.NewReader(buffer[:])
 
-	privKey, err := curve.decafGenerateKeys(r)
+	privKey, err := decafCurve.decafGenerateKeys(r)
 
 	expSym := make([]byte, symKeyBytes)
 	expSym[0] = 0x10
@@ -203,7 +203,7 @@ func (s *Ed448Suite) Test_DecafDeriveTemporarySignature(c *C) {
 		0xcd, 0xc8, 0xd6, 0xf2, 0x7c, 0x71, 0x87, 0x61,
 	}
 
-	sig := curve.decafDeriveTemporarySignature(nonce)
+	sig := decafCurve.decafDeriveTemporarySignature(nonce)
 
 	c.Assert(sig, DeepEquals, exp)
 }
@@ -250,7 +250,7 @@ func (s *Ed448Suite) Test_DecafSign(c *C) {
 		0x93, 0x25, 0xfe, 0x78, 0x0f, 0xdd, 0xa1, 0x3a,
 	}
 
-	signature, err := curve.decafSign(msg, &k)
+	signature, err := decafCurve.decafSign(msg, &k)
 
 	c.Assert(err, IsNil)
 	c.Assert(signature, DeepEquals, expectedSignature)
@@ -286,7 +286,7 @@ func (s *Ed448Suite) Test_DecafVerify(c *C) {
 		0x93, 0x25, 0xfe, 0x78, 0x0f, 0xdd, 0xa1, 0x3a,
 	}
 
-	valid := curve.decafVerify(signature, msg, k)
+	valid := decafCurve.decafVerify(signature, msg, &k)
 
 	c.Assert(valid, Equals, true)
 }

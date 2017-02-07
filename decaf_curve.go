@@ -16,7 +16,7 @@ func decafPseudoRandomFunction(sym []byte) []byte {
 	return out[:]
 }
 
-func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error) {
+func (c *decafCurveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error) {
 	k := privateKey{}
 	copy(k.symKey(), sym[:])
 
@@ -33,7 +33,7 @@ func (c *curveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error
 	return k, nil
 }
 
-func (c *curveT) decafGenerateKeys(r io.Reader) (k privateKey, err error) {
+func (c *decafCurveT) decafGenerateKeys(r io.Reader) (k privateKey, err error) {
 	symKey, err := generateSymmetricKey(r)
 	if err != nil {
 		return
@@ -72,13 +72,13 @@ func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []by
 	return dst
 }
 
-func (c *curveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBytes]byte) {
+func (c *decafCurveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBytes]byte) {
 	point := precomputedScalarMul(nonce)
 	point.decafEncode(dst[:])
 	return
 }
 
-func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
+func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
 	secretKeyWords := &decafScalar{}
 	//XXX: should secret words be destroyed?
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
@@ -100,9 +100,9 @@ func (c *curveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte,
 	return
 }
 
-func (c *curveT) decafVerify(signature [signatureBytes]byte, msg []byte, k publicKey) bool {
+func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
 
-	serPubkey := serialized(k)
+	serPubkey := serialized(*k)
 
 	tmpSig := [fieldBytes]byte{}
 	copy(tmpSig[:], signature[:])

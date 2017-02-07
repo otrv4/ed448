@@ -57,3 +57,49 @@ func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]
 	k := privateKey(private)
 	return sha512.Sum512(ed.computeSecret(k.secretKey(), public[:]))
 }
+
+//DecafCurve is the interface that wraps the basic curve methods in decaf.
+//XXX: change this name
+type DecafCurve interface {
+	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
+	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)
+	Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool)
+}
+
+type decafCurveT struct{}
+
+var (
+	decafCurve = &decafCurveT{}
+)
+
+//NewDecafCurve returns a Curve.
+func NewDecafCurve() DecafCurve {
+	return decafCurve
+}
+
+//GenerateKeys generates a private key and its correspondent public key.
+func (ed *decafCurveT) GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool) {
+	var err error
+	privKey, err := ed.decafGenerateKeys(rand.Reader)
+	ok = err == nil
+
+	copy(priv[:], privKey[:])
+	copy(pub[:], privKey.publicKey())
+
+	return
+}
+
+//Signs a message using the provided private key and returns the signature.
+func (ed *decafCurveT) Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool) {
+	pk := privateKey(priv)
+	signature, err := ed.decafSign(message, &pk)
+	ok = err == nil
+	return
+}
+
+// Verify a signature does correspond a message by a public key.
+func (ed *decafCurveT) Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool) {
+	pk := publicKey(pub)
+	valid = ed.decafVerify(signature, message, &pk)
+	return
+}

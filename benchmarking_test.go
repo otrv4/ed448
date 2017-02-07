@@ -301,7 +301,7 @@ func (s *Ed448Suite) BenchmarkAglEd25519Verify(c *C) {
 func (s *Ed448Suite) Benchmark_DecafDeriveKeys(c *C) {
 	c.ResetTimer()
 	for i := 0; i < c.N; i++ {
-		curve.decafGenerateKeys(rand.Reader)
+		decafCurve.decafGenerateKeys(rand.Reader)
 	}
 }
 

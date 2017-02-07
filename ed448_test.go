@@ -23,7 +23,7 @@ var testValue = [fieldBytes]byte{
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f,
 }
 
-func (s *Ed448Suite) TestGenerateKeysProducesKeyPair(c *C) {
+func (s *Ed448Suite) Test_GenerateKeysProducesKeyPair(c *C) {
 	curve := NewCurve()
 	priv, pub, ok := curve.GenerateKeys()
 	c.Assert(ok, Equals, true)
@@ -31,7 +31,7 @@ func (s *Ed448Suite) TestGenerateKeysProducesKeyPair(c *C) {
 	c.Assert(pub, NotNil)
 }
 
-func (s *Ed448Suite) TestSignAndVerify(c *C) {
+func (s *Ed448Suite) Test_SignAndVerify(c *C) {
 	curve := NewCurve()
 	priv, pub, ok := curve.GenerateKeys()
 	c.Assert(ok, Equals, true)
@@ -48,11 +48,36 @@ func (s *Ed448Suite) TestSignAndVerify(c *C) {
 	c.Assert(valid, Equals, true)
 }
 
-func (s *Ed448Suite) TestComputeSecret(c *C) {
+func (s *Ed448Suite) Test_ComputeSecret(c *C) {
 	curve := NewCurve()
 	privA, pubA, _ := curve.GenerateKeys()
 	privB, pubB, _ := curve.GenerateKeys()
 	secretA := curve.ComputeSecret(privA, pubB)
 	secretB := curve.ComputeSecret(privB, pubA)
 	c.Assert(secretA, DeepEquals, secretB)
+}
+
+func (s *Ed448Suite) Test_DecafGenerateKeysProducesKeyPair(c *C) {
+	decafCurve := NewDecafCurve()
+	priv, pub, ok := decafCurve.GenerateKeys()
+	c.Assert(ok, Equals, true)
+	c.Assert(priv, NotNil)
+	c.Assert(pub, NotNil)
+}
+
+func (s *Ed448Suite) Test_DecafSignAndVerify(c *C) {
+	decafCurve := NewDecafCurve()
+	priv, pub, ok := decafCurve.GenerateKeys()
+	c.Assert(ok, Equals, true)
+
+	message := []byte("sign here.")
+
+	signature, ok := decafCurve.Sign(priv, message)
+
+	c.Assert(ok, Equals, true)
+	c.Assert(signature, NotNil)
+
+	valid := decafCurve.Verify(signature, message, pub)
+
+	c.Assert(valid, Equals, true)
 }
