@@ -66,8 +66,8 @@ func (s *Ed448Suite) Test_DecafGenerateKeysProducesKeyPair(c *C) {
 }
 
 func (s *Ed448Suite) Test_DecafSignAndVerify(c *C) {
-	c.Skip("WIP")
 	decafCurve := NewDecafCurve()
+
 	priv, pub, ok := decafCurve.GenerateKeys()
 	c.Assert(ok, Equals, true)
 

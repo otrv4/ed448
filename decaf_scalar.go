@@ -114,9 +114,9 @@ func (s *decafScalar) decodeShort(b []byte, size uint) {
 func (s *decafScalar) decode(b []byte) word {
 	s.decodeShort(b, scalarBytes)
 
-	accum := dword(0)
+	accum := int64(0)
 	for i := 0; i < 14; i++ {
-		accum += (dword(s[i]) - dword(scalarQ[i]))
+		accum += int64(s[i]) - int64(scalarQ[i])
 		accum >>= wordBits
 	}
 

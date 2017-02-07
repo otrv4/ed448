@@ -101,7 +101,6 @@ func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]
 }
 
 func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
-
 	serPubkey := serialized(*k)
 
 	tmpSig := [fieldBytes]byte{}
@@ -123,6 +122,7 @@ func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k 
 
 	ret := decafDecode(point, tmpSig, true)
 	ret &= decafDecode(pkPoint, serPubkey, false)
+
 	response := &decafScalar{}
 	ret &= response.decode(signature[56:])
 
