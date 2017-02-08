@@ -196,19 +196,17 @@ func (s *decafScalar) halve(a, b Scalar) {
 	s.scalarHalve(a.(*decafScalar), b.(*decafScalar))
 }
 
-//TODO: what happens if dst is < or > fieldBytes?
 //Encode serializes a scalar to wire format.
 func (s *decafScalar) Encode() []byte {
-	dst := make([]byte, 56)
+	dst := make([]byte, fieldBytes)
 	s.serialize(dst)
 	return dst
 }
 
-//TODO: what happens if src is > fieldBytes?
 //Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
 func (s *decafScalar) Decode(src []byte) error {
 	if len(src) < fieldBytes {
-		return errors.New("src length smaller than fieldBytes")
+		return errors.New("ed448: cannot decode a scalar from a byte array with a length unequal to 56")
 	}
 	barrettDeserializeAndReduce(s[:], src, &curvePrimeOrder)
 	return nil

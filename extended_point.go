@@ -113,8 +113,10 @@ func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	return p
 }
 
-// TODO: this will panic if byte array is not 56
 func (p *twExtendedPoint) decafEncode(dst []byte) {
+	if len(dst) != fieldBytes {
+		panic("Attempted an encode with a destination that is not 56 bytes")
+	}
 	t := word(0x00)
 	overT := word(0x00)
 	serialize(dst, p.deisogenize(t, overT))
@@ -454,7 +456,7 @@ func (p *twExtendedPoint) Sub(q, r Point) {
 
 //Encode encodes a point as a sequence of bytes.
 func (p *twExtendedPoint) Encode() []byte {
-	out := make([]byte, 56)
+	out := make([]byte, fieldBytes)
 	p.decafEncode(out)
 	return out
 }
