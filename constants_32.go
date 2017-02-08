@@ -1,7 +1,9 @@
 package ed448
 
 const (
-	lmask = 0xffffffff
+	lmask    = 0xffffffff
+	allZeros = word(0x0)
+	allOnes  = word(0xffffffff)
 
 	decafTrue  = word(0xffffffff)
 	decafFalse = word(0x0)

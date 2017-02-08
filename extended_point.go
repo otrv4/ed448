@@ -335,7 +335,8 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 			tab ^= word(invert)
 			tab &= (1 << (decafCombTeeth - 1)) - 1
 
-			ni = decafPrecompTable.lookup(j, decafCombTeeth, uint(tab))
+			index := uint32(((j << (decafCombTeeth - 1)) + uint(tab)))
+			ni = decafPrecompTable.lookup(index)
 
 			ni.conditionalNegate(word(invert))
 

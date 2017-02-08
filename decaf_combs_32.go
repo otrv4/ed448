@@ -2,21 +2,41 @@ package ed448
 
 type nielsTable []*twNiels
 
+const tableSize = 80
+
+var decafPrecompTable = &decafBaseTable{}
+
 type decafBaseTable struct {
 	base             nielsTable
 	scalarAdjustment *decafScalar
 }
 
-func (table *decafBaseTable) lookup(j, t, idx uint) *twNiels {
-	min := j << (t - 1)
-	return table.base[min+idx].copy()
+func selectMask(index uint32, current uint32) word {
+	xor := index ^ current
+	return word(-(((xor | -xor) >> 31) ^ 1))
+}
+
+func (table *decafBaseTable) lookup(index uint32) *twNiels {
+	out := &twNiels{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	for i := 0; i < tableSize; i++ {
+		m := selectMask(index, uint32(i))
+		for j := 0; j < limbs; j++ {
+			out.a[j] |= m & table.base[i].a[j]
+			out.b[j] |= m & table.base[i].b[j]
+			out.c[j] |= m & table.base[i].c[j]
+		}
+	}
+	return out
 
 }
 
-var decafPrecompTable = &decafBaseTable{}
-
 func init() {
-	t := [80]*twNiels{
+	t := [tableSize]*twNiels{
 		//0
 		&twNiels{
 			&bigNumber{0x07278dc5, 0x0e614a9f, 0x004c5124, 0x02e454ad, 0x0e1436f3, 0x0d8f58ce, 0x0e4180ec, 0x0c83ed46, 0x074a38fa, 0x0a41e932, 0x0257771e, 0x0c1e7e53, 0x03c0392f, 0x043e0ff0, 0x05ce61df, 0x02c7c640},
