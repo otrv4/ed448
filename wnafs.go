@@ -207,6 +207,24 @@ func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
 	return out[:]
 }
 
-func constTimeLookup(table []*twPNiels, idx word) *twPNiels {
-	return table[idx]
+func constTimeLookup(table []*twPNiels, index uint32) *twPNiels {
+	out := &twPNiels{
+		&twNiels{
+			&bigNumber{},
+			&bigNumber{},
+			&bigNumber{},
+		},
+		&bigNumber{},
+	}
+
+	for i := 0; i < len(table); i++ {
+		m := selectMask(index, uint32(i))
+		for j := 0; j < limbs; j++ {
+			out.n.a[j] |= m & table[i].n.a[j]
+			out.n.b[j] |= m & table[i].n.b[j]
+			out.n.c[j] |= m & table[i].n.c[j]
+			out.z[j] |= m & table[i].z[j]
+		}
+	}
+	return out
 }

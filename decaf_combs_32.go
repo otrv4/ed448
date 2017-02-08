@@ -32,7 +32,6 @@ func (table *decafBaseTable) lookup(index uint32) *twNiels {
 		}
 	}
 	return out
-
 }
 
 func init() {

@@ -12,6 +12,7 @@ type fixedBaseTable struct {
 	adjustments adjustmentsTable
 }
 
+//TODO: Make this lookup constant time, just like in decaf_combs_32.go
 func (table *fixedBaseTable) lookup(j, t, idx uint) *twNiels {
 	nin := j << (t - 1)
 	return table.combs[nin+idx].copy()

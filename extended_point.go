@@ -285,7 +285,7 @@ func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoi
 		bits ^= inv
 
 		//Add in from table.  Compute out.t (point) only on last iteration.
-		pNeg := constTimeLookup(multiples, bits&windowTMask).copy()
+		pNeg := constTimeLookup(multiples, uint32(bits&windowTMask))
 		pNeg.n.conditionalNegate(inv)
 
 		if first {
@@ -383,7 +383,7 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafSca
 		bits1 ^= inv1
 		bits2 ^= inv2
 		//Add in from table.  Compute t only on last iteration.
-		mul1pn := constTimeLookup(multiples1, bits1&windowTMask).copy()
+		mul1pn := constTimeLookup(multiples1, uint32(bits1&windowTMask))
 		mul1pn.n.conditionalNegate(inv1)
 		if first {
 			out = mul1pn.twExtendedPoint()
@@ -398,7 +398,7 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafSca
 			out.double(false)
 			out.addProjectiveNielsToExtended(mul1pn, false)
 		}
-		mul2pn := constTimeLookup(multiples2, bits2&windowTMask).copy()
+		mul2pn := constTimeLookup(multiples2, uint32(bits2&windowTMask))
 		mul2pn.n.conditionalNegate(inv2)
 		if i > 0 {
 			out.addProjectiveNielsToExtended(mul2pn, true)
