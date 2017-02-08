@@ -23,22 +23,6 @@ func failure(status word) bool {
 	return false
 }
 
-// NewPoint returns an Ed448 Point
-// The Identity is not a valid point
-func NewPoint(x [fieldBytes]byte) (Point, error) {
-	d := &twExtendedPoint{
-		x: &bigNumber{},
-		y: &bigNumber{},
-		z: &bigNumber{},
-		t: &bigNumber{},
-	}
-	status := decafDecode(d, serialized(x), false)
-	if failure(status) {
-		return nil, errors.New("ed448: the serialized input could not be decoded as a valid point")
-	}
-	return d, nil
-}
-
 //XXX This should probably receive []byte{}
 func newPoint(x, y serialized) (p *homogeneousProjective, err error) {
 	xN, ok1 := deserialize(x)

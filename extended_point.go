@@ -1,5 +1,9 @@
 package ed448
 
+import (
+	"errors"
+)
+
 type twExtendedPoint struct {
 	x, y, z, t *bigNumber
 }
@@ -409,6 +413,37 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafSca
 }
 
 // exposed methods
+
+// NewPointFromByte returns an Ed448 Point from a byte array
+// The Identity is not a valid point
+// TODO Do we want this anymore?
+func NewPointFromBytes(x [fieldBytes]byte) (Point, error) {
+	d := &twExtendedPoint{
+		x: &bigNumber{},
+		y: &bigNumber{},
+		z: &bigNumber{},
+		t: &bigNumber{},
+	}
+	status := decafDecode(d, serialized(x), false)
+	if failure(status) {
+		return nil, errors.New("ed448: the serialized input could not be decoded as a valid point")
+	}
+	return d, nil
+}
+
+// NewPoint returns an Ed448 Point from uint32 arrays
+func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32) Point {
+	x, y, z, t := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+
+	for i := 0; i < limbs; i++ {
+		x[i] = word(a[i])
+		y[i] = word(b[i])
+		z[i] = word(c[i])
+		t[i] = word(d[i])
+	}
+
+	return &twExtendedPoint{x, y, z, t}
+}
 
 //IsValid tests if a point is valid.
 func (p *twExtendedPoint) IsValid() bool {
