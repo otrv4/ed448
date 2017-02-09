@@ -34,7 +34,7 @@ func (s *decafScalar) scalarSubExtra(minuend *decafScalar, subtrahend *decafScal
 	chain = 0
 
 	for i := uintZero; i < scalarWords; i++ {
-		chain += sdword(out[i]) + (sdword(scalarQ[i]) & borrow)
+		chain += sdword(out[i]) + (sdword(ScalarQ[i]) & borrow)
 		out[i] = word(chain)
 		chain >>= wordBits
 	}
@@ -50,7 +50,7 @@ func (s *decafScalar) scalarAdd(a, b *decafScalar) {
 		out[i] = word(chain)
 		chain >>= wordBits
 	}
-	out.scalarSubExtra(out, scalarQ, word(chain))
+	out.scalarSubExtra(out, ScalarQ, word(chain))
 	copy(s[:], out[:])
 }
 
@@ -116,7 +116,7 @@ func (s *decafScalar) decode(b []byte) word {
 
 	accum := int64(0)
 	for i := 0; i < 14; i++ {
-		accum += int64(s[i]) - int64(scalarQ[i])
+		accum += int64(s[i]) - int64(ScalarQ[i])
 		accum >>= wordBits
 	}
 
@@ -140,7 +140,7 @@ func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 		multiplicand := out[0] * montgomeryFactor
 		chain = 0
 		for j := 0; j < scalarWords; j++ {
-			chain += dword(multiplicand)*dword(scalarQ[j]) + dword(out[j])
+			chain += dword(multiplicand)*dword(ScalarQ[j]) + dword(out[j])
 			if j > 0 {
 				out[j-1] = word(chain)
 			}
@@ -150,7 +150,7 @@ func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 		out[scalarWords-1] = word(chain)
 		carry = word(chain >> wordBits)
 	}
-	out.scalarSubExtra(out, scalarQ, carry)
+	out.scalarSubExtra(out, ScalarQ, carry)
 	copy(s[:], out[:])
 }
 

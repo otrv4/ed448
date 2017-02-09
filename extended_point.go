@@ -272,7 +272,7 @@ func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoi
 
 	scalar1x := &decafScalar{}
 	scalar1x.scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
-	scalar1x.halve(scalar1x, scalarQ)
+	scalar1x.halve(scalar1x, ScalarQ)
 
 	multiples := pointA.prepareFixedWindow(nTable)
 
@@ -316,7 +316,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	}
 	scalar2 := NewDecafScalar([fieldBytes]byte{})
 	scalar2.Add(scalar, decafPrecompTable.scalarAdjustment)
-	scalar2.halve(scalar2, scalarQ)
+	scalar2.halve(scalar2, ScalarQ)
 
 	var ni *twNiels
 	for i := int(decafCombSpacing - 1); i >= 0; i-- {
@@ -362,10 +362,10 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafSca
 
 	scalar1x := &decafScalar{}
 	scalar1x.scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
-	scalar1x.halve(scalar1x, scalarQ)
+	scalar1x.halve(scalar1x, ScalarQ)
 	scalar2x := &decafScalar{}
 	scalar2x.scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
-	scalar2x.halve(scalar2x, scalarQ)
+	scalar2x.halve(scalar2x, ScalarQ)
 
 	multiples1 := pointB.prepareFixedWindow(nTable)
 	multiples2 := pointC.prepareFixedWindow(nTable)
