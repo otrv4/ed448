@@ -157,9 +157,17 @@ func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 //Exported methods
 
 // NewDecafScalar returns a decaf Scalar in Ed448
-func NewDecafScalar(in [fieldBytes]byte) Scalar {
+func NewDecafScalar(in []byte) Scalar {
+	if in == nil {
+		return &decafScalar{}
+	}
+
+	if len(in) != 56 {
+		panic("byte input needs to be size 56")
+	}
+
 	out := &decafScalar{}
-	barrettDeserializeAndReduce(out[:], in[:], &curvePrimeOrder)
+	barrettDeserializeAndReduce(out[:], in, &curvePrimeOrder)
 	return out
 }
 

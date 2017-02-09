@@ -5,7 +5,9 @@ import (
 )
 
 func (s *Ed448Suite) Test_NewScalar(c *C) {
-	a := [fieldBytes]byte{
+	lessBytes := make([]byte, 55)
+	moreBytes := make([]byte, 57)
+	bytes := []byte{
 		0x25, 0x8a, 0x52, 0x63, 0xd9, 0xf0, 0xfa, 0xad,
 		0x9d, 0x50, 0x40, 0x8a, 0xf0, 0x76, 0x66, 0xe3,
 		0x3d, 0xc2, 0x86, 0x1b, 0x01, 0x54, 0x18, 0xb8,
@@ -14,8 +16,6 @@ func (s *Ed448Suite) Test_NewScalar(c *C) {
 		0x68, 0xa4, 0x2e, 0xde, 0x76, 0x60, 0xe6, 0x4a,
 		0x51, 0x12, 0xb1, 0x35, 0x3d, 0xac, 0x04, 0x08,
 	}
-
-	sc := NewDecafScalar(a)
 
 	expected := &decafScalar{
 		0x63528a25, 0xadfaf0d9,
@@ -27,7 +27,10 @@ func (s *Ed448Suite) Test_NewScalar(c *C) {
 		0x35b11251, 0x0804ac3d,
 	}
 
-	c.Assert(sc, DeepEquals, expected)
+	c.Assert(NewDecafScalar(nil), DeepEquals, &decafScalar{})
+	c.Assert(func() { NewDecafScalar(lessBytes) }, Panics, "byte input needs to be size 56")
+	c.Assert(func() { NewDecafScalar(moreBytes) }, Panics, "byte input needs to be size 56")
+	c.Assert(NewDecafScalar(bytes), DeepEquals, expected)
 }
 
 func (s *Ed448Suite) Test_ScalarAddition(c *C) {
@@ -279,7 +282,7 @@ func (s *Ed448Suite) Test_DecodeError_WithSmallSource(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarEquals(c *C) {
-	a := NewDecafScalar([fieldBytes]byte{})
+	a := NewDecafScalar(nil)
 	b := a.Copy()
 	c.Assert(a.Equals(b), Equals, true)
 }
