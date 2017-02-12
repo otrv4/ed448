@@ -427,74 +427,69 @@ func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32
 	return &twExtendedPoint{x, y, z, t}
 }
 
-//IsValid tests if a point is valid.
+// IsValid tests if a point is valid.
 func (p *twExtendedPoint) IsValid() bool {
 	return p.isValidPoint()
 }
 
-//Equals compares whether two points are equal.
+// Equals compares whether two points are equal.
 func (p *twExtendedPoint) Equals(q Point) bool {
 	valid := p.equals(q.(*twExtendedPoint))
 	return valid == decafTrue
 }
 
-//Copy copies a point.
+// Copy copies a point.
 func (p *twExtendedPoint) Copy() Point {
 	p.copy()
 	return Point(p)
 }
 
-//Add adds two points to produce a thrid point.
+// Add adds two points to produce a thrid point.
 func (p *twExtendedPoint) Add(q, r Point) {
 	p.add(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
-//Sub subtracts two points to produce a thrid point.
+// Sub subtracts two points to produce a thrid point.
 func (p *twExtendedPoint) Sub(q, r Point) {
 	p.sub(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
-//Encode encodes a point as a sequence of bytes.
+// Encode encodes a point as a sequence of bytes.
 func (p *twExtendedPoint) Encode() []byte {
 	out := make([]byte, fieldBytes)
 	p.decafEncode(out)
 	return out
 }
 
-//Decode decodes a point from a sequence of bytes.
-//Every point has a unique encoding, so not every
-//sequence of bytes is a valid encoding.  If an invalid
-//encoding is given, the output is undefined.
+// Decode decodes a point from a sequence of bytes.
+// Every point has a unique encoding, so not every
+// sequence of bytes is a valid encoding.  If an invalid
+// encoding is given, the output is undefined.
 func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) {
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
 	decafDecode(p, ser, useIdentity)
 }
 
-//PointScalarMul multiplies a base point by a scalar.
+// PointScalarMul multiplies a base point by a scalar.
 func PointScalarMul(q Point, a Scalar) Point {
 	return pointScalarMul(q.(*twExtendedPoint), a.(*decafScalar))
 }
 
-//PrecomputedScalarMul mutiplies a precomputed point by a scalar.
+// PrecomputedScalarMul mutiplies a precomputed point by a scalar.
 func PrecomputedScalarMul(s Scalar) Point {
 	return precomputedScalarMul(s.(*decafScalar))
 }
 
-//DoubleScalarMul multiplies two base points by two scalars.
+// DoubleScalarMul multiplies two base points by two scalars.
 func DoubleScalarMul(q, r Point, a, b Scalar) Point {
 	return doubleScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
 }
 
-//DoubleScalarMulNonsecret multiplies two base points by
-//two scalars. It may leak the scalars. Otherwise is
-//equivalent to DoubleScalarMul.
-func DoubleScalarMulNonsecret(s1, s2 Scalar, b2 Point) Point {
-	combo := &twExtendedPoint{
-		&bigNumber{},
-		&bigNumber{},
-		&bigNumber{},
-		&bigNumber{},
-	}
-	return decafDoubleNonSecretScalarMul(combo, b2.(*twExtendedPoint), s1.(*decafScalar), s2.(*decafScalar))
+// DoubleScalarMulNonsecret multiplies two base points by
+// two scalars. It may leak the scalars. It is faster at
+// expense of variable time than DoubleScalarMul. Otherwise,
+// it is equivalent. It is designed for signature verification.
+func DoubleScalarMulNonsecret(q, r Point, a, b Scalar) Point {
+	return decafDoubleNonSecretScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
 }

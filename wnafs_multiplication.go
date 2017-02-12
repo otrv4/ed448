@@ -12,17 +12,15 @@ func recodeWnaf(control []smvtControl, scalar *decafScalar, nBits, tableBits uin
 		bit := (scalar[i/wordBits] >> uint(i%wordBits)) & 1
 		current = (2 * current) + int(bit)
 
-		/*
-		 * Sizing: |current| >= 2^(tableBits+1) -> |current| = 2^0
-		 * So current loses (tableBits+1) bits every time.  It otherwise gains
-		 * 1 bit per iteration.  The number of iterations is
-		 * (nbits + 2 + tableBits), and an additional control word is added at
-		 * the end.  So the total number of control words is at most
-		 * ceil((nbits+1) / (tableBits+1)) + 2 = floor((nbits)/(tableBits+1)) + 2.
-		 * There's also the stopper with power -1, for a total of +3.
-		 */
+		// Sizing: |current| >= 2^(tableBits+1) -> |current| = 2^0
+		// Current loses (tableBits+1) bits every time.  It otherwise gains
+		// 1 bit per iteration.  The number of iterations is
+		// (nbits + 2 + tableBits), and an additional control word is added at
+		// the end.  So the total number of control words is at most
+		// ceil((nbits+1) / (tableBits+1)) + 2 = floor((nbits)/(tableBits+1)) + 2.
+		// There's also the stopper with power -1, for a total of +3.
 		if current >= (2<<word(tableBits)) || current <= -1-(2<<word(tableBits)) {
-			delta := (current + 1) >> 1 /* |delta| < 2^tablebits */
+			delta := (current + 1) >> 1 // |delta| < 2^tablebits
 			current = -(current & 1)
 
 			for j = i; (delta & 1) == 0; j++ {
@@ -149,21 +147,6 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre *decafSca
 	}
 }
 
-/**
- * Multiply two base points by two scalars:
- * scaled = scalar1*decaf_448_point_base + scalar2*base2.
- *
- * Otherwise equivalent to decaf_448_point_double_scalarmul, but may be
- * faster at the ***expense of being variable time.***
- *
- * @param [out] combo The linear combination scalar1*base + scalar2*base2.
- * @param [in] scalar1 A first scalar to multiply by.
- * @param [in] base2 A second point to be scaled.
- * @param [in] scalar2 A second scalar to multiply by.
- *
- * @warning: This function takes variable time, and may leak the scalars
- * used.  It is designed for signature verification.
- */
 func decafDoubleNonSecretScalarMul(combo, base *twExtendedPoint, scalarPre, scalarVar *decafScalar) *twExtendedPoint {
 	tableBitsVar := uint(3) // DECAF_WNAF_VAR_TABLE_BITS
 	tableBitsPre := uint(5) // DECAF_WNAF_FIXED_TABLE_BITS
