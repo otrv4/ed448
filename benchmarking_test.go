@@ -317,11 +317,9 @@ func (s *Ed448Suite) Benchmark_NonsecretDoubleScalarMul(c *C) {
 
 	y := &decafScalar{0x2378c292, 0x216cc272, 0xc44edb49, 0xffffffff, 0xffffffff, 0xffffffff, 0x3fffffff, 0x2378c292, 0x216cc272, 0xc44edb49, 0x31430f14, 0xffffffff, 0xffffffff, 0x3fffffff}
 
-	p := &twExtendedPoint{&bigNumber{0x00}, &bigNumber{0x00}, &bigNumber{0x00}, &bigNumber{0x00}}
-
 	c.ResetTimer()
 	for i := 0; i < c.N; i++ {
-		decafDoubleNonSecretScalarMul(p, base, x, y)
+		decafDoubleNonSecretScalarMul(base, x, y)
 	}
 }
 

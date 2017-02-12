@@ -490,6 +490,6 @@ func DoubleScalarMul(q, r Point, a, b Scalar) Point {
 // two scalars. It may leak the scalars. It is faster at
 // expense of variable time than DoubleScalarMul. Otherwise,
 // it is equivalent. It is designed for signature verification.
-func DoubleScalarMulNonsecret(q, r Point, a, b Scalar) Point {
-	return decafDoubleNonSecretScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
+func DoubleScalarMulNonsecret(q Point, a, b Scalar) Point {
+	return decafDoubleNonSecretScalarMul(q.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
 }

@@ -126,7 +126,7 @@ func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k 
 	response := &decafScalar{}
 	ret &= response.decode(signature[56:])
 
-	pkPoint = decafDoubleNonSecretScalarMul(pkPoint, pkPoint, response, challenge)
+	pkPoint = decafDoubleNonSecretScalarMul(pkPoint, response, challenge)
 
 	ret &= pkPoint.equals(point)
 
