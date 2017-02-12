@@ -4,7 +4,7 @@ type smvtControl struct {
 	power, addend int
 }
 
-func recodeWnaf(control []smvtControl, scalar *decafScalar, nBits, tableBits uint) (position word) {
+func recodeWNAF(control []smvtControl, scalar *decafScalar, nBits, tableBits uint) (position word) {
 	current := 0
 	var i, j int
 	position = 0
@@ -47,7 +47,19 @@ func recodeWnaf(control []smvtControl, scalar *decafScalar, nBits, tableBits uin
 	return
 }
 
-func prepareWnafTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
+func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
+	pOriginal := p.copy()
+	pn := p.copy().double(false).extendedToNiels()
+	out := make([]*twPNiels, nTable)
+	out[0] = pOriginal.extendedToNiels()
+	for i := 1; i < nTable; i++ {
+		pOriginal.addProjectiveNielsToExtended(pn, false)
+		out[i] = pOriginal.extendedToNiels()
+	}
+	return out[:]
+}
+
+func prepareWNAFTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 	dst[0] = p.twPNiels()
 
 	if tableSize == 0 {
@@ -66,8 +78,8 @@ func prepareWnafTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 	}
 }
 
-func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) {
-	dst[0] = p.twPNiels()
+func decafPrepareWNAFTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) {
+	dst[0] = p.extendedToNiels()
 
 	if tableSize == 0 {
 		return
@@ -75,14 +87,14 @@ func decafPrepareWnafTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 
 	p.double(false)
 
-	twOp := p.twPNiels()
+	twOp := p.extendedToNiels()
 
 	p.addProjectiveNielsToExtended(dst[0], false)
-	dst[1] = p.twPNiels()
+	dst[1] = p.extendedToNiels()
 
 	for i := 2; i < 1<<tableSize; i++ {
 		p.addProjectiveNielsToExtended(twOp, false)
-		dst[i] = p.twPNiels()
+		dst[i] = p.extendedToNiels()
 	}
 }
 
@@ -95,11 +107,11 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre *decafSca
 	var controlVar [92]smvtControl // nbitsVar/(tableBitsVar+1)+3
 	var controlPre [77]smvtControl // nbitsPre/(tableBitsPre+1)+3
 
-	recodeWnaf(controlVar[:], scalarVar, nbitsVar, tableBitsVar)
-	recodeWnaf(controlPre[:], scalarPre, nbitsPre, tableBitsPre)
+	recodeWNAF(controlVar[:], scalarVar, nbitsVar, tableBitsVar)
+	recodeWNAF(controlPre[:], scalarPre, nbitsPre, tableBitsPre)
 
 	var precmpVar [16]*twPNiels // 1 << tableBitsVar
-	prepareWnafTable(precmpVar[:], working, tableBitsVar)
+	prepareWNAFTable(precmpVar[:], working, tableBitsVar)
 
 	contp := 0
 	contv := 0

@@ -6,6 +6,430 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+func (s *Ed448Suite) Test_RecodeWNAFCompareFull(c *C) {
+	scalar := &decafScalar{
+		0x120854c7, 0x6a241ba0,
+		0x41468997, 0x11e8f8aa,
+		0x1c0815bf, 0xea9551e7,
+		0x71cfde7f, 0x462af8b2,
+		0x7a3ac97f, 0x6ae5489c,
+		0x7adb6891, 0x0797f552,
+		0x738313e3, 0x12a2866a,
+	}
+
+	controlVar := make([]smvtControl, 92)
+	pos := recodeWNAF(controlVar, scalar, scalarBits, 4)
+
+	c.Assert(controlVar[:pos], DeepEquals, []smvtControl{
+		smvtControl{440, 19},
+		smvtControl{434, -23},
+		smvtControl{431, -3},
+		smvtControl{423, 13},
+		smvtControl{417, -11},
+		smvtControl{410, 29},
+		smvtControl{402, -31},
+		smvtControl{396, -15},
+		smvtControl{389, 31},
+		smvtControl{384, 3},
+		smvtControl{375, 15},
+		smvtControl{371, 3},
+		smvtControl{359, -21},
+		smvtControl{353, -23},
+		smvtControl{346, 31},
+		smvtControl{341, -9},
+		smvtControl{335, -9},
+		smvtControl{328, -23},
+		smvtControl{324, -7},
+		smvtControl{316, 23},
+		smvtControl{312, -5},
+		smvtControl{304, -27},
+		smvtControl{299, 9},
+		smvtControl{293, 5},
+		smvtControl{287, -7},
+		smvtControl{278, -23},
+		smvtControl{270, -21},
+		smvtControl{263, 19},
+		smvtControl{251, -23},
+		smvtControl{244, -29},
+		smvtControl{240, -5},
+		smvtControl{230, -29},
+		smvtControl{223, -27},
+		smvtControl{217, -7},
+		smvtControl{212, -3},
+		smvtControl{201, -17},
+		smvtControl{199, 1},
+		smvtControl{184, -21},
+		smvtControl{178, -27},
+		smvtControl{172, 21},
+		smvtControl{165, 15},
+		smvtControl{160, 7},
+		smvtControl{154, 7},
+		smvtControl{147, 1},
+		smvtControl{137, 11},
+		smvtControl{134, -1},
+		smvtControl{124, -15},
+		smvtControl{116, 31},
+		smvtControl{112, -7},
+		smvtControl{102, -29},
+		smvtControl{97, -11},
+		smvtControl{94, 1},
+		smvtControl{86, 5},
+		smvtControl{79, 13},
+		smvtControl{71, 19},
+		smvtControl{64, 23},
+		smvtControl{58, 27},
+		smvtControl{53, -15},
+		smvtControl{50, 1},
+		smvtControl{42, 7},
+		smvtControl{37, -3},
+		smvtControl{25, 9},
+		smvtControl{15, 17},
+		smvtControl{10, -11},
+		smvtControl{3, 25},
+		smvtControl{0, -1},
+	})
+}
+
+func (s *Ed448Suite) TestRecodeWNAFForScalarZero(c *C) {
+	nbitsPre := uint(446)
+	tableBitsPre := uint(5)
+	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
+	controlLen := nbitsPre/(tableBitsPre+1) + 3
+	controlPre := make([]smvtControl, controlLen)
+	sig := &decafScalar{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}
+
+	position := recodeWNAF(controlPre[:], sig, nbitsPre, tableBitsPre)
+
+	c.Assert(position, Equals, word(0))
+	c.Assert(controlPre[position].power, Equals, -1)
+	c.Assert(controlPre[position].addend, Equals, 0)
+}
+
+func (s *Ed448Suite) TestRecodeWNAFForChallenge(c *C) {
+	nbits := uint(446)
+	tableBits := uint(4)
+	controlLen := nbits/(tableBits+1) + 3
+	control := make([]smvtControl, controlLen)
+	challenge := &decafScalar{
+		0xfd27ffdd, 0xa4a42c92,
+		0xd9464f36, 0xac8078dd,
+		0x91e922f8, 0x76ebe5e8,
+		0x4f1d8f84, 0x968d2c41,
+		0x857c5a17, 0x9f74691c,
+		0x3595bd83, 0x5b966fb6,
+		0xb1428aca, 0x31b43b4d,
+	}
+
+	position := recodeWNAF(control[:], challenge, nbits, tableBits)
+
+	c.Assert(position, Equals, word(67))
+	c.Assert(control[position].power, Equals, -1)
+	c.Assert(control[position].addend, Equals, 0)
+}
+
+func (s *Ed448Suite) TestDecafRecodeWNAFFull(c *C) {
+	scalar := &decafScalar{
+		0x120854c7, 0x6a241ba0,
+		0x41468997, 0x11e8f8aa,
+		0x1c0815bf, 0xea9551e7,
+		0x71cfde7f, 0x462af8b2,
+		0x7a3ac97f, 0x6ae5489c,
+		0x7adb6891, 0x0797f552,
+		0x738313e3, 0x12a2866a,
+	}
+
+	controlVar := make([]smvtControl, 115)
+	pos := recodeWNAF(controlVar, scalar, scalarBits, 3)
+
+	c.Assert(controlVar[:pos], DeepEquals, []smvtControl{
+		smvtControl{441, 9},
+		smvtControl{437, 5},
+		smvtControl{431, 5},
+		smvtControl{423, 13},
+		smvtControl{417, -11},
+		smvtControl{412, 7},
+		smvtControl{407, 7},
+		smvtControl{400, 3},
+		smvtControl{394, 5},
+		smvtControl{386, -7},
+		smvtControl{384, -1},
+		smvtControl{375, 15},
+		smvtControl{371, 3},
+		smvtControl{360, -11},
+		smvtControl{356, 5},
+		smvtControl{351, 5},
+		smvtControl{344, -5},
+		smvtControl{338, -9},
+		smvtControl{332, -9},
+		smvtControl{327, -15},
+		smvtControl{321, 9},
+		smvtControl{316, -9},
+		smvtControl{312, -5},
+		smvtControl{305, -13},
+		smvtControl{300, -11},
+		smvtControl{295, -15},
+		smvtControl{290, 7},
+		smvtControl{283, 15},
+		smvtControl{278, 9},
+		smvtControl{272, -5},
+		smvtControl{267, -7},
+		smvtControl{263, 3},
+		smvtControl{254, -3},
+		smvtControl{249, 3},
+		smvtControl{242, 11},
+		smvtControl{240, -1},
+		smvtControl{231, -15},
+		smvtControl{226, 13},
+		smvtControl{223, -3},
+		smvtControl{217, -7},
+		smvtControl{212, -3},
+		smvtControl{205, -1},
+		smvtControl{199, -3},
+		smvtControl{185, -11},
+		smvtControl{180, 9},
+		smvtControl{175, 11},
+		smvtControl{172, -3},
+		smvtControl{165, 15},
+		smvtControl{160, 7},
+		smvtControl{154, 7},
+		smvtControl{147, 1},
+		smvtControl{137, 11},
+		smvtControl{134, -1},
+		smvtControl{124, -15},
+		smvtControl{117, 15},
+		smvtControl{112, 9},
+		smvtControl{103, -15},
+		smvtControl{98, 11},
+		smvtControl{94, -7},
+		smvtControl{86, 5},
+		smvtControl{79, 13},
+		smvtControl{73, 5},
+		smvtControl{67, -13},
+		smvtControl{60, -9},
+		smvtControl{57, -3},
+		smvtControl{50, 9},
+		smvtControl{42, 7},
+		smvtControl{37, -3},
+		smvtControl{25, 9},
+		smvtControl{19, 1},
+		smvtControl{11, 11},
+		smvtControl{6, -13},
+		smvtControl{0, 7},
+	})
+}
+
+func (s *Ed448Suite) Test_DecafRecodeWNAFForScalarZero(c *C) {
+	tableBitsPre := uint(5)
+	controlLen := scalarBits/(tableBitsPre+1) + 3
+	controlPre := make([]smvtControl, controlLen)
+	sig := &decafScalar{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}
+
+	position := recodeWNAF(controlPre[:], sig, scalarBits, tableBitsPre)
+
+	c.Assert(position, Equals, word(0))
+	c.Assert(controlPre[position].power, Equals, -1)
+	c.Assert(controlPre[position].addend, Equals, 0)
+}
+
+func (s *Ed448Suite) Test_PrepareFixedWindow(c *C) {
+	p := &twExtendedPoint{
+		&bigNumber{
+			0x0e0fbf9e, 0x0ba1bcd7,
+			0x01cc6d39, 0x053b56e8,
+			0x0635d142, 0x0383307a,
+			0x0f8a159b, 0x097fd2cf,
+			0x0fa310f6, 0x05522bde,
+			0x0b981703, 0x0b095b1e,
+			0x042d4780, 0x05ae11df,
+			0x0934fe80, 0x0dc6474d},
+		&bigNumber{
+			0x02c1149c, 0x0e72febf,
+			0x05259893, 0x0723e184,
+			0x0f7232ff, 0x019a5600,
+			0x05581d2c, 0x07331444,
+			0x04e0124a, 0x09c3c5e5,
+			0x0945536e, 0x0b786a20,
+			0x0f75623f, 0x00ba30e8,
+			0x0cc589a3, 0x04a2eea8},
+		&bigNumber{
+			0x02406c71, 0x0b2fdb67,
+			0x02591aa2, 0x085fc24e,
+			0x0dc50d09, 0x08692c5b,
+			0x0ba917d7, 0x0aefea74,
+			0x037d0084, 0x04d5defa,
+			0x08bbe7ad, 0x050da977,
+			0x08adf827, 0x05425cdd,
+			0x037d816d, 0x0d59cd0a},
+		&bigNumber{
+			0x0baf8c30, 0x06686ad3,
+			0x0c149bac, 0x0f57f68d,
+			0x05cd321a, 0x02ff8d60,
+			0x09dcc4bd, 0x0f731ec2,
+			0x0cd7ea75, 0x0be970e4,
+			0x043d30e0, 0x0dd64b9b,
+			0x04f78bf1, 0x0d1fde20,
+			0x05c88e97, 0x026ce314},
+	}
+	ntable := 16
+
+	w := p.prepareFixedWindow(ntable)
+
+	c.Assert(len(w), Equals, ntable)
+
+	expected := []*twPNiels{
+		// 0
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x04b154fd, 0x02d141e7, 0x03592b5a, 0x01e88a9c, 0x093c61bd, 0x0e172586, 0x05ce0790, 0x0db34174, 0x053d0152, 0x04719a06, 0x0dad3c6b, 0x006f0f01, 0x0b481abf, 0x0b0c1f09, 0x03908b22, 0x06dca75b},
+				&bigNumber{0x00d0d43b, 0x0a14bb97, 0x06f205cd, 0x0c5f386c, 0x05a80441, 0x051d867b, 0x04e232c7, 0x00b2e714, 0x04832342, 0x0f15f1c4, 0x04dd6a71, 0x0681c53f, 0x03a2a9c0, 0x066842c8, 0x05fa8823, 0x026935f6},
+				&bigNumber{0x0460a1f7, 0x0e76b0c4, 0x0bc48547, 0x0a643633, 0x0ff970aa, 0x0cb5cdc9, 0x0d2a0bc4, 0x06940a23, 0x0ad0577f, 0x07e65c18, 0x04b0332f, 0x059b353f, 0x010aebde, 0x09e69eb7, 0x084e54ff, 0x09ba3b12},
+			},
+			&bigNumber{0x0480d8e3, 0x065fb6ce, 0x04b23545, 0x00bf849c, 0x0b8a1a13, 0x00d258b7, 0x07522faf, 0x05dfd4e9, 0x06fa010a, 0x09abbdf4, 0x0177cf5a, 0x0a1b52ef, 0x015bf04e, 0x0a84b9bb, 0x06fb02da, 0x0ab39a14},
+		},
+		// 1
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x00a553ee, 0x00234003, 0x055c092c, 0x057bcbdd, 0x0e495a8c, 0x09c8b997, 0x0c143649, 0x0399ba66, 0x0df0f55f, 0x0c004b24, 0x0a7c0ab5, 0x0a95f91a, 0x005ee2fc, 0x011bb28d, 0x08ca5e5a, 0x0192776c},
+				&bigNumber{0x0a2f247e, 0x02e7847f, 0x0a1e65d9, 0x0571128d, 0x0c710f20, 0x0d2d073c, 0x02f89f06, 0x01a67d7c, 0x0f1e3c52, 0x0e90f285, 0x0a97b2e7, 0x00f68012, 0x005f2af2, 0x0ddcb5d2, 0x0bd8a372, 0x0c15a881},
+				&bigNumber{0x0c7957ba, 0x02b7715c, 0x0951bac2, 0x08ceafd5, 0x0de55a10, 0x01edb51f, 0x019e372a, 0x0ef9da41, 0x00e4539d, 0x08f12616, 0x072899db, 0x04eabccc, 0x01c30552, 0x03c77348, 0x02e95364, 0x0d406ee6},
+			},
+			&bigNumber{0x0f2830d8, 0x0056a35b, 0x08ce98ce, 0x0523ef98, 0x0922d7c0, 0x0dea9b3d, 0x04016a54, 0x0f7d6e3f, 0x0596053c, 0x0f26db88, 0x0e066eea, 0x0866a255, 0x0e8a62a7, 0x0dffb915, 0x084fa2b2, 0x04b35e84},
+		},
+		// 2
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x0bdc0118, 0x02f3217f, 0x09ebc3b3, 0x07617f27, 0x0434daf9, 0x05c63130, 0x079ffbba, 0x0ed66a9f, 0x0ac6adc7, 0x0cea22df, 0x0ead4d20, 0x04d91dbe, 0x08aea04f, 0x0eff9bba, 0x08c6636d, 0x08fbf2fe},
+				&bigNumber{0x0d6dae4e, 0x042ef7e0, 0x0e1974ba, 0x04c7f440, 0x0cc3f843, 0x00083ff4, 0x0490f26f, 0x0e95b6b5, 0x04b546d1, 0x059c8373, 0x03c0f841, 0x02ff119c, 0x087b2772, 0x0fc993a1, 0x02ddd9b6, 0x04a9c14d},
+				&bigNumber{0x0b9dbcd2, 0x0156cdf2, 0x02889448, 0x067306ba, 0x0bb5be76, 0x090eb070, 0x0a50ce79, 0x09b43e73, 0x080845ed, 0x09a2ecf7, 0x018e594a, 0x0b241a06, 0x051f02da, 0x031bbca7, 0x09b2848e, 0x0bbb2ec8},
+			},
+			&bigNumber{0x08078601, 0x088d1850, 0x00e0769d, 0x08eb236c, 0x0130e14f, 0x09e4586f, 0x0911c3b0, 0x0ce7530f, 0x0c10cc39, 0x0da28bc9, 0x05845355, 0x0003ec5a, 0x07b7bf88, 0x0300bf50, 0x0653991f, 0x049db070},
+		},
+		// 3
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x00496408, 0x0b651531, 0x067fd460, 0x085a3886, 0x04d21048, 0x0d621139, 0x071d8a8d, 0x03199572, 0x0e03e14c, 0x0d05c021, 0x0833d2b3, 0x0ef5a2c1, 0x0e1d24c6, 0x0027b3ae, 0x02ce6c8e, 0x08402aa3},
+				&bigNumber{0x05ad9af1, 0x0a0c1d97, 0x0b2d81fb, 0x01ea8e2d, 0x0a22652b, 0x0efd1612, 0x082ba3ab, 0x0afad623, 0x0c37c3dc, 0x094a087f, 0x09442f18, 0x0813269f, 0x0a734c8d, 0x063a6cb0, 0x0010d46a, 0x06638790},
+				&bigNumber{0x0689ba7e, 0x081e4dc6, 0x0c1ef0d4, 0x068f65c6, 0x03cb2bd2, 0x09c5100c, 0x011feeda, 0x0f3d4306, 0x00af4e32, 0x0358eba7, 0x07994455, 0x03534ba3, 0x0ffa2ea6, 0x0621d409, 0x0b854ef5, 0x06997a18},
+			},
+			&bigNumber{0x0a3dc259, 0x04b1a065, 0x03a2fa7c, 0x0099ce98, 0x0434976c, 0x04a0786d, 0x0e76a8b9, 0x0d291d23, 0x01dc0175, 0x05d1717b, 0x0c1d478a, 0x04ba7edf, 0x0b4b4324, 0x0c5f36a8, 0x0ed933aa, 0x0ac6d3f9},
+		},
+		// 4
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x02df046b, 0x057e1a14, 0x0005dcd2, 0x035667ff, 0x0f83f892, 0x0d6b9dca, 0x0f8fb738, 0x025946da, 0x08263015, 0x01e7865e, 0x0c2cba18, 0x0e10546f, 0x0f091335, 0x0df8e689, 0x010a9906, 0x0830b70c},
+				&bigNumber{0x0115bbe7, 0x0867aaae, 0x0ca910ef, 0x0c0ae406, 0x0a5a57ce, 0x03c2d826, 0x0457e63e, 0x0f34b795, 0x048c73f6, 0x0eb2313e, 0x0678f5b1, 0x05a6dbef, 0x0c78ba56, 0x094e3e5c, 0x0da22f13, 0x0678ecb3},
+				&bigNumber{0x0797d90b, 0x023eeee5, 0x06091221, 0x0ececc3a, 0x0ec1cca5, 0x041b1079, 0x0b4f4a87, 0x0a84bb5c, 0x0976bd53, 0x074c939e, 0x0b95416c, 0x05ea1867, 0x08ebff05, 0x0bc870f1, 0x0b309de3, 0x0010c34e},
+			},
+			&bigNumber{0x0b38f0f1, 0x03bc6913, 0x061ba597, 0x0cf921ec, 0x0bd4a2a5, 0x02fac843, 0x083f5c15, 0x07d7877a, 0x09dfebf5, 0x015ee5a1, 0x09beba6e, 0x0a89a826, 0x08e66f3a, 0x063d031e, 0x09d450f7, 0x0a90a158},
+		},
+		// 5
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x00235a46, 0x04d74adc, 0x0ddadd18, 0x061afbc5, 0x00b8d5e3, 0x04ad265e, 0x0b9914b0, 0x0e78fbb0, 0x09908a36, 0x0a2dde9e, 0x07ac5396, 0x0af6ff6a, 0x068ed7eb, 0x0dc11e8b, 0x02fec204, 0x0d5389db},
+				&bigNumber{0x08ae1125, 0x0555a7b2, 0x0b489173, 0x07472588, 0x0a70d04c, 0x028ff109, 0x058ef8ab, 0x065f78fa, 0x0c88caf4, 0x026957ca, 0x02165c81, 0x05288d3d, 0x05ae2148, 0x0108fdde, 0x0d31cc57, 0x048b9c53},
+				&bigNumber{0x0be9e6a9, 0x0617ae56, 0x0759b26d, 0x0c3c93e8, 0x0779d05d, 0x0789edb3, 0x081cf9dd, 0x09aa41bb, 0x07e8f870, 0x054a61b5, 0x088f337d, 0x0bb738c2, 0x06bdc816, 0x0070143c, 0x0114a075, 0x08f49ba9},
+			},
+			&bigNumber{0x048118f9, 0x0ec006fe, 0x05980ad8, 0x0e39107c, 0x0733036a, 0x0f5fc159, 0x07af1bad, 0x0e465b51, 0x0750076c, 0x0dd11964, 0x0b35aa73, 0x0a1fe8ae, 0x0294748c, 0x0f5150d7, 0x06ade020, 0x0659ffca},
+		},
+		// 6
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x04e37267, 0x0df7e646, 0x002c1f13, 0x07145a47, 0x07f9da71, 0x0ef38604, 0x03b74cf6, 0x04f98272, 0x0b1e5de6, 0x0961e851, 0x066a9c11, 0x0637cd49, 0x0c40ca9e, 0x0ad4f30c, 0x0eddbe48, 0x0235fe80},
+				&bigNumber{0x095ecd88, 0x007afcf3, 0x04645e96, 0x0929d281, 0x0c236979, 0x01487c7b, 0x01c93417, 0x0070157a, 0x000f5888, 0x0cd5c842, 0x09578536, 0x06bd9438, 0x0dde9e3f, 0x09d37fdc, 0x0c425dac, 0x081a7c61},
+				&bigNumber{0x0a01e5ed, 0x04ac3269, 0x0246ed1d, 0x01184f59, 0x086c9b60, 0x0b696eae, 0x0e544d50, 0x056e5ef4, 0x0e69db47, 0x0df87f7d, 0x08e76db7, 0x0f048dd2, 0x041b6fe1, 0x0d26dde7, 0x09177799, 0x0e5ebd77},
+			},
+			&bigNumber{0x0f762e2c, 0x0e3d5341, 0x05ab9ead, 0x081acf6b, 0x068db9ea, 0x08cde1f2, 0x08cfc97f, 0x0df58221, 0x035f081e, 0x08b0a279, 0x0ee831ac, 0x0c40fd59, 0x07ae3f18, 0x086b3bed, 0x0ffcb0f3, 0x08492cfb},
+		},
+		// 7
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x06baca70, 0x098c76c4, 0x06d43244, 0x063a0112, 0x0c712d42, 0x0c44c636, 0x0f7f2230, 0x040175a2, 0x05202d65, 0x08d900d7, 0x01da615d, 0x0894103b, 0x02fc86c6, 0x0b908128, 0x0ad5f030, 0x0a5d8188},
+				&bigNumber{0x09c62e7a, 0x0194b55b, 0x00924732, 0x00baca1e, 0x0faab36a, 0x07815f7e, 0x0a75c250, 0x0e63bfa9, 0x03260e43, 0x0d0e684c, 0x06f30b44, 0x01e5fb64, 0x0de6297f, 0x03e7ae5a, 0x0fd9af92, 0x01d12c86},
+				&bigNumber{0x0076d1d3, 0x0e083ce0, 0x0140855d, 0x0efb8ca5, 0x0cff83d8, 0x0f899ccb, 0x0c461c57, 0x02bc586b, 0x0eb8ebf5, 0x03f8256a, 0x071b8d04, 0x0e48f5cb, 0x08a14607, 0x03882433, 0x0c2a92b6, 0x0562a977},
+			},
+			&bigNumber{0x0028918f, 0x0f0c29c3, 0x0e1376f6, 0x09384b43, 0x0e8fc757, 0x00e5805c, 0x0455c0de, 0x055a162e, 0x0c4fd69a, 0x02330659, 0x061e4124, 0x094618ab, 0x040ef9be, 0x0a8f1974, 0x0b099f5c, 0x045c4715},
+		},
+		// 8
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x05a5b500, 0x0985380b, 0x03849e60, 0x06582f04, 0x013402ba, 0x07c4a15b, 0x04afb6e5, 0x019465a6, 0x035d0446, 0x0df3f9e4, 0x050022f4, 0x08332f10, 0x082f2c46, 0x0f810973, 0x0e0216de, 0x0ebdd61f},
+				&bigNumber{0x03aadbdc, 0x0f166b7e, 0x0a7619b8, 0x02528842, 0x008d0c13, 0x0f12020f, 0x06dd379b, 0x0736d3f4, 0x0ab1919d, 0x025ea6c2, 0x09bdc7e6, 0x0528572b, 0x0b5a9a26, 0x0f7e2e75, 0x0b326b12, 0x0ed1cd91},
+				&bigNumber{0x098e28fb, 0x03895751, 0x02d65b85, 0x077bc10a, 0x07b9a601, 0x066b9a42, 0x0dfabb87, 0x01bee158, 0x09b2d4e5, 0x06919086, 0x0169f374, 0x0942eb6b, 0x0bbe91e3, 0x047d5b20, 0x037523b6, 0x0473eb88},
+			},
+			&bigNumber{0x077ca5f0, 0x0fdbec93, 0x0bf4673c, 0x0bcd691d, 0x0b4585cd, 0x0c082eb9, 0x03c5a97b, 0x058b3645, 0x00ef8e34, 0x0424ca79, 0x004655e4, 0x0d4a8fad, 0x08af0bb8, 0x000e75a7, 0x0b6bbaff, 0x0d40c5f3},
+		},
+		// 9
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x06773538, 0x002e55cf, 0x09144496, 0x027e21a0, 0x0fa4fdbf, 0x01568a77, 0x087fe688, 0x05c6d9e6, 0x0508158c, 0x0b7433da, 0x080184db, 0x007477de, 0x00e3b950, 0x0f5b29b8, 0x0dafd838, 0x00336b81},
+				&bigNumber{0x0faf83af, 0x08b8eac0, 0x045af9b9, 0x00fd0239, 0x025ab82f, 0x0a5a46c4, 0x005ab02b, 0x0548c499, 0x0af1167f, 0x0e3ff944, 0x0bbc8c50, 0x08df9171, 0x08421dcf, 0x05354fb7, 0x027fa656, 0x0d88cce5},
+				&bigNumber{0x06592c5f, 0x0758bc19, 0x0976a5c4, 0x080e3e50, 0x05637d60, 0x050266c4, 0x06cce0c2, 0x000f76ba, 0x0b39952b, 0x08118c1c, 0x0f903a05, 0x08dbaac8, 0x02bb60d0, 0x082a0d3a, 0x06b73845, 0x00f848b7},
+			},
+			&bigNumber{0x0021161c, 0x0b667c0e, 0x08a9dc8c, 0x086fa0b9, 0x027b84c9, 0x0de272b8, 0x07dad62c, 0x0697d381, 0x03f9ac5a, 0x06b74d3b, 0x0416858d, 0x048dc187, 0x03cd18b2, 0x040eca1a, 0x0c49f066, 0x0ff05257},
+		},
+		// 10
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x04992354, 0x0f624b93, 0x06c88150, 0x07f72b38, 0x02b76818, 0x01e09970, 0x07856dfb, 0x0b14c688, 0x02d8e364, 0x0d51048e, 0x0674d538, 0x0b822562, 0x0e4e17f9, 0x0b6bf11b, 0x0c10ee26, 0x070319cf},
+				&bigNumber{0x036f3c2c, 0x054cefa5, 0x0cab8002, 0x0d1568b8, 0x0add5fe7, 0x0071a252, 0x04b3c490, 0x01e15013, 0x000e67bf, 0x01926c30, 0x0dc22cc5, 0x0d245c14, 0x03ed8abe, 0x0a7290c8, 0x058d2b11, 0x08aa1db2},
+				&bigNumber{0x0b43c9d5, 0x0d79d7fe, 0x040a1d18, 0x0a6369f1, 0x053e0d48, 0x09f1d213, 0x0bd51750, 0x0005ec64, 0x0297d428, 0x0acf4828, 0x090dd0e3, 0x0409de55, 0x0965d34c, 0x00b94f3a, 0x01dc5637, 0x085b74a4},
+			},
+			&bigNumber{0x09ffe991, 0x04a4ae6a, 0x0851b2cb, 0x0dd241df, 0x0cb58ff7, 0x0e6f6cec, 0x00da8c9b, 0x09032938, 0x01a53998, 0x0d5fcd05, 0x066c843a, 0x0f153cee, 0x01ab32a1, 0x0abd6dc5, 0x06a28c1f, 0x07c2b400},
+		},
+		// 11
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x054fad63, 0x0a6deab8, 0x03139dab, 0x08ec509b, 0x0f38948e, 0x02c721e1, 0x08dd641a, 0x0252cc09, 0x0c443f31, 0x0c8aaa66, 0x0c6458c1, 0x033b5b8b, 0x0089236e, 0x07b3592b, 0x09bf422c, 0x0261e002},
+				&bigNumber{0x05817da6, 0x02cbe159, 0x0253d5b3, 0x004b79fb, 0x075cbe56, 0x059c447b, 0x00211c1b, 0x096e941d, 0x004f1774, 0x0c4b650a, 0x06cc4142, 0x018ce550, 0x01754ebb, 0x0afd200c, 0x0440c27e, 0x082d3511},
+				&bigNumber{0x08151172, 0x0bd650e1, 0x094aa489, 0x05afdd3a, 0x03e3c4a4, 0x0c54bade, 0x030e6eb2, 0x00ffc2c0, 0x0cd3eaa0, 0x0bab2965, 0x05e31ca3, 0x07dbd978, 0x01e50070, 0x01a31a70, 0x0e187e72, 0x04a6706d},
+			},
+			&bigNumber{0x0a64587c, 0x09594b13, 0x07d06590, 0x0b62e1a6, 0x07a498ae, 0x040635bd, 0x04197574, 0x091c0d95, 0x09847940, 0x0be452a4, 0x0e2db46d, 0x077230bf, 0x0a8a3be9, 0x003e2ead, 0x090c8266, 0x01366b4e},
+		},
+		// 12
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x0a3a6958, 0x0b7c6460, 0x0a26894a, 0x0a7f749b, 0x0d68a071, 0x08f5f7aa, 0x0129f200, 0x0be007b7, 0x0f8b0279, 0x0a1bc934, 0x0d0ece01, 0x00317338, 0x0f371340, 0x0f79d31d, 0x060ace29, 0x0ef4c1da},
+				&bigNumber{0x0c1d0072, 0x0403e959, 0x0ec34cd9, 0x0c859e5e, 0x05fc7843, 0x0d850a1c, 0x0a50ccf9, 0x02dba347, 0x00d88f27, 0x08b61a79, 0x06a5f7e4, 0x0fe2f470, 0x0ecfb643, 0x05eae6fc, 0x0eeb0971, 0x0713d0d7},
+				&bigNumber{0x0db37a3f, 0x07c85d50, 0x04651c14, 0x084a7a43, 0x0c624b75, 0x09db7e57, 0x05b93aaf, 0x04aacb8d, 0x014b7e2c, 0x099cc5fe, 0x06c2374a, 0x04047476, 0x0c1b46d1, 0x073aed98, 0x0cb2a6e5, 0x045903bd},
+			},
+			&bigNumber{0x0e1fcb85, 0x0ef06397, 0x01551f6a, 0x07ae3bcb, 0x08a026f5, 0x02398ab0, 0x0e39a35b, 0x05a9b180, 0x0df3cd2b, 0x0e7a9f02, 0x00d7f4b3, 0x070d723d, 0x0b84e97c, 0x0b1fa785, 0x0ba13ca1, 0x0a266cb0},
+		},
+		// 13
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x0ec3db6b, 0x065f580b, 0x04fe9402, 0x07296ffe, 0x0a976860, 0x044b9376, 0x0060db4c, 0x08e2af69, 0x0a3c438a, 0x034a88bb, 0x06dd9552, 0x04c6d9ff, 0x0f880fef, 0x0c19a2ac, 0x003b6ea1, 0x0c5bc3a3},
+				&bigNumber{0x026a4750, 0x0715decb, 0x0e648646, 0x0a122697, 0x0d0de5bf, 0x0b450ecb, 0x0eb9f9d6, 0x08d7a7cf, 0x04b5e294, 0x01a50226, 0x0eee5b89, 0x05b3390a, 0x0b64958e, 0x037eebed, 0x0041d7aa, 0x0b6ccce2},
+				&bigNumber{0x0824e359, 0x0a93715f, 0x043c899c, 0x0ac52d1d, 0x01c6c0d5, 0x0c28ad2d, 0x075514b9, 0x009a03c1, 0x00852ff9, 0x035a06ff, 0x02461b9c, 0x0451dfe8, 0x077838ab, 0x0d925573, 0x08016fb9, 0x0fe722ef},
+			},
+			&bigNumber{0x0e50b079, 0x026c76da, 0x026b4fb0, 0x0661120a, 0x0d766626, 0x00f79967, 0x0fe99490, 0x0699c164, 0x085a39a8, 0x0ea7b9f1, 0x07103c79, 0x05046422, 0x06fe479f, 0x01827469, 0x044ee87b, 0x0cf58841},
+		},
+		// 14
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x0ebfe2a0, 0x0eb5fbb2, 0x0dc6ec15, 0x0668e6e7, 0x0a2b46d6, 0x09716cff, 0x0b1f6161, 0x075f2e4b, 0x092bafec, 0x04a09fe7, 0x0d0693b5, 0x0181e9e6, 0x0ae2011c, 0x0339acaa, 0x05ab0851, 0x02e7f480},
+				&bigNumber{0x00923994, 0x09e0df3c, 0x05d44abd, 0x0e120043, 0x0802cd52, 0x03d6dc68, 0x06848872, 0x0b6dc339, 0x0847737b, 0x0bc369ba, 0x02096051, 0x0bb48580, 0x07f1feb0, 0x01f3325e, 0x05347dc3, 0x0ac3e06b},
+				&bigNumber{0x0efcb0d5, 0x01516f87, 0x00c105be, 0x0c6c761b, 0x0b0e62e2, 0x0a170de3, 0x07e1d862, 0x0efee135, 0x0906ff9a, 0x097301d4, 0x0746a0ee, 0x0ebb2175, 0x0bfdd54e, 0x07828235, 0x0ed64735, 0x03c5ab55},
+			},
+			&bigNumber{0x0cc630cf, 0x04be9e7e, 0x02806f73, 0x033000c5, 0x08901863, 0x06198942, 0x057694d2, 0x0c4ea1d8, 0x0c5c8ca4, 0x0ba40152, 0x0c694dd1, 0x085ae4e6, 0x05bc4f74, 0x0db70b9f, 0x09da2b77, 0x0a6633ef},
+		},
+		// 15
+		&twPNiels{
+			&twNiels{
+				&bigNumber{0x077fc122, 0x08edd3d4, 0x0d81d8d0, 0x01ac9143, 0x08e4b336, 0x0f81211a, 0x0d1e5694, 0x008bd901, 0x04116e1f, 0x0fb16788, 0x092dd842, 0x0cbe52bb, 0x0ca568ee, 0x0f75e6bb, 0x03efc3bb, 0x00e50e2e},
+				&bigNumber{0x05fbceed, 0x0eb215cb, 0x05eeff9f, 0x083a37a3, 0x0044f669, 0x0abb2e46, 0x0807c9b6, 0x0201d31e, 0x0ef4ff9c, 0x07157790, 0x087931f8, 0x0b23a524, 0x0b4c9a95, 0x012ae723, 0x0aa48f6e, 0x08f0775d},
+				&bigNumber{0x01160f9b, 0x08b66bfe, 0x0d9b8296, 0x0a7bbf2a, 0x0c1a10af, 0x0f3cc344, 0x02c0089c, 0x0f4d630f, 0x07901e60, 0x0c9ce1e7, 0x02f5380a, 0x0697ba06, 0x0e6065cf, 0x0e709b4e, 0x0de4fa1d, 0x043caab1},
+			},
+			&bigNumber{0x012a04c3, 0x002a0678, 0x015d16e6, 0x04ec95aa, 0x0072c656, 0x01fee9b9, 0x0ea90f88, 0x04c44954, 0x0eada4ba, 0x0268f035, 0x048efc9e, 0x0905d82f, 0x0e8c31fc, 0x0f80f8f9, 0x0549be7b, 0x066b5184},
+		},
+	}
+	c.Assert(w[0].z, DeepEquals, expected[0].z)
+	c.Assert(w[0].n, DeepEquals, expected[0].n)
+}
+
 func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 	tableSize := uint(4)
 	exp := [16]*twPNiels{
@@ -154,350 +578,14 @@ func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	prepareWnafTable(dst, p, tableSize)
+	prepareWNAFTable(dst, p, tableSize)
 
 	for i, di := range dst {
 		c.Assert(di.equals(exp[i]), Equals, true)
 	}
 }
 
-func (s *Ed448Suite) TestWNAFSMultiplication(c *C) {
-	px, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
-	py, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
-	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	pt, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
-	pu, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
-
-	p := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
-	}
-
-	x := &decafScalar{
-		0x6c226d73, 0x70edcfc3,
-		0x44156c47, 0x084f4695,
-		0xe72606ac, 0x9d0ce5e5,
-		0xed96d3ba, 0x9ff3fa11,
-		0x4a15c383, 0xca38a0af,
-		0xead789b3, 0xb96613ba,
-		0x48ba4461, 0x34eb2031,
-	}
-
-	y := &decafScalar{
-		0x2118b8c6, 0x4356acd5,
-		0x26d7e73c, 0x459174b7,
-		0xf10bea31, 0x83e528bb,
-		0xb960d695, 0xd0da7e28,
-		0xbad7f9a1, 0xe9f5ba01,
-		0x94ea1518, 0x12c58cca,
-		0x302c76eb, 0x3bd0363e,
-	}
-
-	px, _ = hex.DecodeString("d902fadbeee8dd1ef391dcce59cc75d286c9efc7229dd919a35236a5447384e84617bf94d4129af02d7667fad1df88985132c1ce1b133428")
-	py, _ = hex.DecodeString("ba1d18df944a527ec4ebad9c84cc32643064dcd26bf003a9763dad575104e1a3c9fbb02f971169c2736ed5d8812ad8eeedcfa8226977ddb4")
-	pz, _ = hex.DecodeString("2d35e8b251eb6b421291cf3a466597759059e01b7cc89f332f96f801ced244299f4da20b9fcedbaa66c5fd3508dcb61888e2b89bee4fea45")
-	pt, _ = hex.DecodeString("8713cc3806a247771ae8567b3b73dd874a8261a610de7c34202fab877f15213120e2fd14e5b191663c1e62d404c54b9f63e1e2e3d98eafb2")
-	pu, _ = hex.DecodeString("eafb1cd470e2728ee254c7a312092e820656c14a993f2896479aa211b0a1bb515deee36d06acee20a40a1cad5dc5cc38072cdd63447587e9")
-	exp := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
-	}
-
-	linearComboVarFixedVt(p, x, y, wnfsTable[:])
-
-	c.Assert(p.equals(exp), Equals, true)
-}
-
-func (s *Ed448Suite) TestWNAFSMultiplicationCase3(c *C) {
-	px, _ := hex.DecodeString("3ad455b204ac920bddb750a6478ff733f487f45369770d989ad919944d8f1cb30a682d0d6e46892a94bc268688515d835e4d05a2697d78b6")
-	py, _ := hex.DecodeString("918bf9573f40be92567052b0c02fbf49cbfa43f68f5fcd7bdf44f877594eb6bfff690413befd9952d5710cefc1839771b9660f69b17790f5")
-	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	pt, _ := hex.DecodeString("3ad455b204ac920bddb750a6478ff733f487f45369770d989ad919944d8f1cb30a682d0d6e46892a94bc268688515d835e4d05a2697d78b6")
-	pu, _ := hex.DecodeString("918bf9573f40be92567052b0c02fbf49cbfa43f68f5fcd7bdf44f877594eb6bfff690413befd9952d5710cefc1839771b9660f69b17790f5")
-
-	p := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
-	}
-
-	x := &decafScalar{
-		0x150252d4, 0x91f90541,
-		0xfbc32870, 0x5055d9f0,
-		0x3e5d3a5c, 0xec7fe32d,
-		0xd043954a, 0xd6038f2e,
-		0x41d8bc06, 0xff202e0e,
-		0xda461aa0, 0xf8e1491a,
-		0xf2ce123c, 0xfb54751,
-	}
-
-	y := &decafScalar{
-		0xc6a3102f, 0xe9e887ee,
-		0x393be2cb, 0xd6dbb642,
-		0x3a20bf34, 0x8a75ad11,
-		0x93a1124, 0x592da916,
-		0xaf4ef0b8, 0x92d3af99,
-		0xcd91dae6, 0xa55b2817,
-		0x5cbf02a2, 0x28bcd317,
-	}
-
-	px, _ = hex.DecodeString("6aa15c7918e4995298d1774924e4394788ef77a27a8a660ec971f16c337869011a19041bc52fdad9bd5e6aab5360c32d71a910cda93a8d02")
-	py, _ = hex.DecodeString("e0656f99c1a5774f5e8eda93b676d2673c55a7ec50057a3ee2a373deb4847020e7fa2b7e7c1e0bea4adf3004b474ff3c7a26f330a2a2565e")
-	pz, _ = hex.DecodeString("8365faf96687fb3419ed919ab8e995d3cf77b9dcec47bdc5b51d10f6110eb60c19be4daf24a1e0cdb0cef9f10b9bdbf19ae3d433a60c93a2")
-	pt, _ = hex.DecodeString("6221c6e5950a608b30063f8b83d7eef50ccc97fbf8b5c20de61eadebb734b10143965090f5cdbedea08afee791819a25269b63d764b29d89")
-	pu, _ = hex.DecodeString("8b8ee5a52914b36d6b04fc18bdb7dbd826efe424e074c2799e83e43ae3da3357df975d158228bfa5b52fdaac1f637c5cb1bb27bce0367f6f")
-	exp := &twExtensible{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
-		new(bigNumber).setBytes(pu),
-	}
-
-	linearComboVarFixedVt(p, x, y, wnfsTable[:])
-
-	c.Assert(p.equals(exp), Equals, true)
-}
-
-func (s *Ed448Suite) TestRecodeWnafCompareFull(c *C) {
-	x := &decafScalar{
-		0x120854c7, 0x6a241ba0,
-		0x41468997, 0x11e8f8aa,
-		0x1c0815bf, 0xea9551e7,
-		0x71cfde7f, 0x462af8b2,
-		0x7a3ac97f, 0x6ae5489c,
-		0x7adb6891, 0x0797f552,
-		0x738313e3, 0x12a2866a,
-	}
-
-	controlVar := make([]smvtControl, 92)
-	pos := recodeWnaf(controlVar, x, scalarBits, 4)
-
-	c.Assert(controlVar[:pos], DeepEquals, []smvtControl{
-		smvtControl{440, 19},
-		smvtControl{434, -23},
-		smvtControl{431, -3},
-		smvtControl{423, 13},
-		smvtControl{417, -11},
-		smvtControl{410, 29},
-		smvtControl{402, -31},
-		smvtControl{396, -15},
-		smvtControl{389, 31},
-		smvtControl{384, 3},
-		smvtControl{375, 15},
-		smvtControl{371, 3},
-		smvtControl{359, -21},
-		smvtControl{353, -23},
-		smvtControl{346, 31},
-		smvtControl{341, -9},
-		smvtControl{335, -9},
-		smvtControl{328, -23},
-		smvtControl{324, -7},
-		smvtControl{316, 23},
-		smvtControl{312, -5},
-		smvtControl{304, -27},
-		smvtControl{299, 9},
-		smvtControl{293, 5},
-		smvtControl{287, -7},
-		smvtControl{278, -23},
-		smvtControl{270, -21},
-		smvtControl{263, 19},
-		smvtControl{251, -23},
-		smvtControl{244, -29},
-		smvtControl{240, -5},
-		smvtControl{230, -29},
-		smvtControl{223, -27},
-		smvtControl{217, -7},
-		smvtControl{212, -3},
-		smvtControl{201, -17},
-		smvtControl{199, 1},
-		smvtControl{184, -21},
-		smvtControl{178, -27},
-		smvtControl{172, 21},
-		smvtControl{165, 15},
-		smvtControl{160, 7},
-		smvtControl{154, 7},
-		smvtControl{147, 1},
-		smvtControl{137, 11},
-		smvtControl{134, -1},
-		smvtControl{124, -15},
-		smvtControl{116, 31},
-		smvtControl{112, -7},
-		smvtControl{102, -29},
-		smvtControl{97, -11},
-		smvtControl{94, 1},
-		smvtControl{86, 5},
-		smvtControl{79, 13},
-		smvtControl{71, 19},
-		smvtControl{64, 23},
-		smvtControl{58, 27},
-		smvtControl{53, -15},
-		smvtControl{50, 1},
-		smvtControl{42, 7},
-		smvtControl{37, -3},
-		smvtControl{25, 9},
-		smvtControl{15, 17},
-		smvtControl{10, -11},
-		smvtControl{3, 25},
-		smvtControl{0, -1},
-	})
-}
-
-func (s *Ed448Suite) TestRecodeWnafForScalarZero(c *C) {
-	nbitsPre := uint(446)
-	tableBitsPre := uint(5)
-	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
-	controlLen := nbitsPre/(tableBitsPre+1) + 3
-	controlPre := make([]smvtControl, controlLen)
-	sig := &decafScalar{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	}
-
-	position := recodeWnaf(controlPre[:], sig, nbitsPre, tableBitsPre)
-
-	c.Assert(position, Equals, word(0))
-	c.Assert(controlPre[position].power, Equals, -1)
-	c.Assert(controlPre[position].addend, Equals, 0)
-}
-
-func (s *Ed448Suite) TestRecodeWnafForChallenge(c *C) {
-	nbits := uint(446)
-	tableBits := uint(4)
-	controlLen := nbits/(tableBits+1) + 3
-	control := make([]smvtControl, controlLen)
-	challenge := &decafScalar{
-		0xfd27ffdd, 0xa4a42c92,
-		0xd9464f36, 0xac8078dd,
-		0x91e922f8, 0x76ebe5e8,
-		0x4f1d8f84, 0x968d2c41,
-		0x857c5a17, 0x9f74691c,
-		0x3595bd83, 0x5b966fb6,
-		0xb1428aca, 0x31b43b4d,
-	}
-
-	position := recodeWnaf(control[:], challenge, nbits, tableBits)
-
-	c.Assert(position, Equals, word(67))
-	c.Assert(control[position].power, Equals, -1)
-	c.Assert(control[position].addend, Equals, 0)
-}
-
-func (s *Ed448Suite) TestDecafRecodeWnafFull(c *C) {
-	x := &decafScalar{
-		0x120854c7, 0x6a241ba0,
-		0x41468997, 0x11e8f8aa,
-		0x1c0815bf, 0xea9551e7,
-		0x71cfde7f, 0x462af8b2,
-		0x7a3ac97f, 0x6ae5489c,
-		0x7adb6891, 0x0797f552,
-		0x738313e3, 0x12a2866a,
-	}
-
-	controlVar := make([]smvtControl, 115)
-	pos := recodeWnaf(controlVar, x, scalarBits, 3)
-
-	c.Assert(controlVar[:pos], DeepEquals, []smvtControl{
-		smvtControl{441, 9},
-		smvtControl{437, 5},
-		smvtControl{431, 5},
-		smvtControl{423, 13},
-		smvtControl{417, -11},
-		smvtControl{412, 7},
-		smvtControl{407, 7},
-		smvtControl{400, 3},
-		smvtControl{394, 5},
-		smvtControl{386, -7},
-		smvtControl{384, -1},
-		smvtControl{375, 15},
-		smvtControl{371, 3},
-		smvtControl{360, -11},
-		smvtControl{356, 5},
-		smvtControl{351, 5},
-		smvtControl{344, -5},
-		smvtControl{338, -9},
-		smvtControl{332, -9},
-		smvtControl{327, -15},
-		smvtControl{321, 9},
-		smvtControl{316, -9},
-		smvtControl{312, -5},
-		smvtControl{305, -13},
-		smvtControl{300, -11},
-		smvtControl{295, -15},
-		smvtControl{290, 7},
-		smvtControl{283, 15},
-		smvtControl{278, 9},
-		smvtControl{272, -5},
-		smvtControl{267, -7},
-		smvtControl{263, 3},
-		smvtControl{254, -3},
-		smvtControl{249, 3},
-		smvtControl{242, 11},
-		smvtControl{240, -1},
-		smvtControl{231, -15},
-		smvtControl{226, 13},
-		smvtControl{223, -3},
-		smvtControl{217, -7},
-		smvtControl{212, -3},
-		smvtControl{205, -1},
-		smvtControl{199, -3},
-		smvtControl{185, -11},
-		smvtControl{180, 9},
-		smvtControl{175, 11},
-		smvtControl{172, -3},
-		smvtControl{165, 15},
-		smvtControl{160, 7},
-		smvtControl{154, 7},
-		smvtControl{147, 1},
-		smvtControl{137, 11},
-		smvtControl{134, -1},
-		smvtControl{124, -15},
-		smvtControl{117, 15},
-		smvtControl{112, 9},
-		smvtControl{103, -15},
-		smvtControl{98, 11},
-		smvtControl{94, -7},
-		smvtControl{86, 5},
-		smvtControl{79, 13},
-		smvtControl{73, 5},
-		smvtControl{67, -13},
-		smvtControl{60, -9},
-		smvtControl{57, -3},
-		smvtControl{50, 9},
-		smvtControl{42, 7},
-		smvtControl{37, -3},
-		smvtControl{25, 9},
-		smvtControl{19, 1},
-		smvtControl{11, 11},
-		smvtControl{6, -13},
-		smvtControl{0, 7},
-	})
-}
-
-func (s *Ed448Suite) TestDecafRecodeWnafForScalarZero(c *C) {
-	tableBitsPre := uint(5)
-	//struct smvtControl controlVar[nbitsVar/(tableBitsVar+1)+3];
-	controlLen := scalarBits/(tableBitsPre+1) + 3
-	controlPre := make([]smvtControl, controlLen)
-	sig := &decafScalar{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	}
-
-	position := recodeWnaf(controlPre[:], sig, scalarBits, tableBitsPre)
-
-	c.Assert(position, Equals, word(0))
-	c.Assert(controlPre[position].power, Equals, -1)
-	c.Assert(controlPre[position].addend, Equals, 0)
-}
-
-func (s *Ed448Suite) TestDecafPrepareTable(c *C) {
+func (s *Ed448Suite) Test_DecafPrepareWNAFTable(c *C) {
 
 	p := &twExtendedPoint{
 		&bigNumber{
@@ -804,22 +892,262 @@ func (s *Ed448Suite) TestDecafPrepareTable(c *C) {
 			&bigNumber{0x06f5139c, 0x01a89ab4, 0x0cc95459, 0x0748e27f, 0x05b2e11f, 0x09b57ba1, 0x017f1ce1, 0x074f6bca, 0x0d698bba, 0x016b374e, 0x0560fcd8, 0x01bfa3b6, 0x0650f275, 0x00cf2e46, 0x0dc705c1, 0x0620ac64}},
 	}
 
-	decafPrepareWnafTable(dst, p, size)
+	decafPrepareWNAFTable(dst, p, size)
 
 	for i, di := range dst {
 		c.Assert(di.equals(exp[i]), Equals, true)
 	}
 }
 
-func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreNotEqual(c *C) {
-	p := &twExtendedPoint{
-		&bigNumber{0x00},
-		&bigNumber{0x00},
-		&bigNumber{0x00},
-		&bigNumber{0x00},
+func (s *Ed448Suite) Test_WNAFSMultiplication(c *C) {
+	px, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
+	py, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
+	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
+	pt, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
+	pu, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
+
+	p := &twExtensible{
+		new(bigNumber).setBytes(px),
+		new(bigNumber).setBytes(py),
+		new(bigNumber).setBytes(pz),
+		new(bigNumber).setBytes(pt),
+		new(bigNumber).setBytes(pu),
 	}
 
-	base := &twExtendedPoint{
+	x := &decafScalar{
+		0x6c226d73, 0x70edcfc3,
+		0x44156c47, 0x084f4695,
+		0xe72606ac, 0x9d0ce5e5,
+		0xed96d3ba, 0x9ff3fa11,
+		0x4a15c383, 0xca38a0af,
+		0xead789b3, 0xb96613ba,
+		0x48ba4461, 0x34eb2031,
+	}
+
+	y := &decafScalar{
+		0x2118b8c6, 0x4356acd5,
+		0x26d7e73c, 0x459174b7,
+		0xf10bea31, 0x83e528bb,
+		0xb960d695, 0xd0da7e28,
+		0xbad7f9a1, 0xe9f5ba01,
+		0x94ea1518, 0x12c58cca,
+		0x302c76eb, 0x3bd0363e,
+	}
+
+	px, _ = hex.DecodeString("d902fadbeee8dd1ef391dcce59cc75d286c9efc7229dd919a35236a5447384e84617bf94d4129af02d7667fad1df88985132c1ce1b133428")
+	py, _ = hex.DecodeString("ba1d18df944a527ec4ebad9c84cc32643064dcd26bf003a9763dad575104e1a3c9fbb02f971169c2736ed5d8812ad8eeedcfa8226977ddb4")
+	pz, _ = hex.DecodeString("2d35e8b251eb6b421291cf3a466597759059e01b7cc89f332f96f801ced244299f4da20b9fcedbaa66c5fd3508dcb61888e2b89bee4fea45")
+	pt, _ = hex.DecodeString("8713cc3806a247771ae8567b3b73dd874a8261a610de7c34202fab877f15213120e2fd14e5b191663c1e62d404c54b9f63e1e2e3d98eafb2")
+	pu, _ = hex.DecodeString("eafb1cd470e2728ee254c7a312092e820656c14a993f2896479aa211b0a1bb515deee36d06acee20a40a1cad5dc5cc38072cdd63447587e9")
+	exp := &twExtensible{
+		new(bigNumber).setBytes(px),
+		new(bigNumber).setBytes(py),
+		new(bigNumber).setBytes(pz),
+		new(bigNumber).setBytes(pt),
+		new(bigNumber).setBytes(pu),
+	}
+
+	linearComboVarFixedVt(p, x, y, wnfsTable[:])
+
+	c.Assert(p.equals(exp), Equals, true)
+}
+
+func (s *Ed448Suite) Test_WNAFSMultiplicationCase3(c *C) {
+	px, _ := hex.DecodeString("3ad455b204ac920bddb750a6478ff733f487f45369770d989ad919944d8f1cb30a682d0d6e46892a94bc268688515d835e4d05a2697d78b6")
+	py, _ := hex.DecodeString("918bf9573f40be92567052b0c02fbf49cbfa43f68f5fcd7bdf44f877594eb6bfff690413befd9952d5710cefc1839771b9660f69b17790f5")
+	pz, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
+	pt, _ := hex.DecodeString("3ad455b204ac920bddb750a6478ff733f487f45369770d989ad919944d8f1cb30a682d0d6e46892a94bc268688515d835e4d05a2697d78b6")
+	pu, _ := hex.DecodeString("918bf9573f40be92567052b0c02fbf49cbfa43f68f5fcd7bdf44f877594eb6bfff690413befd9952d5710cefc1839771b9660f69b17790f5")
+
+	p := &twExtensible{
+		new(bigNumber).setBytes(px),
+		new(bigNumber).setBytes(py),
+		new(bigNumber).setBytes(pz),
+		new(bigNumber).setBytes(pt),
+		new(bigNumber).setBytes(pu),
+	}
+
+	x := &decafScalar{
+		0x150252d4, 0x91f90541,
+		0xfbc32870, 0x5055d9f0,
+		0x3e5d3a5c, 0xec7fe32d,
+		0xd043954a, 0xd6038f2e,
+		0x41d8bc06, 0xff202e0e,
+		0xda461aa0, 0xf8e1491a,
+		0xf2ce123c, 0xfb54751,
+	}
+
+	y := &decafScalar{
+		0xc6a3102f, 0xe9e887ee,
+		0x393be2cb, 0xd6dbb642,
+		0x3a20bf34, 0x8a75ad11,
+		0x93a1124, 0x592da916,
+		0xaf4ef0b8, 0x92d3af99,
+		0xcd91dae6, 0xa55b2817,
+		0x5cbf02a2, 0x28bcd317,
+	}
+
+	px, _ = hex.DecodeString("6aa15c7918e4995298d1774924e4394788ef77a27a8a660ec971f16c337869011a19041bc52fdad9bd5e6aab5360c32d71a910cda93a8d02")
+	py, _ = hex.DecodeString("e0656f99c1a5774f5e8eda93b676d2673c55a7ec50057a3ee2a373deb4847020e7fa2b7e7c1e0bea4adf3004b474ff3c7a26f330a2a2565e")
+	pz, _ = hex.DecodeString("8365faf96687fb3419ed919ab8e995d3cf77b9dcec47bdc5b51d10f6110eb60c19be4daf24a1e0cdb0cef9f10b9bdbf19ae3d433a60c93a2")
+	pt, _ = hex.DecodeString("6221c6e5950a608b30063f8b83d7eef50ccc97fbf8b5c20de61eadebb734b10143965090f5cdbedea08afee791819a25269b63d764b29d89")
+	pu, _ = hex.DecodeString("8b8ee5a52914b36d6b04fc18bdb7dbd826efe424e074c2799e83e43ae3da3357df975d158228bfa5b52fdaac1f637c5cb1bb27bce0367f6f")
+	exp := &twExtensible{
+		new(bigNumber).setBytes(px),
+		new(bigNumber).setBytes(py),
+		new(bigNumber).setBytes(pz),
+		new(bigNumber).setBytes(pt),
+		new(bigNumber).setBytes(pu),
+	}
+
+	linearComboVarFixedVt(p, x, y, wnfsTable[:])
+
+	c.Assert(p.equals(exp), Equals, true)
+}
+
+func (s *Ed448Suite) Test_DoubleScalarmul(c *C) {
+	p := &twExtendedPoint{
+		&bigNumber{
+			0x0e0fbf9e, 0x0ba1bcd7,
+			0x01cc6d39, 0x053b56e8,
+			0x0635d142, 0x0383307a,
+			0x0f8a159b, 0x097fd2cf,
+			0x0fa310f6, 0x05522bde,
+			0x0b981703, 0x0b095b1e,
+			0x042d4780, 0x05ae11df,
+			0x0934fe80, 0x0dc6474d},
+		&bigNumber{
+			0x02c1149c, 0x0e72febf,
+			0x05259893, 0x0723e184,
+			0x0f7232ff, 0x019a5600,
+			0x05581d2c, 0x07331444,
+			0x04e0124a, 0x09c3c5e5,
+			0x0945536e, 0x0b786a20,
+			0x0f75623f, 0x00ba30e8,
+			0x0cc589a3, 0x04a2eea8},
+		&bigNumber{
+			0x02406c71, 0x0b2fdb67,
+			0x02591aa2, 0x085fc24e,
+			0x0dc50d09, 0x08692c5b,
+			0x0ba917d7, 0x0aefea74,
+			0x037d0084, 0x04d5defa,
+			0x08bbe7ad, 0x050da977,
+			0x08adf827, 0x05425cdd,
+			0x037d816d, 0x0d59cd0a},
+		&bigNumber{
+			0x0baf8c30, 0x06686ad3,
+			0x0c149bac, 0x0f57f68d,
+			0x05cd321a, 0x02ff8d60,
+			0x09dcc4bd, 0x0f731ec2,
+			0x0cd7ea75, 0x0be970e4,
+			0x043d30e0, 0x0dd64b9b,
+			0x04f78bf1, 0x0d1fde20,
+			0x05c88e97, 0x026ce314},
+	}
+
+	a := &decafScalar{
+		0x9a1044c6, 0x92f78393,
+		0x68cea2bc, 0x5f23f942,
+		0xd4384e9e, 0x76969060,
+		0x4d82f8cc, 0xb8016c73,
+		0x1db9b587, 0x061aca05,
+		0x9f0333f5, 0x5a2a7f4a,
+		0x216a1e70, 0x1d22f534}
+
+	q := &twExtendedPoint{
+		&bigNumber{
+			0x06172a44, 0x0731d576,
+			0x0da247e0, 0x0d9fd318,
+			0x072d1c77, 0x073e77aa,
+			0x09a004b5, 0x012507b9,
+			0x09a684c3, 0x08b559f8,
+			0x0d445c85, 0x07941c89,
+			0x0c942cd4, 0x02bcfe3e,
+			0x022ccaaa, 0x0be3a6b3},
+		&bigNumber{
+			0x03294fb1, 0x0e4336b5,
+			0x0fe125d6, 0x08c09f34,
+			0x0f04e3ce, 0x0eac940d,
+			0x09c38a23, 0x0a2ec035,
+			0x06545488, 0x0355e18f,
+			0x0522a0ec, 0x0ce0fd60,
+			0x0bd3a6ce, 0x03fe9d85,
+			0x06e5c4f3, 0x018cf1e5},
+		&bigNumber{
+			0x0e957107, 0x0f672aa2,
+			0x049b0276, 0x07a7ecf2,
+			0x0e9a1c69, 0x04067d01,
+			0x03f2ddee, 0x0ffebccb,
+			0x0d58b6cf, 0x0d95fb9c,
+			0x077d5935, 0x078ddbc3,
+			0x085093f2, 0x03015d2f,
+			0x019d8e0a, 0x0388a2ac},
+		&bigNumber{
+			0x0bf26ccb, 0x0b930dcd,
+			0x0e207a77, 0x0d8fdde5,
+			0x04e2452b, 0x099e9922,
+			0x0ec0b62c, 0x04f9d73b,
+			0x03811a2a, 0x0871aefb,
+			0x00f5e028, 0x0b6aa04c,
+			0x0226cb55, 0x0b6e4ee0,
+			0x0f3eba42, 0x04409402},
+	}
+
+	b := &decafScalar{
+		0x3aad8a3d, 0x7cbae122,
+		0xed340da1, 0x1e37d7eb,
+		0x2a2e914d, 0xcae48b24,
+		0x9e50875c, 0xc5b5e48b,
+		0x89d9f0e4, 0xdf9d2321,
+		0x8775f116, 0xd1868de2,
+		0x139f9896, 0x0ddda899}
+
+	exp := &twExtendedPoint{
+		&bigNumber{
+			0x096c3e19, 0x01279202,
+			0x04f50d93, 0x0699657f,
+			0x022bd90b, 0x00351763,
+			0x08a42a56, 0x07974163,
+			0x004f6ab9, 0x0c05f96c,
+			0x0f16bb21, 0x0cde601f,
+			0x0cef16a4, 0x0ed8b1fc,
+			0x02bd0b33, 0x01fbbe05},
+		&bigNumber{
+			0x0c171c6f, 0x0e23595f,
+			0x03c79297, 0x048e7f98,
+			0x0e5726b1, 0x064d69df,
+			0x055c5256, 0x05b529ee,
+			0x0e3fa1f4, 0x0c3bdb08,
+			0x0f07561d, 0x0142253c,
+			0x06aeb72b, 0x04032bee,
+			0x017cd13e, 0x0e948c21},
+		&bigNumber{
+			0x0fcb5cea, 0x0172ef5b,
+			0x0b22800b, 0x0392234e,
+			0x0a790ab2, 0x0e6073b7,
+			0x088dfcf4, 0x096ca9ff,
+			0x0b835126, 0x085db724,
+			0x01781712, 0x06798d82,
+			0x05b74273, 0x0b76addb,
+			0x061c22d2, 0x0fde553b},
+		&bigNumber{
+			0x03b8199d, 0x0b47e9ac,
+			0x0c90cec3, 0x0677ee9d,
+			0x03f00db6, 0x0809b693,
+			0x0dd662eb, 0x043fe5b9,
+			0x0271b801, 0x0f616c66,
+			0x0fc957d0, 0x0b6bbc82,
+			0x01f8bca7, 0x0077de17,
+			0x0a2a5944, 0x00fc5ac9},
+	}
+
+	out := doubleScalarMul(p, q, a, b)
+
+	c.Assert(out, DeepEquals, exp)
+}
+
+func (s *Ed448Suite) Test_DecafDoubleNonSecretScalarMulWhenTablesAreNotEqual(c *C) {
+	p := &twExtendedPoint{
 		&bigNumber{
 			0x00072b34, 0x04cec1fd,
 			0x0b774a9e, 0x084c12be,
@@ -862,7 +1190,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreNotEqua
 		},
 	}
 
-	x := &decafScalar{
+	a := &decafScalar{
 		0xd9436800, 0x1290c087,
 		0x33c051b3, 0xf9e8460f,
 		0xfcbb9385, 0x78d7514f,
@@ -872,7 +1200,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreNotEqua
 		0xf5ca959a, 0x1be183fc,
 	}
 
-	y := &decafScalar{
+	b := &decafScalar{
 		0x2378c292, 0x216cc272,
 		0xc44edb49, 0xffffffff,
 		0xffffffff, 0xffffffff,
@@ -925,15 +1253,12 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreNotEqua
 		},
 	}
 
-	r := decafDoubleNonSecretScalarMul(p, base, x, y)
+	q := decafDoubleNonSecretScalarMul(p, a, b)
 
-	c.Assert(r.x, DeepEquals, exp.x)
-	c.Assert(r.y, DeepEquals, exp.y)
-	c.Assert(r.z, DeepEquals, exp.z)
-	c.Assert(r.t, DeepEquals, exp.t)
+	c.Assert(q, DeepEquals, exp)
 }
 
-func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreEqual(c *C) {
+func (s *Ed448Suite) Test_DecafDoubleNonSecretScalarMulWhenTablesAreEqual(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x0c952b64, 0x0307a3ee,
@@ -973,7 +1298,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreEqual(c
 			0x09be71a7, 0x0d495629},
 	}
 
-	x := &decafScalar{
+	a := &decafScalar{
 		0x08ed77fa, 0x85c49151,
 		0xa0dd2874, 0x7188bced,
 		0x9a34c3bd, 0xab1aeece,
@@ -983,7 +1308,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreEqual(c
 		0x78fe2593, 0x3aa1dd0f,
 	}
 
-	y := &decafScalar{
+	b := &decafScalar{
 		0x4b91949b, 0x8366b93a,
 		0xea749b37, 0x94751b8c,
 		0xe11471b6, 0xae84f274,
@@ -1036,15 +1361,12 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarTablesAreEqual(c
 		},
 	}
 
-	r := decafDoubleNonSecretScalarMul(p, p, x, y)
+	q := decafDoubleNonSecretScalarMul(p, a, b)
 
-	c.Assert(r.x, DeepEquals, exp.x)
-	c.Assert(r.y, DeepEquals, exp.y)
-	c.Assert(r.z, DeepEquals, exp.z)
-	c.Assert(r.t, DeepEquals, exp.t)
+	c.Assert(q, DeepEquals, exp)
 }
 
-func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarsAreZero(c *C) {
+func (s *Ed448Suite) Test_DecafDoubleNonSecretScalarMulWhenScalarsAreZero(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x0c952b64, 0x0307a3ee,
@@ -1084,8 +1406,8 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarsAreZero(c *C) {
 			0x09be71a7, 0x0d495629},
 	}
 
-	x := &decafScalar{0x00}
-	y := &decafScalar{0x00}
+	a := &decafScalar{0x00}
+	b := &decafScalar{0x00}
 
 	exp := &twExtendedPoint{
 		&bigNumber{0x00},
@@ -1094,10 +1416,7 @@ func (s *Ed448Suite) TestDecafDoubleNonSecretScalarMulWhenScalarsAreZero(c *C) {
 		&bigNumber{0x00},
 	}
 
-	r := decafDoubleNonSecretScalarMul(p, p, x, y)
+	q := decafDoubleNonSecretScalarMul(p, a, b)
 
-	c.Assert(r.x, DeepEquals, exp.x)
-	c.Assert(r.y, DeepEquals, exp.y)
-	c.Assert(r.z, DeepEquals, exp.z)
-	c.Assert(r.t, DeepEquals, exp.t)
+	c.Assert(q, DeepEquals, exp)
 }
