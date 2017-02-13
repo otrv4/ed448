@@ -37,9 +37,9 @@ const (
 
 	symKeyBytes  = 32
 	pubKeyBytes  = fieldBytes
-	privKeyBytes = 2*fieldBytes + symKeyBytes
+	privKeyBytes = 2*fieldBytes + symKeyBytes // 144
 
-	signatureBytes = 2 * fieldBytes
+	signatureBytes = 2 * fieldBytes // 112
 
 	// Comb configuration
 	combNumber  = uint(8)
