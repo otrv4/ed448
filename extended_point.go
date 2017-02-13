@@ -242,7 +242,7 @@ func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
 	copy(p.z[:], bigOne[:])
 }
 
-func (p *twExtendedPoint) extendedToNiels() *twPNiels {
+func (p *twExtendedPoint) toPNiels() *twPNiels {
 	a := &bigNumber{}
 	a.sub(p.y, p.x)
 

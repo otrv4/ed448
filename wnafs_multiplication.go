@@ -49,12 +49,12 @@ func recodeWNAF(control []smvtControl, scalar *decafScalar, nBits, tableBits uin
 
 func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
 	pOriginal := p.copy()
-	pn := p.copy().double(false).extendedToNiels()
+	pn := p.copy().double(false).toPNiels()
 	out := make([]*twPNiels, nTable)
-	out[0] = pOriginal.extendedToNiels()
+	out[0] = pOriginal.toPNiels()
 	for i := 1; i < nTable; i++ {
 		pOriginal.addProjectiveNielsToExtended(pn, false)
-		out[i] = pOriginal.extendedToNiels()
+		out[i] = pOriginal.toPNiels()
 	}
 	return out[:]
 }
@@ -79,7 +79,7 @@ func prepareWNAFTable(dst []*twPNiels, p *twExtensible, tableSize uint) {
 }
 
 func decafPrepareWNAFTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) {
-	dst[0] = p.extendedToNiels()
+	dst[0] = p.toPNiels()
 
 	if tableSize == 0 {
 		return
@@ -87,14 +87,14 @@ func decafPrepareWNAFTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 
 	p.double(false)
 
-	twOp := p.extendedToNiels()
+	twOp := p.toPNiels()
 
 	p.addProjectiveNielsToExtended(dst[0], false)
-	dst[1] = p.extendedToNiels()
+	dst[1] = p.toPNiels()
 
 	for i := 2; i < 1<<tableSize; i++ {
 		p.addProjectiveNielsToExtended(twOp, false)
-		dst[i] = p.extendedToNiels()
+		dst[i] = p.toPNiels()
 	}
 }
 

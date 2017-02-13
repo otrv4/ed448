@@ -1573,7 +1573,7 @@ func (s *Ed448Suite) Test_ConvertExtendedToProjectiveNielsCoordinates(c *C) {
 			0x0de16064, 0x0c137efc},
 	}
 
-	projP := p.extendedToNiels()
+	projP := p.toPNiels()
 
 	c.Assert(projP, DeepEquals, exp)
 }
