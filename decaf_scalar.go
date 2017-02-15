@@ -1,8 +1,6 @@
 package ed448
 
-import (
-	"errors"
-)
+import "errors"
 
 type decafScalar [scalarWords]word
 
@@ -123,6 +121,36 @@ func (s *decafScalar) decode(b []byte) word {
 	s.scalarMul(s, &decafScalar{0x01})
 
 	return word(accum)
+}
+
+func (s *decafScalar) decodeLong(b []byte) {
+	if len(b) == 0 {
+		scalarZero := &decafScalar{0}
+		s = scalarZero.copy()
+	}
+
+	size := len(b) - (len(b) % fieldBytes)
+	if size == len(b) {
+		size -= fieldBytes
+	}
+
+	x, y := &decafScalar{}, &decafScalar{}
+
+	x.decodeShort(b[size:], uint(len(b)-size))
+
+	if len(b) == scalarBytes {
+		s.scalarMul(x, &decafScalar{0x01})
+
+	}
+
+	for size == len(b)-(len(b)%fieldBytes) {
+		size -= fieldBytes
+		x.montgomeryMultiply(x, scalarR2)
+		y.decode(b[:size])
+		x.scalarAdd(x, y)
+	}
+
+	s = x.copy()
 }
 
 func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
