@@ -1,5 +1,16 @@
 package ed448
 
+// Point is a interface of an Ed448 point
+type Point interface {
+	IsValid() bool
+	Equals(q Point) bool
+	Copy() Point
+	Add(q, r Point)
+	Sub(q, r Point)
+	Encode() []byte
+	Decode(src []byte, identity bool)
+}
+
 type twExtendedPoint struct {
 	x, y, z, t *bigNumber
 }

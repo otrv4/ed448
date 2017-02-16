@@ -276,14 +276,11 @@ func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) *
 	h.Write(tmpSignature[:])
 	h.Write(msg)
 
-	dst := decafScalar{}
+	dst := &decafScalar{}
 
 	barrettDeserializeAndReduce(dst[:], h.Sum(nil), &curvePrimeOrder)
 
-	s := &decafScalar{}
-	*s = dst
-
-	return s
+	return dst
 }
 
 func deriveNonce(msg []byte, symKey []byte) (dst decafScalar) {
