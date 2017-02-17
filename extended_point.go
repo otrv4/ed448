@@ -380,6 +380,30 @@ func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32
 	return &twExtendedPoint{x, y, z, t}
 }
 
+// NewPointFromBytes returns an Ed448 Point from byte array
+func NewPointFromBytes(in []byte) Point {
+	out := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	if in == nil {
+		return out
+	}
+
+	if len(in) != 56 {
+		panic("byte input needs to be size 56")
+	}
+
+	tmpIn := [fieldBytes]byte{}
+	copy(tmpIn[:], in[:])
+
+	decafDecode(out, tmpIn, false)
+	return out
+}
+
 // IsValid tests if a point is valid.
 func (p *twExtendedPoint) IsValid() bool {
 	return p.isValidPoint()
