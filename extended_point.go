@@ -463,8 +463,11 @@ func DoubleScalarMul(q, r Point, a, b Scalar) Point {
 	return doubleScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
 }
 
-// DoubleScalarMulNonsecret multiplies two base points by
-// two scalars. It may leak the scalars. It is faster at
+// DoubleScalarMulNonsecret multiplies the Ed448 base point
+// (from safe curves: https://safecurves.cr.yp.to/field.html)
+// and the supplied point q by the scalars a and b.
+//   output = a * Ed448_BasePoint + b * q
+// It may leak the scalar values. It is faster at
 // expense of variable time than DoubleScalarMul. Otherwise,
 // it is equivalent. It is designed for signature verification.
 func DoubleScalarMulNonsecret(q Point, a, b Scalar) Point {
