@@ -62,6 +62,7 @@ func (s *Ed448Suite) Test_IsValidPoint(c *C) {
 			0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
 		},
 	}
+
 	c.Assert(p.isValidPoint(), Equals, true)
 	c.Assert(q.isValidPoint(), Equals, false)
 }
@@ -380,10 +381,10 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 	c.Assert(p, DeepEquals, exp)
 
 	q := &twExtendedPoint{
-		&bigNumber{0x1},
-		&bigNumber{0x2},
-		&bigNumber{0x3},
-		&bigNumber{0x4},
+		&bigNumber{0x01},
+		&bigNumber{0x02},
+		&bigNumber{0x03},
+		&bigNumber{0x04},
 	}
 
 	exp = &twExtendedPoint{
@@ -836,7 +837,6 @@ func (s *Ed448Suite) Test_SubNielsFromExtendedPoint(c *C) {
 	q.subNielsFromExtendedPoint(np, true)
 
 	c.Assert(q, DeepEquals, exp)
-
 }
 
 func (s *Ed448Suite) Test_AddProjectiveNielsToExtendedCoordinates(c *C) {
@@ -1014,7 +1014,6 @@ func (s *Ed448Suite) Test_SubProjectiveNielsFromExtendedPoint(c *C) {
 
 	p.subProjectiveNielsFromExtendedPoint(np, false)
 	c.Assert(p, DeepEquals, exp)
-
 }
 
 func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
@@ -1239,6 +1238,7 @@ func (s *Ed448Suite) Test_NewPoint(c *C) {
 		0x0923c854, 0x0cfc9865, 0x055b2fed, 0x05bdcc90,
 		0x01a99835, 0x0ea08056, 0x0abbf763, 0x03826c2f,
 	}
+
 	exp := &twExtendedPoint{
 		&bigNumber{
 			0x034365c8, 0x06b2a874, 0x0eb875d7, 0x0ae4c7a7,
