@@ -92,8 +92,9 @@ func (s *Ed448Suite) TestInvert(c *C) {
 		0x0864dc36, 0x06821f90,
 		0x08099dc5, 0x0cf9ca3d,
 	}
+	n.invert(x)
 
-	c.Assert(n.invert(x), DeepEquals, y)
+	c.Assert(n, DeepEquals, y)
 }
 
 func (s *Ed448Suite) TestNegate(c *C) {
