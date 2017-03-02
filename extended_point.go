@@ -246,11 +246,20 @@ func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, befo
 	p.subNielsFromExtendedPoint(p2.n, beforeDouble)
 }
 
-func (p *twExtendedPoint) nielsToExtended(src *twNiels) {
-	p.y.add(src.b, src.a)
-	p.x.sub(src.b, src.a)
+//XXX: extendedPoint should not know about twNiels
+func (np *twNiels) toExtended() *twExtendedPoint {
+	p := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	p.y.add(np.b, np.a)
+	p.x.sub(np.b, np.a)
 	p.t.mul(p.y, p.x)
 	copy(p.z[:], bigOne[:])
+	return p
 }
 
 func (p *twExtendedPoint) toPNiels() *twPNiels {
@@ -356,7 +365,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 			if i != int(decafCombSpacing-1) || j != 0 {
 				p.addNielsToExtended(ni, j == decafCombNumber-1 && i != 0)
 			} else {
-				p.nielsToExtended(ni)
+				p = ni.toExtended()
 			}
 		}
 	}

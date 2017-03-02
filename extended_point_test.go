@@ -1453,12 +1453,6 @@ func (s *Ed448Suite) Test_SubProjectiveNielsFromExtendedPoint(c *C) {
 }
 
 func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
-	p := &twExtendedPoint{
-		&bigNumber{0x00},
-		&bigNumber{0x01},
-		&bigNumber{0x01},
-		&bigNumber{0x00}}
-
 	pn := &twNiels{
 		&bigNumber{0x068d5b74},
 		&bigNumber{0x068d5b74},
@@ -1487,7 +1481,7 @@ func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
 			0x0fffffff, 0x0fffffff},
 	}
 
-	p.nielsToExtended(pn)
+	p := pn.toExtended()
 
 	c.Assert(p, DeepEquals, exp)
 }

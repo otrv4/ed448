@@ -254,7 +254,7 @@ func decafDoubleNonSecretScalarMul(p *twExtendedPoint, scalarPre, scalarVar *dec
 		contp++
 	} else {
 		i = controlPre[0].power
-		out.nielsToExtended(decafWnafsTable[controlPre[0].addend>>1])
+		out = decafWnafsTable[controlPre[0].addend>>1].toExtended()
 		contp++
 	}
 
