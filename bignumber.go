@@ -5,13 +5,8 @@ import "fmt"
 type bigNumber [limbs]word
 type serialized [fieldBytes]byte
 
-func mustDeserialize(in serialized) *bigNumber {
-	n, ok := deserialize(in)
-	if !ok {
-		panic("Failed to deserialize")
-	}
-
-	return n
+func (n *bigNumber) zero() (eq bool) {
+	return n.zeroMask() == lmask
 }
 
 //n = x + y
@@ -50,6 +45,14 @@ func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 	return karatsubaMul(n, x, y)
 }
 
+func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c sdword) *bigNumber {
+	if c >= 0 {
+		return n.mulW(x, dword(c))
+	}
+	r := n.mulW(x, dword(-c))
+	return r.sub(bigZero, r)
+}
+
 func (n *bigNumber) square(x *bigNumber) *bigNumber {
 	return karatsubaSquare(n, x)
 }
@@ -70,13 +73,13 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	return n
 }
 
-//XXX Security this is not constant time when c is a signed integer
-func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c sdword) *bigNumber {
-	if c >= 0 {
-		return n.mulW(x, dword(c))
+func mustDeserialize(in serialized) *bigNumber {
+	n, ok := deserialize(in)
+	if !ok {
+		panic("Failed to deserialize")
 	}
-	r := n.mulW(x, dword(-c))
-	return r.sub(bigZero, r)
+
+	return n
 }
 
 func (n *bigNumber) invert(x *bigNumber) {
@@ -124,10 +127,6 @@ func (n *bigNumber) copy() *bigNumber {
 func (n *bigNumber) set(x *bigNumber) *bigNumber {
 	copy(n[:], x[:])
 	return n
-}
-
-func (n *bigNumber) zero() (eq bool) {
-	return n.zeroMask() == lmask
 }
 
 //in is big endian

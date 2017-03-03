@@ -92,7 +92,7 @@ func barrettReduce(dst []word, carry word, p *barrettPrime) {
 		dst[p.wordsInP-1] &= word(1)<<p.pShift - 1
 	}
 
-	/* mask = carry-1: if no carry then do sub, otherwise don't */
+	// mask = carry-1: if no carry then do sub, otherwise don't
 	subExtPacked(dst, dst[:p.wordsInP], p.lowWords, cout-1)
 }
 
@@ -114,7 +114,7 @@ func addExtPacked(dst, x, y []word, mask word) word {
 }
 
 func subExtPacked(dst, x, y []word, mask word) word {
-	carry := sdword(0)
+	carry := sdword(0x00)
 	for i := 0; i < len(y); i++ {
 		carry += sdword(x[i]) - (sdword(y[i]) & sdword(mask))
 		dst[i] = word(carry)
