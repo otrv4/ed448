@@ -90,8 +90,8 @@ func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]
 	tmpSignature := c.decafDeriveTemporarySignature(nonce)
 	challenge := decafDeriveChallenge(k.publicKey(), tmpSignature, msg)
 
-	challenge.scalarMul(challenge, secretKeyWords)
-	nonce.scalarSub(nonce, challenge)
+	challenge.mul(challenge, secretKeyWords)
+	nonce.sub(nonce, challenge)
 
 	copy(sig[:fieldBytes], tmpSignature[:])
 	nonce.serialize(sig[fieldBytes:])

@@ -83,8 +83,8 @@ func (s *Ed448Suite) Test_ScalarEquality(c *C) {
 		0xaaaa552b, 0x3aae8588, 0x2c3dc273, 0x68cf88ac,
 		0x3b089f07, 0x1e6eee07,
 	}
-	c.Assert(a.scalarEquals(a), Equals, true)
-	c.Assert(a.scalarEquals(b), Equals, false)
+	c.Assert(a.equals(a), Equals, true)
+	c.Assert(a.equals(b), Equals, false)
 }
 
 func (s *Ed448Suite) Test_ScalarCopy(c *C) {
@@ -112,7 +112,7 @@ func (s *Ed448Suite) Test_ScalarAddition(c *C) {
 	}
 
 	out := new(decafScalar)
-	out.scalarAdd(a, b)
+	out.add(a, b)
 
 	c.Assert(out, DeepEquals, exp)
 }
@@ -122,7 +122,7 @@ func (s *Ed448Suite) Test_ScalarSubtraction(c *C) {
 	b := &decafScalar{0x0c}
 
 	out := new(decafScalar)
-	out.scalarSub(a, b)
+	out.sub(a, b)
 
 	exp := &decafScalar{0x01}
 
@@ -150,7 +150,7 @@ func (s *Ed448Suite) Test_ScalarMultiplication(c *C) {
 		0xf2d89c1e, 0xb9036ff6, 0x203d424b, 0xfccd61b3,
 		0x4ca389ed, 0x31e055c1,
 	}
-	a.scalarMul(a, b)
+	a.mul(a, b)
 	c.Assert(a, DeepEquals, exp)
 }
 
@@ -159,7 +159,7 @@ func (s *Ed448Suite) Test_ScalarHalve(c *C) {
 	b := &decafScalar{0x04}
 
 	out := new(decafScalar)
-	out.scalarHalve(a, b)
+	out.halve(a, b)
 
 	exp := &decafScalar{0x06}
 

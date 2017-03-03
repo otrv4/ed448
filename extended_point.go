@@ -290,7 +290,7 @@ func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoi
 	out := &twExtendedPoint{}
 
 	scalar1x := &decafScalar{}
-	scalar1x.scalarAdd(scalar, decafPrecompTable.scalarAdjustment)
+	scalar1x.add(scalar, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x, ScalarQ)
 
 	multiples := pointA.prepareFixedWindow(nTable)

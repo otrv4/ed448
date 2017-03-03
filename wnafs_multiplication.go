@@ -167,10 +167,10 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafSca
 	const nTable = 1 << (window - 1)     //0x00010 16
 
 	scalar1x := &decafScalar{}
-	scalar1x.scalarAdd(scalarB, decafPrecompTable.scalarAdjustment)
+	scalar1x.add(scalarB, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x, ScalarQ)
 	scalar2x := &decafScalar{}
-	scalar2x.scalarAdd(scalarC, decafPrecompTable.scalarAdjustment)
+	scalar2x.add(scalarC, decafPrecompTable.scalarAdjustment)
 	scalar2x.halve(scalar2x, ScalarQ)
 
 	multiples1 := pointB.prepareFixedWindow(nTable)

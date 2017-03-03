@@ -29,12 +29,13 @@ func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 		out[scalarWords-1] = word(chain)
 		carry = word(chain >> wordBits)
 	}
-	out.scalarSubExtra(out, ScalarQ, carry)
+
+	out.subExtra(out, ScalarQ, carry)
 	copy(s[:], out[:])
 }
 
-func (s *decafScalar) scalarEquals(x *decafScalar) bool {
-	diff := word(0)
+func (s *decafScalar) equals(x *decafScalar) bool {
+	diff := word(0x00)
 	for i := uintZero; i < scalarWords; i++ {
 		diff |= s[i] ^ x[i]
 	}
@@ -47,7 +48,7 @@ func (s *decafScalar) copy() *decafScalar {
 	return out
 }
 
-func (s *decafScalar) scalarSubExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
+func (s *decafScalar) subExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
 	out := &decafScalar{}
 	var chain sdword
 
@@ -68,7 +69,7 @@ func (s *decafScalar) scalarSubExtra(minuend *decafScalar, subtrahend *decafScal
 	copy(s[:], out[:])
 }
 
-func (s *decafScalar) scalarAdd(a, b *decafScalar) {
+func (s *decafScalar) add(a, b *decafScalar) {
 	out := &decafScalar{}
 	var chain dword
 
@@ -77,21 +78,21 @@ func (s *decafScalar) scalarAdd(a, b *decafScalar) {
 		out[i] = word(chain)
 		chain >>= wordBits
 	}
-	out.scalarSubExtra(out, ScalarQ, word(chain))
+	out.subExtra(out, ScalarQ, word(chain))
 	copy(s[:], out[:])
 }
 
-func (s *decafScalar) scalarSub(x, y *decafScalar) {
-	noExtra := word(0)
-	s.scalarSubExtra(x, y, noExtra)
+func (s *decafScalar) sub(x, y *decafScalar) {
+	noExtra := word(0x00)
+	s.subExtra(x, y, noExtra)
 }
 
-func (s *decafScalar) scalarMul(x, y *decafScalar) {
+func (s *decafScalar) mul(x, y *decafScalar) {
 	s.montgomeryMultiply(x, y)
 	s.montgomeryMultiply(s, scalarR2)
 }
 
-func (s *decafScalar) scalarHalve(a, b *decafScalar) {
+func (s *decafScalar) halve(a, b *decafScalar) {
 	out := &decafScalar{}
 	mask := -(a[0] & 1)
 	var chain dword
@@ -147,7 +148,7 @@ func (s *decafScalar) decode(b []byte) word {
 		accum >>= wordBits
 	}
 
-	s.scalarMul(s, &decafScalar{0x01})
+	s.mul(s, &decafScalar{0x01})
 
 	return word(accum)
 }
@@ -169,7 +170,7 @@ func (s *decafScalar) decodeLong(b []byte) {
 	x.decodeShort(b[size:], uint(len(b)-size))
 
 	if len(b) == scalarBytes {
-		s.scalarMul(x, &decafScalar{0x01})
+		s.mul(x, &decafScalar{0x01})
 
 	}
 
@@ -177,7 +178,7 @@ func (s *decafScalar) decodeLong(b []byte) {
 		size -= fieldBytes
 		x.montgomeryMultiply(x, scalarR2)
 		y.decode(b[:size])
-		x.scalarAdd(x, y)
+		x.add(x, y)
 	}
 
 	s = x.copy()
@@ -207,7 +208,7 @@ func NewScalar(in ...[]byte) Scalar {
 
 // Equals compares two scalars. Returns true if they are the same; false, otherwise.
 func (s *decafScalar) Equals(x Scalar) bool {
-	return s.scalarEquals(x.(*decafScalar))
+	return s.equals(x.(*decafScalar))
 }
 
 // Copy copies scalars.
@@ -219,13 +220,13 @@ func (s *decafScalar) Copy() Scalar {
 
 // Add adds two scalars. The scalars may use the same memory.
 func (s *decafScalar) Add(x, y Scalar) {
-	s.scalarAdd(x.(*decafScalar), y.(*decafScalar))
+	s.add(x.(*decafScalar), y.(*decafScalar))
 }
 
 // Sub subtracts two scalars. The scalars may use the same memory.
 func (s *decafScalar) Sub(x, y Scalar) {
 	noExtra := word(0)
-	s.scalarSubExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
+	s.subExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
 }
 
 // Mul multiplies two scalars. The scalars may use the same memory.
