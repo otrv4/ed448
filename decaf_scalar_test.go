@@ -302,12 +302,9 @@ func (s *Ed448Suite) Test_NewScalar(c *C) {
 	}
 
 	exp := &decafScalar{
-		0x63528a25, 0xadfaf0d9,
-		0x8a40509d, 0xe36676f0,
-		0x1b86c23d, 0xb8185401,
-		0xcd763b1b, 0xfda21855,
-		0xee64f2f1, 0xe7c5aeae,
-		0xde2ea468, 0x4ae66076,
+		0x63528a25, 0xadfaf0d9, 0x8a40509d, 0xe36676f0,
+		0x1b86c23d, 0xb8185401, 0xcd763b1b, 0xfda21855,
+		0xee64f2f1, 0xe7c5aeae, 0xde2ea468, 0x4ae66076,
 		0x35b11251, 0x0804ac3d,
 	}
 
@@ -349,7 +346,7 @@ func (s *Ed448Suite) Test_ExportedScalarAddition(c *C) {
 	c.Assert(out, DeepEquals, exp)
 }
 
-func (s *Ed448Suite) Test_ExportedSubtraction(c *C) {
+func (s *Ed448Suite) Test_ExportedScalarSubtraction(c *C) {
 	a := &decafScalar{0x0d}
 	b := &decafScalar{0x0c}
 
