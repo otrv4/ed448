@@ -6,18 +6,20 @@ type decafScalar [scalarWords]word
 
 func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 	out := &decafScalar{}
-	carry := word(0)
+	carry := word(0x00)
 
 	for i := 0; i < scalarWords; i++ {
-		chain := dword(0)
+		chain := dword(0x00)
 		for j := 0; j < scalarWords; j++ {
 			chain += dword(x[i])*dword(y[j]) + dword(out[j])
 			out[j] = word(chain)
 			chain >>= wordBits
 		}
+
 		saved := word(chain)
 		multiplicand := out[0] * montgomeryFactor
-		chain = 0
+		chain = dword(0x00)
+
 		for j := 0; j < scalarWords; j++ {
 			chain += dword(multiplicand)*dword(ScalarQ[j]) + dword(out[j])
 			if j > 0 {
