@@ -4,10 +4,33 @@ import "errors"
 
 type decafScalar [scalarWords]word
 
-func (s *decafScalar) copy() *decafScalar {
+func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 	out := &decafScalar{}
-	copy(out[:], s[:])
-	return out
+	carry := word(0)
+
+	for i := 0; i < scalarWords; i++ {
+		chain := dword(0)
+		for j := 0; j < scalarWords; j++ {
+			chain += dword(x[i])*dword(y[j]) + dword(out[j])
+			out[j] = word(chain)
+			chain >>= wordBits
+		}
+		saved := word(chain)
+		multiplicand := out[0] * montgomeryFactor
+		chain = 0
+		for j := 0; j < scalarWords; j++ {
+			chain += dword(multiplicand)*dword(ScalarQ[j]) + dword(out[j])
+			if j > 0 {
+				out[j-1] = word(chain)
+			}
+			chain >>= wordBits
+		}
+		chain += dword(saved) + dword(carry)
+		out[scalarWords-1] = word(chain)
+		carry = word(chain >> wordBits)
+	}
+	out.scalarSubExtra(out, ScalarQ, carry)
+	copy(s[:], out[:])
 }
 
 func (s *decafScalar) scalarEquals(x *decafScalar) bool {
@@ -16,6 +39,12 @@ func (s *decafScalar) scalarEquals(x *decafScalar) bool {
 		diff |= s[i] ^ x[i]
 	}
 	return word(((dword(diff))-1)>>wordBits) == decafTrue
+}
+
+func (s *decafScalar) copy() *decafScalar {
+	out := &decafScalar{}
+	copy(out[:], s[:])
+	return out
 }
 
 func (s *decafScalar) scalarSubExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
@@ -123,6 +152,7 @@ func (s *decafScalar) decode(b []byte) word {
 	return word(accum)
 }
 
+// XXX: implement variable size arg
 func (s *decafScalar) decodeLong(b []byte) {
 	if len(b) == 0 {
 		scalarZero := &decafScalar{0}
@@ -151,35 +181,6 @@ func (s *decafScalar) decodeLong(b []byte) {
 	}
 
 	s = x.copy()
-}
-
-func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
-	out := &decafScalar{}
-	carry := word(0)
-
-	for i := 0; i < scalarWords; i++ {
-		chain := dword(0)
-		for j := 0; j < scalarWords; j++ {
-			chain += dword(x[i])*dword(y[j]) + dword(out[j])
-			out[j] = word(chain)
-			chain >>= wordBits
-		}
-		saved := word(chain)
-		multiplicand := out[0] * montgomeryFactor
-		chain = 0
-		for j := 0; j < scalarWords; j++ {
-			chain += dword(multiplicand)*dword(ScalarQ[j]) + dword(out[j])
-			if j > 0 {
-				out[j-1] = word(chain)
-			}
-			chain >>= wordBits
-		}
-		chain += dword(saved) + dword(carry)
-		out[scalarWords-1] = word(chain)
-		carry = word(chain >> wordBits)
-	}
-	out.scalarSubExtra(out, ScalarQ, carry)
-	copy(s[:], out[:])
 }
 
 //Exported methods

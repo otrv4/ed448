@@ -57,9 +57,11 @@ const (
 )
 
 var (
-	bigZero = &bigNumber{0}
-	bigOne  = &bigNumber{1}
-	bigTwo  = &bigNumber{2}
+	bigZero = &bigNumber{0x00}
+	bigOne  = &bigNumber{0x01}
+	bigTwo  = &bigNumber{0x02}
+
+	scalarZero = &decafScalar{0x00}
 
 	sqrtDminus1 = mustDeserialize(serialized{
 		0x46, 0x9f, 0x74, 0x36, 0x18, 0xe2, 0xd2, 0x79,
