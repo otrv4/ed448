@@ -9,6 +9,4 @@ type Scalar interface {
 	Mul(a, b Scalar)
 	Encode() []byte
 	Decode(src []byte) error
-	// unexposed funcs
-	halve(a, b Scalar)
 }

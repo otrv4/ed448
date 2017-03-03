@@ -237,10 +237,6 @@ func (s *decafScalar) Mul(x, y Scalar) {
 	s.montgomeryMultiply(s, scalarR2)
 }
 
-func (s *decafScalar) halve(a, b Scalar) {
-	s.scalarHalve(a.(*decafScalar), b.(*decafScalar))
-}
-
 // Encode serializes a scalar to wire format.
 func (s *decafScalar) Encode() []byte {
 	dst := make([]byte, fieldBytes)
