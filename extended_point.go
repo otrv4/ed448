@@ -389,7 +389,11 @@ func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32
 }
 
 // NewPointFromBytes returns an Ed448 Point from byte array
-func NewPointFromBytes(in []byte) Point {
+func NewPointFromBytes(in ...[]byte) Point {
+	if len(in) > 1 {
+		panic("too many arguments to function call")
+	}
+
 	out := &twExtendedPoint{
 		&bigNumber{},
 		&bigNumber{},
@@ -401,14 +405,14 @@ func NewPointFromBytes(in []byte) Point {
 		return out
 	}
 
-	if len(in) != 56 {
+	bytes := in[0][:]
+	if len(bytes) != 56 {
 		panic("byte input needs to be size 56")
 	}
-
 	tmpIn := [fieldBytes]byte{}
-	copy(tmpIn[:], in[:])
-
+	copy(tmpIn[:], bytes[:])
 	decafDecode(out, tmpIn, false)
+
 	return out
 }
 
