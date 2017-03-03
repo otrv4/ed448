@@ -108,12 +108,12 @@ func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 	d.addRaw(c, a)
 	p.t.addRaw(p.y, p.x)
 	b.square(p.t)
-	exponentBias := word(3)
+	exponentBias := word(0x03)
 	b.subXBias(b, d, exponentBias)
 	p.t.sub(a, c)
 	p.x.square(p.z)
 	p.z.addRaw(p.x, p.x)
-	exponentBias = word(4)
+	exponentBias = word(0x04)
 	a.subXBias(p.z, p.t, exponentBias)
 	p.x.mul(a, b)
 	p.z.mul(p.t, a)
@@ -192,13 +192,13 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) word {
 	return succ
 }
 
-func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
+func (p *twExtendedPoint) addNielsToExtended(np *twNiels, beforeDouble bool) {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.sub(p.y, p.x)
-	a.mul(p2.a, b)
+	a.mul(np.a, b)
 	b.addRaw(p.x, p.y)
-	p.y.mul(p2.b, b)
-	p.x.mul(p2.c, p.t)
+	p.y.mul(np.b, b)
+	p.x.mul(np.c, p.t)
 	c.addRaw(a, p.y)
 	b.sub(p.y, a)
 	p.y.sub(p.z, p.x)
@@ -211,17 +211,16 @@ func (p *twExtendedPoint) addNielsToExtended(p2 *twNiels, beforeDouble bool) {
 	}
 }
 
-func (p *twExtendedPoint) subNielsFromExtendedPoint(p2 *twNiels, beforeDouble bool) {
+func (p *twExtendedPoint) subNielsFromExtendedPoint(np *twNiels, beforeDouble bool) {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.sub(p.y, p.x)
-	a.mul(p2.b, b)
+	a.mul(np.b, b)
 	b.addRaw(p.x, p.y)
-	p.y.mul(p2.a, b)
-	p.x.mul(p2.c, p.t)
+	p.y.mul(np.a, b)
+	p.x.mul(np.c, p.t)
 	c.addRaw(a, p.y)
 	b.sub(p.y, a)
 	p.y.addRaw(p.z, p.x)
-
 	a.sub(p.z, p.x)
 	p.z.mul(a, p.y)
 	p.x.mul(p.y, b)
@@ -231,11 +230,11 @@ func (p *twExtendedPoint) subNielsFromExtendedPoint(p2 *twNiels, beforeDouble bo
 	}
 }
 
-func (p *twExtendedPoint) addProjectiveNielsToExtended(pn *twPNiels, beforeDouble bool) {
+func (p *twExtendedPoint) addProjectiveNielsToExtended(np *twPNiels, beforeDouble bool) {
 	tmp := &bigNumber{}
-	tmp.mul(p.z, pn.z)
+	tmp.mul(p.z, np.z)
 	p.z = tmp.copy()
-	p.addNielsToExtended(pn.n, beforeDouble)
+	p.addNielsToExtended(np.n, beforeDouble)
 }
 
 func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, beforeDouble bool) {
@@ -280,7 +279,7 @@ func (p *twExtendedPoint) toPNiels() *twPNiels {
 	}
 }
 
-func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
+func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
 	const decafWindowBits = 5            //move this to const file
 	const window = decafWindowBits       //5
 	const windowMask = (1 << window) - 1 //0x0001f 31
@@ -293,7 +292,7 @@ func pointScalarMul(pointA *twExtendedPoint, scalar *decafScalar) *twExtendedPoi
 	scalar1x.add(scalar, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x, ScalarQ)
 
-	multiples := pointA.prepareFixedWindow(nTable)
+	multiples := p.prepareFixedWindow(nTable)
 
 	first := true
 	for i := scalarBits - ((scalarBits - 1) % window) - 1; i >= 0; i -= window {
@@ -337,7 +336,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	scalar2.add(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2.halve(scalar2, ScalarQ)
 
-	var ni *twNiels
+	var np *twNiels
 	for i := int(decafCombSpacing - 1); i >= 0; i-- {
 		if i != int(decafCombSpacing-1) {
 			p.double(false)
@@ -357,14 +356,14 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 			tab &= (1 << (decafCombTeeth - 1)) - 1
 
 			index := uint32(((j << (decafCombTeeth - 1)) + uint(tab)))
-			ni = decafPrecompTable.lookup(index)
+			np = decafPrecompTable.lookup(index)
 
-			ni.conditionalNegate(word(invert))
+			np.conditionalNegate(word(invert))
 
 			if i != int(decafCombSpacing-1) || j != 0 {
-				p.addNielsToExtended(ni, j == decafCombNumber-1 && i != 0)
+				p.addNielsToExtended(np, j == decafCombNumber-1 && i != 0)
 			} else {
-				p = ni.toExtended()
+				p = np.toExtended()
 			}
 		}
 	}
