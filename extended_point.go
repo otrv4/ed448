@@ -333,8 +333,8 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 		new(bigNumber),
 		new(bigNumber),
 	}
-	scalar2 := NewScalar()
-	scalar2.Add(scalar, decafPrecompTable.scalarAdjustment)
+	scalar2 := &decafScalar{}
+	scalar2.add(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2.halve(scalar2, ScalarQ)
 
 	var ni *twNiels
@@ -348,7 +348,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 			for k := uintZero; k < decafCombTeeth; k++ {
 				bit := uint(i) + decafCombSpacing*(k+j*decafCombTeeth)
 				if bit < scalarBits {
-					tab |= (scalar2.(*decafScalar)[bit/wordBits] >> (bit % wordBits) & 1) << k
+					tab |= (scalar2[bit/wordBits] >> (bit % wordBits) & 1) << k
 				}
 			}
 
