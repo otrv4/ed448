@@ -128,8 +128,7 @@ func (p *twExtendedPoint) decafEncode(dst []byte) {
 	if len(dst) != fieldBytes {
 		panic("Attempted an encode with a destination that is not 56 bytes")
 	}
-	t := word(0x00)
-	overT := word(0x00)
+	t, overT := allZeros, allZeros
 	serialize(dst, p.deisogenize(t, overT))
 }
 
