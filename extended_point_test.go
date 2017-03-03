@@ -1136,12 +1136,9 @@ func (s *Ed448Suite) Test_PointScalarMul(c *C) {
 	}
 
 	scalar := &decafScalar{
-		0x6ee372b7, 0xe128ae78,
-		0x1533427c, 0xad0b7015,
-		0x307f665e, 0xde8026c1,
-		0xb64629d1, 0xab454c66,
-		0x3fe5bf1a, 0x083f8304,
-		0x3c003777, 0xdef437f6,
+		0x6ee372b7, 0xe128ae78, 0x1533427c, 0xad0b7015,
+		0x307f665e, 0xde8026c1, 0xb64629d1, 0xab454c66,
+		0x3fe5bf1a, 0x083f8304, 0x3c003777, 0xdef437f6,
 		0xee2e1b73, 0x05ca185a,
 	}
 
@@ -1178,7 +1175,7 @@ func (s *Ed448Suite) Test_PointScalarMul(c *C) {
 }
 
 func (s *Ed448Suite) Test_PrecomputedScalarMultiplication(c *C) {
-	scalar := &decafScalar{0}
+	scalar := &decafScalar{0x00}
 
 	p := precomputedScalarMul(scalar)
 
