@@ -374,7 +374,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 
 // exposed methods
 
-// NewPoint returns an Ed448 Point from uint32 arrays
+// NewPoint returns an Ed448 Point from uint32 arrays.
 func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32) Point {
 	x, y, z, t := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -388,7 +388,7 @@ func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32
 	return &twExtendedPoint{x, y, z, t}
 }
 
-// NewPointFromBytes returns an Ed448 Point from byte array
+// NewPointFromBytes returns an Ed448 Point from byte slice.
 func NewPointFromBytes(in ...[]byte) Point {
 	if len(in) > 1 {
 		panic("too many arguments to function call")
@@ -476,7 +476,6 @@ func DoubleScalarMul(q, r Point, a, b Scalar) Point {
 }
 
 // DoubleScalarMulNonsecret multiplies the Ed448 base point
-// (from safe curves: https://safecurves.cr.yp.to/field.html)
 // and the supplied point q by the scalars a and b.
 //   output = a * Ed448_BasePoint + b * q
 // It may leak the scalar values. It is faster at
