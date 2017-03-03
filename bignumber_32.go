@@ -479,19 +479,91 @@ func (n *bigNumber) mulW(x *bigNumber, w dword) *bigNumber {
 	n[8] = word(accum8 & dword(radixMask))
 	accum8 >>= radix
 
-	for i := 1; i < limbs/2; i++ {
-		accum0 += dword(wlo) * dword(x[i])
-		accum8 += dword(wlo) * dword(x[i+8])
-		accum0 += dword(whi) * dword(x[i-1])
-		accum8 += dword(whi) * dword(x[i+7])
+	// 1
+	accum0 += dword(wlo) * dword(x[1])
+	accum8 += dword(wlo) * dword(x[9])
+	accum0 += dword(whi) * dword(x[0])
+	accum8 += dword(whi) * dword(x[8])
 
-		n[i] = word(accum0 & dword(radixMask))
-		accum0 >>= radix
+	n[1] = word(accum0 & dword(radixMask))
+	accum0 >>= radix
 
-		n[i+8] = word(accum8 & dword(radixMask))
-		accum8 >>= radix
-	}
+	n[9] = word(accum8 & dword(radixMask))
+	accum8 >>= radix
 
+	// 2
+	accum0 += dword(wlo) * dword(x[2])
+	accum8 += dword(wlo) * dword(x[10])
+	accum0 += dword(whi) * dword(x[1])
+	accum8 += dword(whi) * dword(x[9])
+
+	n[2] = word(accum0 & dword(radixMask))
+	accum0 >>= radix
+
+	n[10] = word(accum8 & dword(radixMask))
+	accum8 >>= radix
+
+	// 3
+	accum0 += dword(wlo) * dword(x[3])
+	accum8 += dword(wlo) * dword(x[11])
+	accum0 += dword(whi) * dword(x[2])
+	accum8 += dword(whi) * dword(x[10])
+
+	n[3] = word(accum0 & dword(radixMask))
+	accum0 >>= radix
+
+	n[11] = word(accum8 & dword(radixMask))
+	accum8 >>= radix
+
+	// 4
+	accum0 += dword(wlo) * dword(x[4])
+	accum8 += dword(wlo) * dword(x[12])
+	accum0 += dword(whi) * dword(x[3])
+	accum8 += dword(whi) * dword(x[11])
+
+	n[4] = word(accum0 & dword(radixMask))
+	accum0 >>= radix
+
+	n[12] = word(accum8 & dword(radixMask))
+	accum8 >>= radix
+
+	// 5
+	accum0 += dword(wlo) * dword(x[5])
+	accum8 += dword(wlo) * dword(x[13])
+	accum0 += dword(whi) * dword(x[4])
+	accum8 += dword(whi) * dword(x[12])
+
+	n[5] = word(accum0 & dword(radixMask))
+	accum0 >>= radix
+
+	n[13] = word(accum8 & dword(radixMask))
+	accum8 >>= radix
+
+	// 6
+	accum0 += dword(wlo) * dword(x[6])
+	accum8 += dword(wlo) * dword(x[14])
+	accum0 += dword(whi) * dword(x[5])
+	accum8 += dword(whi) * dword(x[13])
+
+	n[6] = word(accum0 & dword(radixMask))
+	accum0 >>= radix
+
+	n[14] = word(accum8 & dword(radixMask))
+	accum8 >>= radix
+
+	// 7
+	accum0 += dword(wlo) * dword(x[7])
+	accum8 += dword(wlo) * dword(x[15])
+	accum0 += dword(whi) * dword(x[6])
+	accum8 += dword(whi) * dword(x[14])
+
+	n[7] = word(accum0 & dword(radixMask))
+	accum0 >>= radix
+
+	n[15] = word(accum8 & dword(radixMask))
+	accum8 >>= radix
+
+	// finish
 	accum0 += accum8 + dword(n[8])
 	n[8] = word(accum0 & dword(radixMask))
 	n[9] += word(accum0 >> radix)
