@@ -333,7 +333,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 		new(bigNumber),
 		new(bigNumber),
 	}
-	scalar2 := NewDecafScalar(nil)
+	scalar2 := NewScalar()
 	scalar2.Add(scalar, decafPrecompTable.scalarAdjustment)
 	scalar2.halve(scalar2, ScalarQ)
 

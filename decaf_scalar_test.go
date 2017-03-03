@@ -27,10 +27,12 @@ func (s *Ed448Suite) Test_NewScalar(c *C) {
 		0x35b11251, 0x0804ac3d,
 	}
 
-	c.Assert(NewDecafScalar(nil), DeepEquals, &decafScalar{})
-	c.Assert(func() { NewDecafScalar(lessBytes) }, Panics, "byte input needs to be size 56")
-	c.Assert(func() { NewDecafScalar(moreBytes) }, Panics, "byte input needs to be size 56")
-	c.Assert(NewDecafScalar(bytes), DeepEquals, expected)
+	c.Assert(NewScalar(), DeepEquals, &decafScalar{})
+	c.Assert(func() { NewScalar(moreBytes, lessBytes) }, Panics, "too many arguments to function call")
+	c.Assert(func() { NewScalar(lessBytes) }, Panics, "byte input needs to be size 56")
+	c.Assert(func() { NewScalar(moreBytes) }, Panics, "byte input needs to be size 56")
+	c.Assert(NewScalar(bytes), DeepEquals, expected)
+	c.Assert(NewScalar(bytes), DeepEquals, expected)
 }
 
 func (s *Ed448Suite) Test_ScalarAddition(c *C) {
@@ -310,7 +312,7 @@ func (s *Ed448Suite) Test_DecodeError_WithSmallSource(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarEquals(c *C) {
-	a := NewDecafScalar(nil)
+	a := NewScalar()
 	b := a.Copy()
 	c.Assert(a.Equals(b), Equals, true)
 }
