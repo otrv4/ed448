@@ -5,6 +5,40 @@ import "fmt"
 type bigNumber [limbs]word
 type serialized [fieldBytes]byte
 
+func (n *bigNumber) copy() *bigNumber {
+	c := &bigNumber{}
+	*c = *n
+	return c
+}
+
+func (n *bigNumber) set(x *bigNumber) *bigNumber {
+	copy(n[:], x[:])
+	return n
+}
+
+//in is big endian
+func (n *bigNumber) setBytes(in []byte) *bigNumber {
+	if len(in) != fieldBytes {
+		return nil
+	}
+
+	s := serialized{}
+	for i, si := range in {
+		s[len(s)-i-1] = si
+	}
+
+	d, ok := deserialize(s)
+	if !ok {
+		return nil
+	}
+
+	for i, di := range d {
+		n[i] = di
+	}
+
+	return n
+}
+
 func (n *bigNumber) zero() (eq bool) {
 	return n.zeroMask() == lmask
 }
@@ -45,6 +79,7 @@ func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 	return karatsubaMul(n, x, y)
 }
 
+//XXX Security this is not constant time
 func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c sdword) *bigNumber {
 	if c >= 0 {
 		return n.mulW(x, dword(c))
@@ -68,15 +103,6 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 
 	for ; y > 0; y -= 2 {
 		n.square(new(bigNumber).square(n))
-	}
-
-	return n
-}
-
-func mustDeserialize(in serialized) *bigNumber {
-	n, ok := deserialize(in)
-	if !ok {
-		panic("Failed to deserialize")
 	}
 
 	return n
@@ -118,35 +144,10 @@ func (n *bigNumber) decafCondNegate(neg word) {
 	n.decafConstTimeSel(n, new(bigNumber).sub(bigZero, n), neg)
 }
 
-func (n *bigNumber) copy() *bigNumber {
-	c := &bigNumber{}
-	*c = *n
-	return c
-}
-
-func (n *bigNumber) set(x *bigNumber) *bigNumber {
-	copy(n[:], x[:])
-	return n
-}
-
-//in is big endian
-func (n *bigNumber) setBytes(in []byte) *bigNumber {
-	if len(in) != fieldBytes {
-		return nil
-	}
-
-	s := serialized{}
-	for i, si := range in {
-		s[len(s)-i-1] = si
-	}
-
-	d, ok := deserialize(s)
+func mustDeserialize(in serialized) *bigNumber {
+	n, ok := deserialize(in)
 	if !ok {
-		return nil
-	}
-
-	for i, di := range d {
-		n[i] = di
+		panic("Failed to deserialize")
 	}
 
 	return n
