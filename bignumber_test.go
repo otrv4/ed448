@@ -6,7 +6,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) TestZero(c *C) {
+func (s *Ed448Suite) Test_Zero(c *C) {
 	notZero := mustDeserialize(serialized{0x01})
 	c.Assert(notZero.zero(), Equals, false)
 
@@ -14,7 +14,7 @@ func (s *Ed448Suite) TestZero(c *C) {
 	c.Assert(zero.zero(), Equals, true)
 }
 
-func (s *Ed448Suite) TestSumRadix(c *C) {
+func (s *Ed448Suite) Test_SumRadix(c *C) {
 	x := mustDeserialize(serialized{0x57})
 	y := mustDeserialize(serialized{0x83})
 	z := mustDeserialize(serialized{0xda})
@@ -26,7 +26,7 @@ func (s *Ed448Suite) TestSumRadix(c *C) {
 	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
 }
 
-func (s *Ed448Suite) TestSubRadix(c *C) {
+func (s *Ed448Suite) Test_SubRadix(c *C) {
 	x := mustDeserialize(serialized{0x57})
 	y := mustDeserialize(serialized{0x83})
 	z := mustDeserialize(serialized{0xda})
@@ -38,7 +38,7 @@ func (s *Ed448Suite) TestSubRadix(c *C) {
 	c.Assert(new(bigNumber).sub(z, y).strongReduce(), DeepEquals, x)
 }
 
-func (s *Ed448Suite) TestSquareN(c *C) {
+func (s *Ed448Suite) Test_SquareN(c *C) {
 	gx := mustDeserialize(serialized{
 		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
 		0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,
@@ -69,7 +69,7 @@ func (s *Ed448Suite) TestSquareN(c *C) {
 	c.Assert(n.equals(exp), Equals, true)
 }
 
-func (s *Ed448Suite) TestInvert(c *C) {
+func (s *Ed448Suite) Test_Invert(c *C) {
 	n := &bigNumber{}
 	x := &bigNumber{
 		0x04516644, 0x01430f14, 0x072318d2, 0x0b1c2096,
@@ -89,7 +89,7 @@ func (s *Ed448Suite) TestInvert(c *C) {
 	c.Assert(n, DeepEquals, y)
 }
 
-func (s *Ed448Suite) TestNegate(c *C) {
+func (s *Ed448Suite) Test_Negate(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
 	n := new(bigNumber).setBytes(bs)
 	out := new(bigNumber).neg(n)
@@ -100,7 +100,7 @@ func (s *Ed448Suite) TestNegate(c *C) {
 	c.Assert(out, DeepEquals, expected)
 }
 
-func (s *Ed448Suite) TestConditionalNegateNumber(c *C) {
+func (s *Ed448Suite) Test_ConditionalNegateNumber(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
 	n := new(bigNumber).setBytes(bs)
 
@@ -111,7 +111,7 @@ func (s *Ed448Suite) TestConditionalNegateNumber(c *C) {
 	c.Assert(n.copy().conditionalNegate(0), DeepEquals, n)
 }
 
-func (s *Ed448Suite) TestConditionalSelect(c *C) {
+func (s *Ed448Suite) Test_ConditionalSelect(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
 	x := new(bigNumber).setBytes(bs)
 
@@ -123,7 +123,7 @@ func (s *Ed448Suite) TestConditionalSelect(c *C) {
 
 }
 
-func (s *Ed448Suite) TestConditionalSwap(c *C) {
+func (s *Ed448Suite) Test_ConditionalSwap(c *C) {
 	bs, _ := hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
 	x := new(bigNumber).setBytes(bs)
 
