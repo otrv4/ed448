@@ -62,6 +62,27 @@ func (n *bigNumber) subRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	return n
 }
 
+func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
+	n[0] = word(-x[0])
+	n[1] = word(-x[1])
+	n[2] = word(-x[2])
+	n[3] = word(-x[3])
+	n[4] = word(-x[4])
+	n[5] = word(-x[5])
+	n[6] = word(-x[6])
+	n[7] = word(-x[7])
+	n[8] = word(-x[8])
+	n[9] = word(-x[9])
+	n[10] = word(-x[10])
+	n[11] = word(-x[11])
+	n[12] = word(-x[12])
+	n[13] = word(-x[13])
+	n[14] = word(-x[14])
+	n[15] = word(-x[15])
+
+	return n
+}
+
 func (n *bigNumber) isr(x *bigNumber) *bigNumber {
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
@@ -137,25 +158,20 @@ func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg word) {
 	n[15] = (x[15] & (^neg)) | (y[15] & (neg))
 }
 
-func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {
-	n[0] = word(-x[0])
-	n[1] = word(-x[1])
-	n[2] = word(-x[2])
-	n[3] = word(-x[3])
-	n[4] = word(-x[4])
-	n[5] = word(-x[5])
-	n[6] = word(-x[6])
-	n[7] = word(-x[7])
-	n[8] = word(-x[8])
-	n[9] = word(-x[9])
-	n[10] = word(-x[10])
-	n[11] = word(-x[11])
-	n[12] = word(-x[12])
-	n[13] = word(-x[13])
-	n[14] = word(-x[14])
-	n[15] = word(-x[15])
+func constantTimeGreaterOrEqualP(n *bigNumber) word {
+	ge := word(lmask)
 
-	return n
+	for i := 0; i < 4; i++ {
+		ge &= n[i]
+	}
+
+	ge = (ge & (n[4] + 1)) | isZeroMask(word(n[4]^radixMask))
+
+	for i := 5; i < 8; i++ {
+		ge &= n[i]
+	}
+
+	return ^isZeroMask(word(ge ^ radixMask))
 }
 
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
@@ -209,6 +225,12 @@ func (n *bigNumber) decafEq(x *bigNumber) word {
 	return word((dword(ret) - 1) >> 32)
 }
 
+func isZeroMask(n word) word {
+	nn := dword(n)
+	nn = nn - 1
+	return word(nn >> wordBits)
+}
+
 func (n *bigNumber) zeroMask() word {
 	x := n.copy().strongReduce()
 	r := word(0)
@@ -247,22 +269,6 @@ func deserializeReturnMask(in serialized) (*bigNumber, word) {
 	}
 
 	return n, constantTimeGreaterOrEqualP(n)
-}
-
-func constantTimeGreaterOrEqualP(n *bigNumber) word {
-	ge := word(lmask)
-
-	for i := 0; i < 4; i++ {
-		ge &= n[i]
-	}
-
-	ge = (ge & (n[4] + 1)) | isZeroMask(word(n[4]^radixMask))
-
-	for i := 5; i < 8; i++ {
-		ge &= n[i]
-	}
-
-	return ^isZeroMask(word(ge ^ radixMask))
 }
 
 func deserialize(in serialized) (n *bigNumber, ok bool) {
@@ -580,10 +586,4 @@ func highBit(x *bigNumber) word {
 	y.add(x, x)
 	y.strongReduce()
 	return word(-(y[0] & 1))
-}
-
-func isZeroMask(n word) word {
-	nn := dword(n)
-	nn = nn - 1
-	return word(nn >> wordBits)
 }

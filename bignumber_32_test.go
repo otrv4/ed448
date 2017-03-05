@@ -6,7 +6,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) TestISR(c *C) {
+func (s *Ed448Suite) Test_ISR(c *C) {
 	x := mustDeserialize(serialized{
 		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
 		0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,
@@ -27,49 +27,40 @@ func (s *Ed448Suite) TestISR(c *C) {
 }
 
 func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
-	n := &bigNumber{
-		0x08db85c2, 0x0fd2361e,
-		0x0ce2105d, 0x06a17729,
-		0x0e3ca84d, 0x0a137aa5,
-		0x0985ee61, 0x05a26d64,
-		0x0734c5f3, 0x0da853af,
-		0x01d955b7, 0x03160ecd,
-		0x0a59046d, 0x0c32cf71,
-		0x98dce72d, 0x00007fff,
-	}
-
 	x := &bigNumber{
-		0x07247a3d, 0x002dc9e1,
-		0x031defa2, 0x095e88d6,
-		0x01c357b2, 0x05ec855a,
-		0x067a119e, 0x0a5d929b,
-		0x08cb3a0b, 0x0257ac50,
-		0x0e26aa48, 0x0ce9f132,
-		0x05a6fb92, 0x03cd308e,
-		0x072318d2, 0x0fff8007,
-	}
-	expected := &bigNumber{
-		0x07247a3d, 0x002dc9e1,
-		0x031defa2, 0x095e88d6,
-		0x01c357b2, 0x05ec855a,
-		0x067a119e, 0x0a5d929b,
-		0x08cb3a0b, 0x0257ac50,
-		0x0e26aa48, 0x0ce9f132,
-		0x05a6fb92, 0x03cd308e,
-		0x072318d2, 0x0fff8007,
+		0x08db85c2, 0x0fd2361e, 0x0ce2105d, 0x06a17729,
+		0x0e3ca84d, 0x0a137aa5, 0x0985ee61, 0x05a26d64,
+		0x0734c5f3, 0x0da853af, 0x01d955b7, 0x03160ecd,
+		0x0a59046d, 0x0c32cf71, 0x98dce72d, 0x00007fff,
 	}
 
+	y := &bigNumber{
+		0x07247a3d, 0x002dc9e1, 0x031defa2, 0x095e88d6,
+		0x01c357b2, 0x05ec855a, 0x067a119e, 0x0a5d929b,
+		0x08cb3a0b, 0x0257ac50, 0x0e26aa48, 0x0ce9f132,
+		0x05a6fb92, 0x03cd308e, 0x072318d2, 0x0fff8007,
+	}
+
+	exp := &bigNumber{
+		0x07247a3d, 0x002dc9e1, 0x031defa2, 0x095e88d6,
+		0x01c357b2, 0x05ec855a, 0x067a119e, 0x0a5d929b,
+		0x08cb3a0b, 0x0257ac50, 0x0e26aa48, 0x0ce9f132,
+		0x05a6fb92, 0x03cd308e, 0x072318d2, 0x0fff8007,
+	}
+
+	n := &bigNumber{}
 	neg := word(lmask)
-	n.decafConstTimeSel(n, x, neg)
-	c.Assert(n, DeepEquals, expected)
+	n.decafConstTimeSel(x, y, neg)
+
+	c.Assert(n, DeepEquals, exp)
 
 	nonNeg := word(0)
+	n.decafConstTimeSel(x, y, nonNeg)
 
-	n.decafConstTimeSel(n, x, nonNeg)
 	c.Assert(n, DeepEquals, n)
 }
 
-func (s *Ed448Suite) TestEquals(c *C) {
+func (s *Ed448Suite) Test_Equals(c *C) {
 	n, _ := deserialize(serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -85,6 +76,7 @@ func (s *Ed448Suite) TestEquals(c *C) {
 
 	x := mustDeserialize(serialized{0x01, 0x01})
 	y := mustDeserialize(serialized{0x01, 0x02})
+
 	c.Assert(x.equals(y), Equals, false)
 }
 
@@ -115,14 +107,14 @@ func (s *Ed448Suite) Test_DecafEq(c *C) {
 	c.Assert(x.decafEq(y), Equals, decafFalse)
 }
 
-func (s *Ed448Suite) TestZeroMask(c *C) {
+func (s *Ed448Suite) Test_ZeroMask(c *C) {
 
 	c.Assert(bigZero.zeroMask(), Equals, word(lmask))
-	c.Assert(bigOne.zeroMask(), Equals, word(0))
+	c.Assert(bigOne.zeroMask(), Equals, word(0x00))
 }
 
-func (s *Ed448Suite) TestDeserialize(c *C) {
-	ser := serialized{0x1}
+func (s *Ed448Suite) Test_Deserialize(c *C) {
+	ser := serialized{0x01}
 	n, ok := deserialize(ser)
 
 	c.Assert(n, DeepEquals, bigOne)
@@ -142,14 +134,10 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 	n, ok = deserialize(ser)
 
 	c.Assert(n, DeepEquals, &bigNumber{
-		0x57481f5, 0x72337ad,
-		0xf0d3c36, 0x3daacf9,
-		0xf1e8bc1, 0xbf897ef,
-		0x5637876, 0x7dd1806,
-		0xb874ad8, 0xc0b9143,
-		0xd0b68e1, 0x4776c8b,
-		0x082c3f3, 0x582f2d9,
-		0x94b75d2, 0x74a8bc3,
+		0x57481f5, 0x72337ad, 0xf0d3c36, 0x3daacf9,
+		0xf1e8bc1, 0xbf897ef, 0x5637876, 0x7dd1806,
+		0xb874ad8, 0xc0b9143, 0xd0b68e1, 0x4776c8b,
+		0x082c3f3, 0x582f2d9, 0x94b75d2, 0x74a8bc3,
 	})
 	c.Assert(ok, Equals, true)
 
@@ -166,36 +154,28 @@ func (s *Ed448Suite) TestDeserialize(c *C) {
 
 	n, ok = deserialize(ser)
 	c.Assert(n, DeepEquals, &bigNumber{
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xffffffe, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
 	})
 	c.Assert(ok, Equals, false)
 }
 
-func (s *Ed448Suite) TestSerialize(c *C) {
+func (s *Ed448Suite) Test_Serialize(c *C) {
 	dst := [fieldBytes]byte{}
 
 	serialize(dst[:], bigOne)
 	c.Assert(dst, DeepEquals, [fieldBytes]byte{1})
 
-	p := &bigNumber{
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xffffffe, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
-		0xfffffff, 0xfffffff,
+	n := &bigNumber{
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
 	}
 
-	serialize(dst[:], p)
+	serialize(dst[:], n)
 
 	//0 because serialize reduces mod p
 	c.Assert(dst, DeepEquals, [fieldBytes]byte{})
@@ -211,25 +191,21 @@ func (s *Ed448Suite) TestSerialize(c *C) {
 		0xd2, 0x75, 0x4b, 0x39, 0xbc, 0xa8, 0x74,
 	}
 
-	a := &bigNumber{
-		0x57481f5, 0x72337ad,
-		0xf0d3c36, 0x3daacf9,
-		0xf1e8bc1, 0xbf897ef,
-		0x5637876, 0x7dd1806,
-		0xb874ad8, 0xc0b9143,
-		0xd0b68e1, 0x4776c8b,
-		0x082c3f3, 0x582f2d9,
-		0x94b75d2, 0x74a8bc3,
+	x := &bigNumber{
+		0x57481f5, 0x72337ad, 0xf0d3c36, 0x3daacf9,
+		0xf1e8bc1, 0xbf897ef, 0x5637876, 0x7dd1806,
+		0xb874ad8, 0xc0b9143, 0xd0b68e1, 0x4776c8b,
+		0x082c3f3, 0x582f2d9, 0x94b75d2, 0x74a8bc3,
 	}
 
-	serialize(dst[:], a)
+	serialize(dst[:], x)
 
 	c.Assert(dst, DeepEquals, exp)
 
 }
 
-func (s *Ed448Suite) TestStrongReduce(c *C) {
-	p, _ := deserialize(serialized{
+func (s *Ed448Suite) Test_StrongReduce(c *C) {
+	n, _ := deserialize(serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -241,11 +217,11 @@ func (s *Ed448Suite) TestStrongReduce(c *C) {
 	})
 
 	//p = p mod p = 0
-	p.strongReduce()
+	n.strongReduce()
 
-	c.Assert(p, DeepEquals, bigZero)
+	c.Assert(n, DeepEquals, bigZero)
 
-	n := mustDeserialize(serialized{
+	n = mustDeserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
 		0x36, 0x3c, 0x0d, 0x9f, 0xcf, 0xaa, 0x3d,
 		0xc1, 0x8b, 0x1e, 0xff, 0x7e, 0x89, 0xbf,
