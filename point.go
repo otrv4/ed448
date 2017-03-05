@@ -123,7 +123,7 @@ func (p *twPNiels) copy() *twPNiels {
 	}
 }
 
-func (p *twPNiels) twExtendedPoint() *twExtendedPoint {
+func (p *twPNiels) toExtendedPoint() *twExtendedPoint {
 	eu := &bigNumber{}
 	q := &twExtendedPoint{
 		&bigNumber{},

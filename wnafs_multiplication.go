@@ -194,7 +194,7 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafSca
 		mul1pn := constTimeLookup(multiples1, word(bits1&windowTMask))
 		mul1pn.n.conditionalNegate(inv1)
 		if first {
-			out = mul1pn.twExtendedPoint()
+			out = mul1pn.toExtendedPoint()
 			first = false
 		} else {
 			//Using Hisil et al's lookahead method instead of extensible here
@@ -245,10 +245,10 @@ func decafDoubleNonSecretScalarMul(p *twExtendedPoint, scalarPre, scalarVar *dec
 	}
 
 	if i > controlPre[0].power {
-		out = precmpVar[index].twExtendedPoint()
+		out = precmpVar[index].toExtendedPoint()
 		contv++
 	} else if i == controlPre[0].power && i >= 0 {
-		out = precmpVar[index].twExtendedPoint()
+		out = precmpVar[index].toExtendedPoint()
 		out.addNielsToExtended(decafWnafsTable[controlPre[0].addend>>1], i != 0)
 		contv++
 		contp++

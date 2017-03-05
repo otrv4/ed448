@@ -310,7 +310,7 @@ func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
 		pNeg.n.conditionalNegate(inv)
 
 		if first {
-			out = pNeg.twExtendedPoint()
+			out = pNeg.toExtendedPoint()
 			first = false
 		} else {
 			//Using Hisil et al's lookahead method instead of
