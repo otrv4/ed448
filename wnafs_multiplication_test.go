@@ -87,7 +87,7 @@ func (s *Ed448Suite) Test_RecodeWNAFCompareFull(c *C) {
 	})
 }
 
-func (s *Ed448Suite) TestRecodeWNAFForScalarZero(c *C) {
+func (s *Ed448Suite) Test_RecodeWNAFForScalarZero(c *C) {
 	nbitsPre := uint(446)
 	tableBitsPre := uint(5)
 	controlLen := nbitsPre/(tableBitsPre+1) + 3
@@ -101,7 +101,7 @@ func (s *Ed448Suite) TestRecodeWNAFForScalarZero(c *C) {
 	c.Assert(controlPre[pos].addend, Equals, 0)
 }
 
-func (s *Ed448Suite) TestRecodeWNAFForChallenge(c *C) {
+func (s *Ed448Suite) Test_RecodeWNAFForChallenge(c *C) {
 	nbits := uint(446)
 	tableBits := uint(4)
 	controlLen := nbits/(tableBits+1) + 3
@@ -120,7 +120,7 @@ func (s *Ed448Suite) TestRecodeWNAFForChallenge(c *C) {
 	c.Assert(control[pos].addend, Equals, 0)
 }
 
-func (s *Ed448Suite) TestDecafRecodeWNAFFull(c *C) {
+func (s *Ed448Suite) Test_DecafRecodeWNAFFull(c *C) {
 	scalar := &decafScalar{
 		0x120854c7, 0x6a241ba0, 0x41468997, 0x11e8f8aa,
 		0x1c0815bf, 0xea9551e7, 0x71cfde7f, 0x462af8b2,
@@ -406,7 +406,7 @@ func (s *Ed448Suite) Test_PrepareFixedWindow(c *C) {
 	c.Assert(w[0].n, DeepEquals, exp[0].n)
 }
 
-func (s *Ed448Suite) TestPrepareWNAFTable(c *C) {
+func (s *Ed448Suite) Test_PrepareWNAFTable(c *C) {
 	tableSize := uint(4)
 	exp := [16]*twPNiels{
 		//0

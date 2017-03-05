@@ -7,11 +7,11 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) TestRadixBasePointIsOnCurve(c *C) {
+func (s *Ed448Suite) Test_RadixBasePointIsOnCurve(c *C) {
 	c.Assert(basePoint.OnCurve(), Equals, true)
 }
 
-func (s *Ed448Suite) TestRadixMultiplyByBase(c *C) {
+func (s *Ed448Suite) Test_RadixMultiplyByBase(c *C) {
 	scalar := decafScalar{}
 	scalar[scalarWords-1] = 1000
 
@@ -20,7 +20,7 @@ func (s *Ed448Suite) TestRadixMultiplyByBase(c *C) {
 	c.Assert(p.OnCurve(), Equals, true)
 }
 
-func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
+func (s *Ed448Suite) Test_RadixGenerateKey(c *C) {
 	buffer := make([]byte, symKeyBytes)
 	buffer[0] = 0x10
 	r := bytes.NewReader(buffer[:])
@@ -56,7 +56,7 @@ func (s *Ed448Suite) TestRadixGenerateKey(c *C) {
 	c.Assert(privKey.publicKey(), DeepEquals, expectedPublic)
 }
 
-func (s *Ed448Suite) TestDeriveNonce(c *C) {
+func (s *Ed448Suite) Test_DeriveNonce(c *C) {
 	msg := []byte("hey there")
 	symKey := [symKeyBytes]byte{
 		0x27, 0x54, 0xcd, 0xa7, 0x12, 0x98, 0x88, 0x3d,
@@ -80,7 +80,7 @@ func (s *Ed448Suite) TestDeriveNonce(c *C) {
 	c.Assert(nonce, DeepEquals, expectedNonce)
 }
 
-func (s *Ed448Suite) TestDeriveChallenge(c *C) {
+func (s *Ed448Suite) Test_DeriveChallenge(c *C) {
 	msg := []byte("hey there")
 	pubKey := [pubKeyBytes]byte{
 		0x0e, 0xe8, 0x29, 0x1c, 0xc5, 0x9d, 0x51, 0x9c,
@@ -113,7 +113,7 @@ func (s *Ed448Suite) TestDeriveChallenge(c *C) {
 	c.Assert(challenge, DeepEquals, expectedChallenge)
 }
 
-func (s *Ed448Suite) TestSign(c *C) {
+func (s *Ed448Suite) Test_Sign(c *C) {
 	msg := []byte("hey there")
 	k := privateKey([privKeyBytes]byte{
 		//secret
@@ -163,7 +163,7 @@ func (s *Ed448Suite) TestSign(c *C) {
 	c.Assert(signature, DeepEquals, expectedSignature)
 }
 
-func (s *Ed448Suite) TestVerify(c *C) {
+func (s *Ed448Suite) Test_Verify(c *C) {
 	msg := []byte("hey there")
 	k := publicKey([pubKeyBytes]byte{
 		//public
@@ -197,7 +197,7 @@ func (s *Ed448Suite) TestVerify(c *C) {
 	c.Assert(valid, Equals, true)
 }
 
-func (s *Ed448Suite) TestMultiplyMontgomery(c *C) {
+func (s *Ed448Suite) Test_MultiplyMontgomery(c *C) {
 	pk := mustDeserialize(serialized{
 		0x0e, 0xe8, 0x29, 0x1c, 0xc5, 0x9d, 0x51, 0x9c,
 		0xb2, 0x94, 0xdd, 0xc4, 0x5c, 0xb9, 0xf7, 0x0f,

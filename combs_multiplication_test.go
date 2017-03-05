@@ -2,7 +2,7 @@ package ed448
 
 import . "gopkg.in/check.v1"
 
-func (s *Ed448Suite) TestRadixScheduleForCombs(c *C) {
+func (s *Ed448Suite) Test_RadixScheduleForCombs(c *C) {
 	scalar := decafScalar{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 	}

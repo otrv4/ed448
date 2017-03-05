@@ -9,7 +9,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) TestPoint(c *C) {
+func (s *Ed448Suite) Test_Point(c *C) {
 	//Base point
 	gx := serialized{
 		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
@@ -35,7 +35,7 @@ func (s *Ed448Suite) TestPoint(c *C) {
 	c.Assert(q.OnCurve(), Equals, true)
 }
 
-func (s *Ed448Suite) TestMixedAddition(c *C) {
+func (s *Ed448Suite) Test_MixedAddition(c *C) {
 	pa, _ := hex.DecodeString("4b8a632c1feab72769cd96e7aaa577861871b3613945c802b89377e8b85331ecc0ffb1cb20169bfc9c27274d38b0d01e87a1d5d851770bc8")
 	pb, _ := hex.DecodeString("81a45f02f41053f8d7d2a1f176a340529b33b7ee4d3fa84de384b750b35a54c315bf36c41d023ade226449916e668396589ea2145da09b95")
 	pc, _ := hex.DecodeString("5f5a2b06a2dbf7136f8dc979fd54d631ca7de50397250a196d3be2a721ab7cbaa92c545d9b15b5319e11b64bc031666049d8637e13838b3b")
@@ -78,7 +78,7 @@ func (s *Ed448Suite) TestMixedAddition(c *C) {
 	c.Assert(ret.equals(expected), Equals, true)
 }
 
-func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
+func (s *Ed448Suite) Test_ExtensibleUntwistAndDoubleAndSerialize(c *C) {
 	px, _ := hex.DecodeString("4ed74e709fb89daba40d2aad54b8befa01e3cc2cd9eee3d72f9869a2897e5e44c32990e0366df5da4d36a890f10835a1ff85db9058b346b8")
 	py, _ := hex.DecodeString("79c2294410f6371b2074d4ce8c40e366ebcf3770f45867e2280de6cb5e7da2c9e9c53a3ba0e9e38af58ac04092ef2a4d09510502adab1b90")
 	pz, _ := hex.DecodeString("0b629561746bb03a5a1806376c6e424d51c704677885fc9947e3ae97d9146726dafa80b16a53f9bf492982b997466bf1c36e0ebaea3c7feb")
@@ -101,7 +101,7 @@ func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
 	c.Assert(ser.equals(exp), Equals, true)
 }
 
-func (s *Ed448Suite) TestConditionalNegate(c *C) {
+func (s *Ed448Suite) Test_ConditionalNegate(c *C) {
 	pa, _ := hex.DecodeString("4b8a632c1feab72769cd96e7aaa577861871b3613945c802b89377e8b85331ecc0ffb1cb20169bfc9c27274d38b0d01e87a1d5d851770bc8")
 	pb, _ := hex.DecodeString("81a45f02f41053f8d7d2a1f176a340529b33b7ee4d3fa84de384b750b35a54c315bf36c41d023ade226449916e668396589ea2145da09b95")
 	pc, _ := hex.DecodeString("5f5a2b06a2dbf7136f8dc979fd54d631ca7de50397250a196d3be2a721ab7cbaa92c545d9b15b5319e11b64bc031666049d8637e13838b3b")
@@ -122,7 +122,7 @@ func (s *Ed448Suite) TestConditionalNegate(c *C) {
 	x.conditionalNegate(lmask)
 	c.Assert(x, DeepEquals, negN)
 }
-func (s *Ed448Suite) TestMontgomerySerialize(c *C) {
+func (s *Ed448Suite) Test_MontgomerySerialize(c *C) {
 	bsIn, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
 	bsZ0, _ := hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
 	bsXd, _ := hex.DecodeString("c88f896abf42ca2cbff1edf881d1246ee76abe7385932d7b54fb9d71307fdd8043d8a80c7d0363e7a45443d4e9a03bf3e0aab82fb4714c5f")
@@ -146,7 +146,7 @@ func (s *Ed448Suite) TestMontgomerySerialize(c *C) {
 	c.Assert(out.equals(exp), Equals, true)
 }
 
-func (s *Ed448Suite) TestMontgomeryDeserialize(c *C) {
+func (s *Ed448Suite) Test_MontgomeryDeserialize(c *C) {
 	bsIn, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008")
 	in := new(bigNumber).setBytes(bsIn)
 	out := new(montgomery)
@@ -169,7 +169,7 @@ func (s *Ed448Suite) TestMontgomeryDeserialize(c *C) {
 	c.Assert(out.za.equals(za), Equals, true)
 }
 
-func (s *Ed448Suite) TestMontgomeryStep(c *C) {
+func (s *Ed448Suite) Test_MontgomeryStep(c *C) {
 	bsZ0, _ := hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
 	bsXd, _ := hex.DecodeString("dc7c2264cf2a3f6178ee7884793f2d0cfe98e602c32adfbec9a5fc225c904f5e1f45c614fc483aec252745e04a38f49e1a4cfc0e8bbf14c5")
 	bsZd, _ := hex.DecodeString("76ad01dbfd7dd72671ad1f827b762fe0c39c808084533b1e22ee18537b7e43c75b995f9e107ec055fbb3df4fb83ad78e69de76a188fb6db6")
@@ -203,7 +203,7 @@ func (s *Ed448Suite) TestMontgomeryStep(c *C) {
 	c.Assert(mont.za.equals(exp.za), Equals, true)
 }
 
-func (s *Ed448Suite) TestAddTwNiels(c *C) {
+func (s *Ed448Suite) Test_AddTwNiels(c *C) {
 	na, _ := hex.DecodeString("33d7e1341e2291816fa27efbac283c2d0fae711d29b581200d215449fa64ef98a767887486155176a543fc08807a595766b7987e4b4c037f")
 	nb, _ := hex.DecodeString("4ad8ff3e6b86b69d349faa7cca6280ed8208997607ed60c842651c0ddac0754664433340bd3e4253dd8565c36713f7ca2c11023891708535")
 	nc, _ := hex.DecodeString("8bd294a6cfdee12764081c4e9acaab981fcf3b8bd422f683d37a175081eeaec3a1b5c42dc5b962e5a46a0959b1f725796637306f8723066c")
@@ -248,7 +248,7 @@ func (s *Ed448Suite) TestAddTwNiels(c *C) {
 	c.Assert(e.u.equals(exp.u), Equals, true)
 }
 
-func (s *Ed448Suite) TestDeserializeAndTwistAprox(c *C) {
+func (s *Ed448Suite) Test_DeserializeAndTwistAprox(c *C) {
 	b, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
 	n := new(bigNumber).setBytes(b)
 
@@ -275,7 +275,7 @@ func (s *Ed448Suite) TestDeserializeAndTwistAprox(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
-func (s *Ed448Suite) TestUntwistDoubleAndSerialize(c *C) {
+func (s *Ed448Suite) Test_UntwistDoubleAndSerialize(c *C) {
 	ex, _ := hex.DecodeString("d902fadbeee8dd1ef391dcce59cc75d286c9efc7229dd919a35236a5447384e84617bf94d4129af02d7667fad1df88985132c1ce1b133428")
 	ey, _ := hex.DecodeString("ba1d18df944a527ec4ebad9c84cc32643064dcd26bf003a9763dad575104e1a3c9fbb02f971169c2736ed5d8812ad8eeedcfa8226977ddb4")
 	ez, _ := hex.DecodeString("2d35e8b251eb6b421291cf3a466597759059e01b7cc89f332f96f801ced244299f4da20b9fcedbaa66c5fd3508dcb61888e2b89bee4fea45")
@@ -298,24 +298,7 @@ func (s *Ed448Suite) TestUntwistDoubleAndSerialize(c *C) {
 	c.Assert(untw.equals(expected), Equals, true)
 }
 
-func compareNumbers(label string, n *bigNumber, b *big.Int) {
-	s := [fieldBytes]byte{}
-	serialize(s[:], n)
-
-	r := rev(s[:])
-	bs := b.Bytes()
-
-	for i := len(r) - len(bs); i > 0; i-- {
-		bs = append([]byte{0}, bs...)
-	}
-
-	if !bytes.Equal(r, bs) {
-		fmt.Printf("%s does not match!\n\t%#v\n\n vs\n\n\t%#v\n", label, r, bs)
-	}
-
-}
-
-func (s *Ed448Suite) Test_convertPNielsToExtended(c *C) {
+func (s *Ed448Suite) Test_ConvertPNielsToExtended(c *C) {
 	pn := &twPNiels{
 		&twNiels{
 			&bigNumber{
@@ -373,4 +356,21 @@ func (s *Ed448Suite) Test_convertPNielsToExtended(c *C) {
 	}
 
 	c.Assert(pn.toExtendedPoint(), DeepEquals, expected)
+}
+
+func compareNumbers(label string, n *bigNumber, b *big.Int) {
+	s := [fieldBytes]byte{}
+	serialize(s[:], n)
+
+	r := rev(s[:])
+	bs := b.Bytes()
+
+	for i := len(r) - len(bs); i > 0; i-- {
+		bs = append([]byte{0}, bs...)
+	}
+
+	if !bytes.Equal(r, bs) {
+		fmt.Printf("%s does not match!\n\t%#v\n\n vs\n\n\t%#v\n", label, r, bs)
+	}
+
 }
