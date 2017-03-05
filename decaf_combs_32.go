@@ -11,12 +11,12 @@ type decafBaseTable struct {
 	scalarAdjustment *decafScalar
 }
 
-func selectMask(index uint32, current uint32) word {
+func selectMask(index word, current word) word {
 	xor := index ^ current
 	return word(-(((xor | -xor) >> 31) ^ 1))
 }
 
-func (table *decafBaseTable) lookup(index uint32) *twNiels {
+func (table *decafBaseTable) lookup(index word) *twNiels {
 	out := &twNiels{
 		&bigNumber{},
 		&bigNumber{},
@@ -24,7 +24,7 @@ func (table *decafBaseTable) lookup(index uint32) *twNiels {
 	}
 
 	for i := 0; i < tableSize; i++ {
-		m := selectMask(index, uint32(i))
+		m := selectMask(index, word(i))
 		for j := 0; j < limbs; j++ {
 			out.a[j] |= m & table.base[i].a[j]
 			out.b[j] |= m & table.base[i].b[j]

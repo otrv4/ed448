@@ -168,6 +168,7 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) word {
 		succ &= decafFalse | ^zero
 	}
 	succ &= ^highBit(n)
+
 	a.square(n)
 	dst.z.sub(bigOne, a)
 	b.square(dst.z)
@@ -305,7 +306,7 @@ func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
 		bits ^= inv
 
 		//Add in from table.  Compute out.t (point) only on last iteration.
-		pNeg := constTimeLookup(multiples, uint32(bits&windowTMask))
+		pNeg := constTimeLookup(multiples, word(bits&windowTMask))
 		pNeg.n.conditionalNegate(inv)
 
 		if first {
@@ -355,7 +356,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 			tab ^= word(invert)
 			tab &= (1 << (decafCombTeeth - 1)) - 1
 
-			index := uint32(((j << (decafCombTeeth - 1)) + uint(tab)))
+			index := word(((j << (decafCombTeeth - 1)) + uint(tab)))
 			np = decafPrecompTable.lookup(index)
 
 			np.conditionalNegate(word(invert))

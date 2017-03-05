@@ -144,7 +144,7 @@ func (s *decafScalar) decodeShort(b []byte, size uint) {
 func (s *decafScalar) decode(b []byte) word {
 	s.decodeShort(b, scalarBytes)
 
-	accum := sdword(0)
+	accum := sdword(0x00)
 	for i := 0; i < 14; i++ {
 		accum += sdword(s[i]) - sdword(ScalarQ[i])
 		accum >>= wordBits
@@ -158,7 +158,6 @@ func (s *decafScalar) decode(b []byte) word {
 // XXX: implement variable size arg
 func (s *decafScalar) decodeLong(b []byte) {
 	if len(b) == 0 {
-		scalarZero := &decafScalar{0}
 		s = scalarZero.copy()
 	}
 

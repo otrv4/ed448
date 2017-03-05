@@ -24,7 +24,7 @@ func (s *Ed448Suite) Test_DecafLookup(c *C) {
 		0x0ca3ffdc, 0x0bd7f65a, 0x050288a8, 0x0dea434a,
 	}
 
-	point := decafPrecompTable.lookup(uint32(9))
+	point := decafPrecompTable.lookup(word(0x09))
 
 	c.Assert(point.a, DeepEquals, expA)
 	c.Assert(point.b, DeepEquals, expB)

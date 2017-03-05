@@ -1,6 +1,6 @@
 package ed448
 
-func constTimeLookup(table []*twPNiels, index uint32) *twPNiels {
+func constTimeLookup(table []*twPNiels, index word) *twPNiels {
 	out := &twPNiels{
 		&twNiels{
 			&bigNumber{},
@@ -11,7 +11,7 @@ func constTimeLookup(table []*twPNiels, index uint32) *twPNiels {
 	}
 
 	for i := 0; i < len(table); i++ {
-		m := selectMask(index, uint32(i))
+		m := selectMask(index, word(i))
 		for j := 0; j < limbs; j++ {
 			out.n.a[j] |= m & table[i].n.a[j]
 			out.n.b[j] |= m & table[i].n.b[j]
