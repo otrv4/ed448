@@ -78,7 +78,14 @@ func (s *Ed448Suite) Test_DecafSignAndVerify(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Assert(signature, NotNil)
 
-	valid := decafCurve.Verify(signature, message, pub)
+	valid, err := decafCurve.Verify(signature, message, pub)
 
 	c.Assert(valid, Equals, true)
+	c.Assert(err, IsNil)
+
+	fakeMessage := []byte("fake sign.")
+	valid, err = decafCurve.Verify(signature, fakeMessage, pub)
+
+	c.Assert(valid, Equals, false)
+	c.Assert(err, ErrorMatches, "unable to verify given signature")
 }

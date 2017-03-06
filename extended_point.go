@@ -1,5 +1,7 @@
 package ed448
 
+import "errors"
+
 // Point is a interface of an Ed448 point
 type Point interface {
 	IsValid() bool
@@ -8,7 +10,7 @@ type Point interface {
 	Add(q, r Point)
 	Sub(q, r Point)
 	Encode() []byte
-	Decode(src []byte, identity bool)
+	Decode(src []byte, identity bool) (bool, error)
 }
 
 type twExtendedPoint struct {
@@ -157,7 +159,7 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
-func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) word {
+func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
 	n, succ := deserializeReturnMask(src)
@@ -190,7 +192,12 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) word {
 	dst.t.mul(dst.x, a)
 	dst.y[0] -= zero
 
-	return succ
+	var err error
+	if succ != decafTrue {
+		err = errors.New("unable to decode given point")
+		return succ, err
+	}
+	return succ, err
 }
 
 func (p *twExtendedPoint) addNielsToExtended(np *twNiels, beforeDouble bool) {
@@ -457,7 +464,12 @@ func (p *twExtendedPoint) Encode() []byte {
 func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) {
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
-	decafDecode(p, ser, useIdentity)
+
+	valid, err := decafDecode(p, ser, useIdentity)
+	if err != nil {
+		return false, err
+	}
+	return valid == decafTrue, nil
 }
 
 // PointScalarMul multiplies a base point by a scalar.

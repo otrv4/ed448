@@ -16,24 +16,27 @@ func decafPseudoRandomFunction(sym []byte) []byte {
 	return out[:]
 }
 
-func (c *decafCurveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (privateKey, error) {
-	k := privateKey{}
+func (c *decafCurveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (*privateKey, error) {
+	k := &privateKey{}
 	copy(k.symKey(), sym[:])
 
 	skb := decafPseudoRandomFunction(sym[:])
 	secretKey := &decafScalar{}
 
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
-	secretKey.serialize(k.secretKey())
+
+	err := secretKey.serialize(k.secretKey())
+	if err != nil {
+		return nil, err
+	}
 
 	publicKey := precomputedScalarMul(secretKey)
-
 	publicKey.decafEncode(k.publicKey())
 
 	return k, nil
 }
 
-func (c *decafCurveT) decafGenerateKeys(r io.Reader) (k privateKey, err error) {
+func (c *decafCurveT) decafGenerateKeys(r io.Reader) (k *privateKey, err error) {
 	symKey, err := generateSymmetricKey(r)
 	if err != nil {
 		return
@@ -100,9 +103,8 @@ func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]
 	return
 }
 
-func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publicKey) bool {
+func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k *publicKey) (bool, error) {
 	serPubkey := serialized(*k)
-
 	tmpSig := [fieldBytes]byte{}
 	copy(tmpSig[:], signature[:])
 	challenge := decafDeriveChallenge(serPubkey[:], tmpSig, msg)
@@ -120,15 +122,26 @@ func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k 
 		t: &bigNumber{},
 	}
 
-	ret := decafDecode(point, tmpSig, true)
-	ret &= decafDecode(pkPoint, serPubkey, false)
+	ret, err := decafDecode(point, tmpSig, true)
+	if err != nil {
+		return false, err
+	}
+
+	ret1, err := decafDecode(pkPoint, serPubkey, false)
+	if err != nil {
+		return false, err
+	}
+	// XXX: hacky. FIX ME.
+	ret &= ret1
 
 	response := &decafScalar{}
 	ret &= response.decode(signature[56:])
 
 	pkPoint = decafDoubleNonSecretScalarMul(pkPoint, response, challenge)
-
 	ret &= pkPoint.equals(point)
 
-	return ret == word(lmask)
+	if ret != word(lmask) {
+		return false, errors.New("unable to verify given signature")
+	}
+	return true, nil
 }

@@ -63,7 +63,7 @@ func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]
 type DecafCurve interface {
 	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
 	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)
-	Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool)
+	Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool, err error)
 }
 
 type decafCurveT struct{}
@@ -79,7 +79,6 @@ func NewDecafCurve() DecafCurve {
 
 //GenerateKeys generates a private key and its correspondent public key.
 func (ed *decafCurveT) GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool) {
-	var err error
 	privKey, err := ed.decafGenerateKeys(rand.Reader)
 	ok = err == nil
 
@@ -98,8 +97,12 @@ func (ed *decafCurveT) Sign(priv [privKeyBytes]byte, message []byte) (signature 
 }
 
 // Verify a signature does correspond a message by a public key.
-func (ed *decafCurveT) Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool) {
+func (ed *decafCurveT) Verify(signature [signatureBytes]byte, message []byte, pub [pubKeyBytes]byte) (valid bool, err error) {
 	pk := publicKey(pub)
-	valid = ed.decafVerify(signature, message, &pk)
-	return
+
+	valid, err = ed.decafVerify(signature, message, &pk)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
