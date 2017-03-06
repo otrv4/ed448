@@ -426,45 +426,45 @@ func NewPointFromBytes(in ...[]byte) Point {
 	return out
 }
 
-// IsValid tests if a point is valid.
-func (p *twExtendedPoint) IsValid() bool {
-	return p.isValidPoint()
+// IsOnCurve reports whether the given point (p) lies on the curve.
+func (p *twExtendedPoint) IsOnCurve() bool {
+	return p.isOnCurve()
 }
 
-// Equals compares whether two points are equal.
+// Equals compares whether two points (p, q) are equal .
 func (p *twExtendedPoint) Equals(q Point) bool {
 	valid := p.equals(q.(*twExtendedPoint))
 	return valid == decafTrue
 }
 
-// Copy copies a point.
+// Copy returns a copy of a given point (p).
 func (p *twExtendedPoint) Copy() Point {
 	p.copy()
 	return Point(p)
 }
 
-// Add adds two points to produce a thrid point.
+// Add gives the sum of two points (q, r) and produces a thrid point (p).
 func (p *twExtendedPoint) Add(q, r Point) {
 	p.add(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
-// Sub subtracts two points to produce a thrid point.
+// Sub gives the subtraction of two points (q, r) and produces a thrid point (p).
 func (p *twExtendedPoint) Sub(q, r Point) {
 	p.sub(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
-// Encode encodes a point as a sequence of bytes.
+// Encode returns the encoding of a point (p) as a sequence of bytes.
 func (p *twExtendedPoint) Encode() []byte {
 	out := make([]byte, fieldBytes)
 	p.decafEncode(out)
 	return out
 }
 
-// Decode decodes a point from a sequence of bytes.
-// Every point has a unique encoding, so not every
-// sequence of bytes is a valid encoding.  If an invalid
-// encoding is given, the output is undefined.
-func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) {
+// Decode gives the decoding a point from a sequence of bytes (src).
+// Every point has a unique encoding, so not every sequence of bytes is a valid
+// encoding.  If an invalid encoding is given, the output is undefined.
+// Set 'useIdentity' true  if the identity is a legal input.
+func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) (bool, error) {
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
 
@@ -475,27 +475,30 @@ func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) {
 	return valid == decafTrue, nil
 }
 
-// PointScalarMul multiplies a base point by a scalar.
+// PointScalarMul returns the multiplication of a given point (p) by a given
+// scalar (a): q * a.
 func PointScalarMul(q Point, a Scalar) Point {
 	return pointScalarMul(q.(*twExtendedPoint), a.(*decafScalar))
 }
 
-// PrecomputedScalarMul mutiplies a precomputed point by a scalar.
-func PrecomputedScalarMul(s Scalar) Point {
-	return precomputedScalarMul(s.(*decafScalar))
+// PrecomputedScalarMul returns the multiplication of a given scalar (a) by the
+// precomputed base point of the curve: basePoint * a.
+func PrecomputedScalarMul(a Scalar) Point {
+	return precomputedScalarMul(a.(*decafScalar))
 }
 
-// DoubleScalarMul multiplies two base points by two scalars.
-func DoubleScalarMul(q, r Point, a, b Scalar) Point {
+// PointDoubleScalarMul returns the addition of two multiplications: a given
+// point (q) by a given scalar (a) and a given point (r) by a given scalar (b):
+// q * a + r * b.
+func PointDoubleScalarMul(q, r Point, a, b Scalar) Point {
 	return doubleScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
 }
 
-// DoubleScalarMulNonsecret multiplies the Ed448 base point
-// and the supplied point q by the scalars a and b.
-//   output = a * Ed448_BasePoint + b * q
-// It may leak the scalar values. It is faster at
-// expense of variable time than DoubleScalarMul. Otherwise,
-// it is equivalent. It is designed for signature verification.
-func DoubleScalarMulNonsecret(q Point, a, b Scalar) Point {
+// PointDoubleScalarMulNonsecret returns the addition of two multiplications:
+// a given point (q) by a given scalar (b) and the base point of the curve by a
+// given scalar (a): q * b + basePoint * a.
+// @warning: This function takes variable time, and may leak the scalars used.
+// It is designed for signature verification.
+func PointDoubleScalarMulNonsecret(q Point, a, b Scalar) Point {
 	return decafDoubleNonSecretScalarMul(q.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
 }
