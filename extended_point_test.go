@@ -63,8 +63,8 @@ func (s *Ed448Suite) Test_IsValidPoint(c *C) {
 		},
 	}
 
-	c.Assert(p.isValidPoint(), Equals, true)
-	c.Assert(q.isValidPoint(), Equals, false)
+	c.Assert(p.isOnCurve(), Equals, true)
+	c.Assert(q.isOnCurve(), Equals, false)
 }
 
 func (s *Ed448Suite) Test_PointEquality(c *C) {
