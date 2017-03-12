@@ -257,6 +257,34 @@ func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, befo
 	p.subNielsFromExtendedPoint(p2.n, beforeDouble)
 }
 
+type affinePoint struct {
+	x, y *bigNumber
+}
+
+// Convert from the extended twisted Edwards representation of a point to affine
+// Given (X : Y : Z : T), compute X/Z^2, Y/Z^3 and ignore T.
+// If the point is ∞ it returns 0, 0.
+func (p *twExtendedPoint) toAffine() *affinePoint {
+	out := &affinePoint{
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	if p.equals(identity) == decafTrue || p.z.equals(bigZero) {
+		return out
+	}
+
+	s, t, r := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	r.invert(p.z)
+	s.square(r)
+
+	out.x.mul(p.x, s).strongReduce()
+	t.mul(p.y, s)
+	out.y.mul(t, r).strongReduce()
+
+	return out
+}
+
 //XXX: extendedPoint should not know about twNiels
 func (np *twNiels) toExtended() *twExtendedPoint {
 	p := &twExtendedPoint{

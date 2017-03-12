@@ -1033,6 +1033,79 @@ func (s *Ed448Suite) Test_SubProjectiveNielsFromExtendedPoint(c *C) {
 	c.Assert(p, DeepEquals, exp)
 }
 
+func (s *Ed448Suite) Test_ConvertToAffine(c *C) {
+	p := &twExtendedPoint{
+		&bigNumber{
+			0x0cf14237, 0x0ac97f43, 0x0a9543bc, 0x0dc98db8,
+			0x0bcca6a6, 0x07874a17, 0x021af78f, 0x0fffa763,
+			0x0cf2ac0b, 0x074f2a89, 0x0f89f88d, 0x0356a31e,
+			0x09f61e5a, 0x00c01083, 0x0c84b7a5, 0x00bf3b5c,
+		},
+
+		&bigNumber{
+			0x00c9a64c, 0x06b775bc, 0x026148bb, 0x0ee0c3e1,
+			0x0303aa98, 0x04fad09b, 0x0efaf59d, 0x03008555,
+			0x072a0bf6, 0x023bc0fa, 0x0c52ee5b, 0x0f0f61f9,
+			0x05cf8d7f, 0x0b8b7f38, 0x018a4398, 0x06a9849a,
+		},
+
+		&bigNumber{
+			0x014e2fce, 0x0198c24c, 0x0b74b290, 0x0080f748,
+			0x0fb60b6e, 0x08ab2f53, 0x06c32b60, 0x06979188,
+			0x0e87a66d, 0x087ecac7, 0x0f354ebd, 0x035faebf,
+			0x0e30d07f, 0x0c96f513, 0x0fab82ed, 0x0da28e58,
+		},
+
+		&bigNumber{
+			0x0702239a, 0x05c67537, 0x0ce76a54, 0x0fae388e,
+			0x034bcae9, 0x06b5fe3d, 0x0d3c37ae, 0x09cac77d,
+			0x0761a657, 0x0a02246f, 0x06490757, 0x09448b04,
+			0x05281bbe, 0x0e0bd3d4, 0x0abc5ecb, 0x07c655f9,
+		},
+	}
+
+	exp := &affinePoint{
+		&bigNumber{
+			0x0a6862a1, 0x0b9509e3, 0x0f633a09, 0x01bbe8fd,
+			0x0055bfe7, 0x04b7a267, 0x098fec7a, 0x02b43bdb,
+			0x038728f3, 0x0e50a54c, 0x06da2f47, 0x0b1844b2,
+			0x03e1ddfe, 0x03f84a5f, 0x0517a1cc, 0x0bc8e0e4,
+		},
+
+		&bigNumber{
+			0x0b002bae, 0x046b63b0, 0x00e0f577, 0x093028d2,
+			0x04ae3673, 0x0cb031e4, 0x0a1b1455, 0x0ef16821,
+			0x0505815a, 0x0c83cd8d, 0x0753d9cc, 0x06691155,
+			0x0cfa1242, 0x0bcee146, 0x03335bee, 0x0dfe21fd,
+		},
+	}
+
+	// is the identity
+	q := p.toAffine()
+	c.Assert(q, DeepEquals, exp)
+
+	q = identity.toAffine()
+
+	exp = &affinePoint{
+		&bigNumber{0x00},
+		&bigNumber{0x00},
+	}
+
+	c.Assert(q, DeepEquals, exp)
+
+	// Z is zero
+	p = &twExtendedPoint{
+		&bigNumber{0x0c},
+		&bigNumber{0x0c},
+		&bigNumber{0x00},
+		&bigNumber{0x0c},
+	}
+
+	q = p.toAffine()
+
+	c.Assert(q, DeepEquals, exp)
+}
+
 func (s *Ed448Suite) Test_ConvertNielsToExtended(c *C) {
 	pn := &twNiels{
 		&bigNumber{0x068d5b74},
