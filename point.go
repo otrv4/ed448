@@ -5,13 +5,6 @@ import (
 	"fmt"
 )
 
-func failure(status word) bool {
-	if status == 0 {
-		return true
-	}
-	return false
-}
-
 //XXX This should probably receive []byte{}
 func newPoint(x, y serialized) (p *homogeneousProjective, err error) {
 	xN, ok1 := deserialize(x)
