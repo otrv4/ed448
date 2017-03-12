@@ -42,14 +42,14 @@ const (
 	signatureBytes = 2 * fieldBytes // 112
 
 	// Comb configuration
-	combNumber  = uint(8)
-	combTeeth   = uint(4)
-	combSpacing = uint(14)
+	combNumber  = uint(0x08)
+	combTeeth   = uint(0x04)
+	combSpacing = uint(0x0e)
 
 	// DecafComb configuration
-	decafCombNumber  = uint(5)
-	decafCombTeeth   = uint(5)
-	decafCombSpacing = uint(18)
+	decafCombNumber  = uint(0x05)
+	decafCombTeeth   = uint(0x05)
+	decafCombSpacing = uint(0x12)
 
 	uintZero = uint(0)
 

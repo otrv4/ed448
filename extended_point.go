@@ -50,10 +50,10 @@ func (p *twExtendedPoint) copy() *twExtendedPoint {
 }
 
 func (p *twExtendedPoint) setIdentity() {
-	p.x.setUI(0)
-	p.y.setUI(1)
-	p.z.setUI(1)
-	p.t.setUI(0)
+	p.x.setUI(0x00)
+	p.y.setUI(0x01)
+	p.z.setUI(0x01)
+	p.t.setUI(0x00)
 }
 
 func (p *twExtendedPoint) equals(q *twExtendedPoint) word {
