@@ -1033,7 +1033,7 @@ func (s *Ed448Suite) Test_SubProjectiveNielsFromExtendedPoint(c *C) {
 	c.Assert(p, DeepEquals, exp)
 }
 
-func (s *Ed448Suite) Test_ConvertToAffine(c *C) {
+func (s *Ed448Suite) Test_ConvertExtendedToAffine(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x0cf14237, 0x0ac97f43, 0x0a9543bc, 0x0dc98db8,
@@ -1064,7 +1064,7 @@ func (s *Ed448Suite) Test_ConvertToAffine(c *C) {
 		},
 	}
 
-	exp := &affinePoint{
+	exp := &affineCoordinates{
 		&bigNumber{
 			0x0a6862a1, 0x0b9509e3, 0x0f633a09, 0x01bbe8fd,
 			0x0055bfe7, 0x04b7a267, 0x098fec7a, 0x02b43bdb,
@@ -1086,7 +1086,7 @@ func (s *Ed448Suite) Test_ConvertToAffine(c *C) {
 
 	q = identity.toAffine()
 
-	exp = &affinePoint{
+	exp = &affineCoordinates{
 		&bigNumber{0x00},
 		&bigNumber{0x00},
 	}

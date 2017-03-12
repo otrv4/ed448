@@ -257,15 +257,11 @@ func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, befo
 	p.subNielsFromExtendedPoint(p2.n, beforeDouble)
 }
 
-type affinePoint struct {
-	x, y *bigNumber
-}
-
 // Convert from the extended twisted Edwards representation of a point to affine
 // Given (X : Y : Z : T), compute X/Z^2, Y/Z^3 and ignore T.
 // If the point is ∞ it returns 0, 0.
-func (p *twExtendedPoint) toAffine() *affinePoint {
-	out := &affinePoint{
+func (p *twExtendedPoint) toAffine() *affineCoordinates {
+	out := &affineCoordinates{
 		&bigNumber{},
 		&bigNumber{},
 	}

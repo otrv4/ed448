@@ -5,12 +5,23 @@ import (
 	"fmt"
 )
 
-//XXX This should probably receive []byte{}
-func newPoint(x, y serialized) (p *homogeneousProjective, err error) {
-	xN, ok1 := deserialize(x)
-	yN, ok2 := deserialize(y)
+type affineCoordinates struct {
+	x, y *bigNumber
+}
 
-	p = newHomogeneousProjective(xN, yN)
+func newPoint(x, y []byte) (p *homogeneousProjective, err error) {
+	tmp1, tmp2 := [fieldBytes]byte{}, [fieldBytes]byte{}
+	copy(tmp1[:], x[:])
+	copy(tmp2[:], y[:])
+
+	xN, ok1 := deserialize(tmp1)
+	yN, ok2 := deserialize(tmp2)
+	q := &affineCoordinates{
+		x: xN,
+		y: yN,
+	}
+
+	p = newHomogeneousProjective(q)
 
 	if !(ok1 && ok2) {
 		err = errors.New("invalid coordinates")
@@ -448,10 +459,10 @@ type homogeneousProjective struct {
 }
 
 //Affine to Homogeneous Projective
-func newHomogeneousProjective(x *bigNumber, y *bigNumber) *homogeneousProjective {
+func newHomogeneousProjective(p *affineCoordinates) *homogeneousProjective {
 	return &homogeneousProjective{
-		x: x.copy(),
-		y: y.copy(),
+		x: p.x.copy(),
+		y: p.y.copy(),
 		z: bigOne.copy(),
 	}
 }
