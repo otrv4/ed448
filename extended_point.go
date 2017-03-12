@@ -13,6 +13,8 @@ type Point interface {
 	Decode(src []byte, identity bool) (bool, error)
 }
 
+// Extended Homogenous Projective coordinates: (X : Y : T : Z), which
+// correspond to the affine point (X/Z, Y/Z) with Z ≠ 0
 type twExtendedPoint struct {
 	x, y, z, t *bigNumber
 }
@@ -384,7 +386,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 
 // exposed methods
 
-// NewPoint returns an Ed448 Point from uint32 arrays.
+// NewPoint returns an Ed448 point from 4 arrays of uint32.
 func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32) Point {
 	x, y, z, t := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -398,7 +400,7 @@ func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32
 	return &twExtendedPoint{x, y, z, t}
 }
 
-// NewPointFromBytes returns an Ed448 Point from byte slice.
+// NewPointFromBytes returns an Ed448 point from a byte slice.
 func NewPointFromBytes(in ...[]byte) Point {
 	if len(in) > 1 {
 		panic("too many arguments to function call")
