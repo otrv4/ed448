@@ -2,7 +2,7 @@ package ed448
 
 import "errors"
 
-// Point is a interface of an Ed448 point
+// Point is a interface of a Ed448 point
 type Point interface {
 	IsOnCurve() bool
 	Equals(q Point) bool

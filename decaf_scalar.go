@@ -2,6 +2,17 @@ package ed448
 
 import "errors"
 
+// Scalar is a interface of a Ed448 scalar
+type Scalar interface {
+	Equals(a Scalar) bool
+	Copy() Scalar
+	Add(a, b Scalar)
+	Sub(a, b Scalar)
+	Mul(a, b Scalar)
+	Encode() []byte
+	Decode(src []byte) error
+}
+
 type decafScalar [scalarWords]word
 
 func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
