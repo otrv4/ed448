@@ -98,13 +98,35 @@ func (s *Ed448Suite) Test_ScalarCopy(c *C) {
 	c.Assert(a, DeepEquals, exp)
 }
 
+func (s *Ed448Suite) Test_ScalarSet(c *C) {
+	a := &decafScalar{}
+	a.set(word(0xee))
+
+	exp := &decafScalar{0xee}
+
+	c.Assert(a, DeepEquals, exp)
+
+	b := &decafScalar{
+		0x529eec33, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,
+		0x44a725bf, 0xeec492d9, 0x0cd77058, 0x00000002,
+	}
+	b.set(word(0x2aae8688))
+
+	exp = &decafScalar{
+		0x2aae8688, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,
+		0x44a725bf, 0xeec492d9, 0x0cd77058, 0x00000002,
+	}
+
+	c.Assert(b, DeepEquals, exp)
+}
+
 func (s *Ed448Suite) Test_ScalarAddition(c *C) {
 	a := &decafScalar{
 		0x529eec33, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,
 		0x44a725bf, 0xeec492d9, 0x0cd77058, 0x00000002,
 	}
 
-	b := &decafScalar{0x00000001}
+	b := &decafScalar{0x01}
 
 	exp := &decafScalar{
 		0x529eec34, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,

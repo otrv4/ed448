@@ -61,6 +61,10 @@ func (s *decafScalar) copy() *decafScalar {
 	return out
 }
 
+func (s *decafScalar) set(w word) {
+	s[0] = w
+}
+
 func (s *decafScalar) subExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
 	out := &decafScalar{}
 	var chain sdword
