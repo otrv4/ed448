@@ -408,6 +408,121 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	return p
 }
 
+func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, shortCircuit, useIdentity word) ([fieldBytes]byte, word) {
+	// using the montgomery ladder
+	var out [56]byte
+	xa, xs, zs, l0, l1 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+
+	s0, succ := deserializeReturnMask(p)
+	succ &= useIdentity | ^(s0.decafEq(bigZero))
+
+	// Prepare the Montgomery ladder: Q = 1:0, P+Q = P
+	xa.square(s0)
+	x0 := xa.copy()
+	za := bigOne.copy()
+	xd := bigOne.copy()
+	zd := bigZero.copy()
+
+	pflip := word(0x00)
+	for j := scalarBits - 1; j >= 0; j-- {
+		// Augmented Montgomery ladder
+		flip := -(scalar[j/wordBits] >> word(j%wordBits) & 1)
+		// Differential add
+		xs.addRaw(xa, za)
+		zs.sub(xa, za)
+		xa.addRaw(xd, zd)
+		za.sub(xd, zd)
+
+		l0.decafConstTimeSel(xa, xs, flip^pflip)
+		l1.decafConstTimeSel(za, zs, flip^pflip)
+
+		xd.mul(xa, zs)
+		zd.mul(xs, za)
+		xs.addRaw(xd, zd)
+		zd.sub(xd, zd)
+		zs.mul(zd, s0)
+		xa.square(xs)
+		za.square(zs)
+
+		// double
+		zd.square(l0)
+		l0.square(l1)
+		l1.sub(zd, l0)
+		xd.mul(l0, zd)
+		zd.mulWSignedCurveConstant(l1, 1-(edwardsD))
+		l0.addRaw(l0, zd)
+		zd.mul(l0, l1)
+
+		pflip = flip
+	}
+	xa.conditionalSwap(xd, pflip)
+	za.conditionalSwap(zd, pflip)
+
+	// XXX: should be constant time
+	// reserialize XXX: simplify this reserialization
+	xzD, xzA, xzS, den, l2, l3 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+
+	xzS.mul(xs, zs)
+	xzD.mul(xd, zd)
+	xzA.mul(xa, za)
+	zeroOut := xzD.decafEq(bigZero)
+	xzD[0] -= zeroOut // make xzD always nonzero
+	zCase := zeroOut | xzA.decafEq(bigZero)
+	zeroZA := za.decafEq(bigZero)
+
+	// Curve test in zcase, compute x0^2 + (2d-4)x0 + 1
+	l0.add(x0, bigOne)
+	l1.square(l0)
+	l0.mulWSignedCurveConstant(x0, -4*edwardsD)
+	l1.add(l1, l0)
+	xzA.decafConstTimeSel(xzA, l1, zCase)
+
+	// Compute denominator = x0 xa za xd zd
+	l0.mul(x0, xzA)
+	l1.mul(l0, xzD)
+	den.isr(l1)
+
+	// Check that the square root is valid.
+	l2.square(den)
+	l3.mul(l0, l2) // x0 xa za den^2 = 1/xzD
+	l0.mul(l1, l2)
+	l0.add(l0, bigOne)
+	succ &= ^highBit(s0) & ^(l0.decafEq(bigZero))
+
+	// Compute y/x for input and output point.
+	l1.mul(x0, xd)
+	l1.sub(zd, l1)
+	l0.mul(za, l1) // L0 = "opq"
+	l1.mul(x0, zd)
+	l1.sub(l1, xd)
+	l2.mul(xa, l1) // L2 = "pqr"
+	l1.sub(l0, l2)
+	l0.add(l0, l2)
+	l2.mul(l1, den) // L2 = y0 / x0
+	l1.mul(l0, den) // L1 = yO / xO
+	sflip := lowBit(l1) ^ lowBit(l2) | zeroZA
+
+	// If xa==0 or za ==0: return 0
+	// Else if za == 0: return s0 * (sflip ? zd : xd)^2 * L3
+	// Else if zd == 0: return s0 * (sflip ? zd : xd)^2 * L3
+	// Else if pflip: return xs * zs * (sflip ? zd : xd) * L3
+	// Else: return s0 * xs * zs * (sflip ? zd : xd) * den
+	xd.decafConstTimeSel(xd, zd, sflip)
+	den.decafConstTimeSel(den, l3, pflip|zCase)
+	xzS.decafConstTimeSel(xzS, xd, zCase)
+	s0.decafConstTimeSel(s0, bigOne, pflip & ^zCase)
+	s0.decafConstTimeSel(s0, bigZero, zeroOut)
+
+	l0.mul(xd, den)
+	l1.mul(l0, s0)
+	l0.mul(l1, xzS)
+
+	l0.conditionalNegate(highBit(l0))
+	serialize(out[:], l0)
+
+	return out, succ
+}
+
 // exposed methods
 
 // NewPoint returns an Ed448 point from 4 arrays of uint32.
