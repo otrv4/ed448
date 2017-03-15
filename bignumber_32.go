@@ -587,3 +587,8 @@ func highBit(x *bigNumber) word {
 	y.strongReduce()
 	return word(-(y[0] & 1))
 }
+
+func lowBit(x *bigNumber) word {
+	x.strongReduce()
+	return -(x[0] & 1)
+}

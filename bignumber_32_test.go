@@ -253,3 +253,17 @@ func (s *Ed448Suite) Test_HighBit(c *C) {
 
 	c.Assert(h, Equals, word(0x00))
 }
+
+func (s *Ed448Suite) Test_LowBit(c *C) {
+	n := &bigNumber{0x01}
+
+	l := lowBit(n)
+
+	c.Assert(l, Equals, word(0xffffffff))
+
+	n = &bigNumber{0x00}
+
+	l = lowBit(n)
+
+	c.Assert(l, Equals, word(0x00))
+}
