@@ -1327,7 +1327,7 @@ func (s *Ed448Suite) Test_DirectPointScalarMul(c *C) {
 		0x2c, 0x9b, 0x37, 0xac, 0xdc, 0x41, 0xa3, 0x15,
 	}
 
-	q, valid := directPointScalarMul(p, a, decafFalse, decafTrue)
+	q, valid := directPointScalarMul(p, a, decafFalse)
 
 	c.Assert(q, DeepEquals, exp)
 	c.Assert(valid, DeepEquals, decafFalse)

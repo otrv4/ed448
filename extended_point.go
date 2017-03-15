@@ -408,8 +408,9 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	return p
 }
 
-func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, shortCircuit, useIdentity word) ([fieldBytes]byte, word) {
-	// using the montgomery ladder
+// using the montgomery ladder
+// XXX: implement the one not using montgomery?
+func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, useIdentity word) ([fieldBytes]byte, word) {
 	var out [56]byte
 	xa, xs, zs, l0, l1 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
