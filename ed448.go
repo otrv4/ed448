@@ -91,6 +91,7 @@ func (ed *decafCurveT) GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes
 //Signs a message using the provided private key and returns the signature.
 func (ed *decafCurveT) Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool) {
 	pk := privateKey(priv)
+
 	signature, err := ed.decafSign(message, &pk)
 	ok = err == nil
 	return

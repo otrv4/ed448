@@ -45,6 +45,65 @@ func (c *decafCurveT) decafGenerateKeys(r io.Reader) (k *privateKey, err error) 
 	return c.decafDerivePrivateKey(symKey)
 }
 
+func (c *decafCurveT) decafComputeSecret(myPriv *privateKey, yourPub [fieldBytes]byte) ([]byte, word) {
+	var delta, less uint16
+	var ser [fieldBytes]byte
+	var sk decafScalar
+	invalid := "decaf_448_ss_invalid"
+
+	priv := myPriv.secretKey()
+	pub := myPriv.publicKey()
+	sym := myPriv.symKey()
+
+	_ = barrettDeserializeReturnMask(sk[:], priv, &curvePrimeOrder)
+
+	// Lexsort keys. Less will be -1 if mine is less, and 0 otherwise.
+	for i := uintZero; i < fieldBytes; i++ {
+		delta = uint16(pub[i])
+		delta -= uint16(yourPub[i])
+		// Case:
+		// = -> delta = 0 -> hi delta-1 = -1, hi delta = 0
+		// > -> delta > 0 -> hi delta-1 = 0, hi delta = 0
+		// < -> delta < 0 -> hi delta-1 = (doesnt matter), hi delta = -1
+		less &= delta - 1
+		less |= delta
+	}
+	less >>= 8
+
+	// update the lesser
+	for j := uintZero; j < fieldBytes; j++ {
+		ser[j] = uint8(uint16(pub[j])&less) | uint8(uint16(yourPub[j])&^less) // check
+	}
+
+	hash := sha3.NewShake256()
+	hash.Write(ser[:])
+
+	// update the greater
+	for k := uintZero; k < fieldBytes; k++ {
+		ser[k] = uint8(uint16(pub[k])&^less | uint16(yourPub[k])&less)
+	}
+
+	hash.Write(ser[:])
+	ser, ok := directPointScalarMul(yourPub, &sk, decafFalse)
+
+	// If invalid, replace
+	for l := uintZero; l < fieldBytes; l++ {
+		ser[l] &= uint8(ok)
+		if l < wordBits {
+			ser[l] |= sym[l] & ^uint8(ok)
+		} else if l-wordBits < uint(len(invalid)) {
+			ser[l] |= invalid[l-wordBits] & ^uint8(ok)
+		}
+	}
+
+	hash.Write(ser[:])
+	var shared [fieldBytes]byte
+	hash.Read(shared[:])
+
+	//XXX: should we wipe ser bytes?
+	return shared[:], ok
+}
+
 func decafDeriveNonce(msg []byte, symKey []byte) *decafScalar {
 	h := sha3.NewShake256()
 	h.Write(msg)
@@ -84,6 +143,7 @@ func (c *decafCurveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fi
 func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
 	secretKeyWords := &decafScalar{}
 	//XXX: should secret words be destroyed?
+
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		err = errors.New("Corrupted private key")
 		return

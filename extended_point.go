@@ -164,6 +164,7 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
+// XXX: should this return a bool and and error?
 func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -425,9 +426,9 @@ func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, useIdentity w
 	zd := bigZero.copy()
 
 	pflip := word(0x00)
-	for j := scalarBits - 1; j >= 0; j-- {
+	for i := scalarBits - 1; i >= 0; i-- {
 		// Augmented Montgomery ladder
-		flip := -(scalar[j/wordBits] >> word(j%wordBits) & 1)
+		flip := -(scalar[i/wordBits] >> word(i%wordBits) & 1)
 		// Differential add
 		xs.addRaw(xa, za)
 		zs.sub(xa, za)
