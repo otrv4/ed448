@@ -6,6 +6,26 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+func (s *Ed448Suite) Test_SetBytes(c *C) {
+	bs := []byte{0x0e}
+	n := new(bigNumber).setBytes(bs)
+	c.Assert(n, IsNil)
+
+	bs, _ = hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
+	n = new(bigNumber).setBytes(bs)
+	exp := &bigNumber{
+		0x09026de, 0xc079798,
+		0x3ea3257, 0x9ab1f6c,
+		0x55c7c55, 0x0d622fc,
+		0xcdfe06e, 0xe84a7b7,
+		0xea49b4e, 0x0088115,
+		0xc410603, 0xff453f1,
+		0xc29824e, 0x79e577d,
+		0xe49cef7, 0xe6f5b8a,
+	}
+	c.Assert(n, DeepEquals, exp)
+}
+
 func (s *Ed448Suite) Test_Zero(c *C) {
 	notZero := mustDeserialize(serialized{0x01})
 	c.Assert(notZero.zero(), Equals, false)
@@ -87,26 +107,6 @@ func (s *Ed448Suite) Test_Invert(c *C) {
 	n.invert(x)
 
 	c.Assert(n, DeepEquals, y)
-}
-
-func (s *Ed448Suite) Test_SetBytes(c *C) {
-	bs := []byte{0x0e}
-	n := new(bigNumber).setBytes(bs)
-	c.Assert(n, IsNil)
-
-	bs, _ = hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
-	n = new(bigNumber).setBytes(bs)
-	exp := &bigNumber{
-		0x09026de, 0xc079798,
-		0x3ea3257, 0x9ab1f6c,
-		0x55c7c55, 0x0d622fc,
-		0xcdfe06e, 0xe84a7b7,
-		0xea49b4e, 0x0088115,
-		0xc410603, 0xff453f1,
-		0xc29824e, 0x79e577d,
-		0xe49cef7, 0xe6f5b8a,
-	}
-	c.Assert(n, DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_Negate(c *C) {
@@ -198,4 +198,19 @@ func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
 
 	// 0 mod p = n1
 	c.Assert(n1, DeepEquals, p)
+}
+
+func (s *Ed448Suite) Test_MustDeserialize(c *C) {
+	p := serialized{
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	}
+
+	c.Assert(func() { mustDeserialize(p) }, Panics, "Failed to deserialize")
 }
