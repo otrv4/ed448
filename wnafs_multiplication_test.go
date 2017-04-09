@@ -559,6 +559,9 @@ func (s *Ed448Suite) Test_PrepareWNAFTable(c *C) {
 	for i, di := range dst {
 		c.Assert(di.equals(exp[i]), Equals, true)
 	}
+
+	prepareWNAFTable(dst, p, uint(0))
+	c.Assert(dst, DeepEquals, dst)
 }
 
 func (s *Ed448Suite) Test_DecafPrepareWNAFTable(c *C) {
