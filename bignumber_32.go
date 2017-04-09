@@ -295,8 +295,8 @@ func serialize(dst []byte, n *bigNumber) {
 }
 
 func (n *bigNumber) bias(b word) *bigNumber {
-	var co1 = radixMask * b
-	var co2 = co1 - b
+	co1 := radixMask * b
+	co2 := co1 - b
 	lo := [4]word{co1, co1, co1, co1}
 	hi := [4]word{co2, co1, co1, co1}
 

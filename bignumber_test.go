@@ -41,39 +41,92 @@ func (s *Ed448Suite) Test_IsZero(c *C) {
 func (s *Ed448Suite) Test_Add(c *C) {
 	x := mustDeserialize(serialized{0x57})
 	y := mustDeserialize(serialized{0x83})
-	z := mustDeserialize(serialized{0xda})
+	exp := mustDeserialize(serialized{0xda})
 
-	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
+	c.Assert(new(bigNumber).add(x, y), DeepEquals, exp)
 
 	// radix
 	x = mustDeserialize(serialized{
 		0xff, 0xff, 0xff, 0xf0,
 	})
 	y = mustDeserialize(serialized{0x01})
-	z = mustDeserialize(serialized{
+	exp = mustDeserialize(serialized{
 		0x00, 0x00, 0x00, 0xf1,
 	})
 
-	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
+	c.Assert(new(bigNumber).add(x, y), DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_AddWord(c *C) {
 	x := word(0x01)
-	y := mustDeserialize(serialized{0x01})
+	exp := mustDeserialize(serialized{0x01})
 
-	c.Assert(new(bigNumber).addW(x), DeepEquals, y)
+	c.Assert(new(bigNumber).addW(x), DeepEquals, exp)
 }
 
-func (s *Ed448Suite) Test_SubRadix(c *C) {
-	x := mustDeserialize(serialized{0x57})
+func (s *Ed448Suite) Test_Subtraction(c *C) {
+	x := mustDeserialize(serialized{0xda})
 	y := mustDeserialize(serialized{0x83})
-	z := mustDeserialize(serialized{0xda})
-	c.Assert(new(bigNumber).sub(z, y).strongReduce(), DeepEquals, x)
+	exp := mustDeserialize(serialized{0x57})
 
-	x = mustDeserialize(serialized{0xff, 0xff, 0xff, 0xf0})
+	c.Assert(new(bigNumber).sub(x, y).strongReduce(), DeepEquals, exp)
+
+	x = mustDeserialize(serialized{
+		0x00, 0x00, 0x00, 0xf1,
+	})
 	y = mustDeserialize(serialized{0x01})
-	z = mustDeserialize(serialized{0x00, 0x00, 0x00, 0xf1})
-	c.Assert(new(bigNumber).sub(z, y).strongReduce(), DeepEquals, x)
+	exp = mustDeserialize(serialized{
+		0xff, 0xff, 0xff, 0xf0,
+	})
+
+	c.Assert(new(bigNumber).sub(x, y).strongReduce(), DeepEquals, exp)
+}
+
+func (s *Ed448Suite) Test_SubWord(c *C) {
+	x := mustDeserialize(serialized{0x01})
+	y := word(0x01)
+	exp := mustDeserialize(serialized{0x00})
+
+	c.Assert(x.subW(y), DeepEquals, exp)
+}
+
+func (s *Ed448Suite) Test_SubWithDifferentBias(c *C) {
+	x := mustDeserialize(serialized{0xff})
+	y := mustDeserialize(serialized{0xff})
+	exp := &bigNumber{
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+	}
+
+	c.Assert(new(bigNumber).subXBias(x, y, word(2)), DeepEquals, exp)
+}
+
+func (s *Ed448Suite) Test_Multiplication(c *C) {
+	x := mustDeserialize(serialized{0x02})
+	y := mustDeserialize(serialized{0x03})
+	exp := mustDeserialize(serialized{0x06})
+
+	c.Assert(new(bigNumber).mulCopy(x, y), DeepEquals, exp)
+
+	x = mustDeserialize(serialized{0x10})
+	y = mustDeserialize(serialized{0x0e})
+	exp = mustDeserialize(serialized{0xe0})
+
+	c.Assert(new(bigNumber).mul(x, y), DeepEquals, exp)
+}
+
+func (s *Ed448Suite) Test_MulWithDConstant(c *C) {
+	x := mustDeserialize(serialized{0x02})
+	exp := &bigNumber{
+		0xffecead, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xffffffe, 0xfffffff, 0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff, 0xfffffff, 0xfffffff,
+	}
+
+	c.Assert(new(bigNumber).mulWSignedCurveConstant(x, edwardsD), DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_SquareN(c *C) {
@@ -110,17 +163,17 @@ func (s *Ed448Suite) Test_SquareN(c *C) {
 func (s *Ed448Suite) Test_Invert(c *C) {
 	n := &bigNumber{}
 	x := &bigNumber{
-		0x04516644, 0x01430f14, 0x072318d2, 0x0b1c2096,
-		0x032e3855, 0x01c1105f, 0x0bf1556f, 0x0bb9f535,
-		0x0e3d45c0, 0x0e954acd, 0x0cba31b2, 0x05b931f9,
-		0x00920cdd, 0x064f93a9, 0x02d91281, 0x0674f3d0,
+		0x4516644, 0x1430f14, 0x72318d2, 0xb1c2096,
+		0x32e3855, 0x1c1105f, 0xbf1556f, 0xbb9f535,
+		0xe3d45c0, 0xe954acd, 0xcba31b2, 0x5b931f9,
+		0x0920cdd, 0x64f93a9, 0x2d91281, 0x674f3d0,
 	}
 
 	y := &bigNumber{
-		0x03509cef, 0x092c009c, 0x04116af4, 0x04bd5cae,
-		0x05c60b66, 0x01da9fbd, 0x0e925340, 0x02fffa3f,
-		0x0dd725b2, 0x0c2ae8ae, 0x0f4808a9, 0x040ed04c,
-		0x0864dc36, 0x06821f90, 0x08099dc5, 0x0cf9ca3d,
+		0x3509cef, 0x92c009c, 0x4116af4, 0x4bd5cae,
+		0x5c60b66, 0x1da9fbd, 0xe925340, 0x2fffa3f,
+		0xdd725b2, 0xc2ae8ae, 0xf4808a9, 0x40ed04c,
+		0x864dc36, 0x6821f90, 0x8099dc5, 0xcf9ca3d,
 	}
 	n.invert(x)
 

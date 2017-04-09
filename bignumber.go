@@ -84,6 +84,7 @@ func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c sdword) *bigNumber {
 	if c >= 0 {
 		return n.mulW(x, dword(c))
 	}
+
 	r := n.mulW(x, dword(-c))
 	return r.sub(bigZero, r)
 }
@@ -110,6 +111,7 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 
 func (n *bigNumber) invert(x *bigNumber) {
 	t1 := &bigNumber{}
+
 	t1.square(x)
 	n.isr(t1)
 	t1.square(n)
