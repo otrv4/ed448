@@ -280,7 +280,7 @@ func deserialize(in serialized) (n *bigNumber, ok bool) {
 
 func serialize(dst []byte, n *bigNumber) {
 	if len(dst) != 56 {
-		panic("Attempted to serialize with a destination that is not 56 bytes")
+		panic("Failed to serialize")
 	}
 	src := n.copy()
 	src.strongReduce()

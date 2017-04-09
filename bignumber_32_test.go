@@ -163,6 +163,10 @@ func (s *Ed448Suite) Test_Deserialize(c *C) {
 }
 
 func (s *Ed448Suite) Test_Serialize(c *C) {
+	invalid := [55]byte{}
+
+	c.Assert(func() { serialize(invalid[:], bigOne) }, Panics, "Failed to serialize")
+
 	dst := [fieldBytes]byte{}
 
 	serialize(dst[:], bigOne)
