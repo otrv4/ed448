@@ -38,6 +38,7 @@ func (n *bigNumber) addRaw(x *bigNumber, y *bigNumber) *bigNumber {
 	n[13] = x[13] + y[13]
 	n[14] = x[14] + y[14]
 	n[15] = x[15] + y[15]
+
 	return n
 }
 

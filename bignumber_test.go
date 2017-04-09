@@ -6,20 +6,15 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) Test_Zero(c *C) {
-	notZero := mustDeserialize(serialized{0x01})
-	c.Assert(notZero.isZero(), Equals, false)
-
-	zero := mustDeserialize(serialized{0x00})
-	c.Assert(zero.isZero(), Equals, true)
-}
-
 func (s *Ed448Suite) Test_SetBytes(c *C) {
 	bs := []byte{0x0e}
 	n := new(bigNumber).setBytes(bs)
+
 	c.Assert(n, IsNil)
 
-	bs, _ = hex.DecodeString("e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee84a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
+	bs = bytesFromHex(
+		"e6f5b8ae49cef779e577dc29824eff453f1c4106030088115ea49b4ee8" +
+			"4a7b7cdfe06e0d622fc55c7c559ab1f6c3ea3257c07979809026de")
 	n = new(bigNumber).setBytes(bs)
 	exp := &bigNumber{
 		0x09026de, 0xc079798,
@@ -31,19 +26,42 @@ func (s *Ed448Suite) Test_SetBytes(c *C) {
 		0xc29824e, 0x79e577d,
 		0xe49cef7, 0xe6f5b8a,
 	}
+
 	c.Assert(n, DeepEquals, exp)
 }
 
-func (s *Ed448Suite) Test_SumRadix(c *C) {
+func (s *Ed448Suite) Test_IsZero(c *C) {
+	n := mustDeserialize(serialized{0x01})
+	c.Assert(n.isZero(), Equals, false)
+
+	n = mustDeserialize(serialized{0x00})
+	c.Assert(n.isZero(), Equals, true)
+}
+
+func (s *Ed448Suite) Test_Add(c *C) {
 	x := mustDeserialize(serialized{0x57})
 	y := mustDeserialize(serialized{0x83})
 	z := mustDeserialize(serialized{0xda})
+
 	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
 
-	x = mustDeserialize(serialized{0xff, 0xff, 0xff, 0xf0})
+	// radix
+	x = mustDeserialize(serialized{
+		0xff, 0xff, 0xff, 0xf0,
+	})
 	y = mustDeserialize(serialized{0x01})
-	z = mustDeserialize(serialized{0x00, 0x00, 0x00, 0xf1})
+	z = mustDeserialize(serialized{
+		0x00, 0x00, 0x00, 0xf1,
+	})
+
 	c.Assert(new(bigNumber).add(x, y), DeepEquals, z)
+}
+
+func (s *Ed448Suite) Test_AddWord(c *C) {
+	x := word(0x01)
+	y := mustDeserialize(serialized{0x01})
+
+	c.Assert(new(bigNumber).addW(x), DeepEquals, y)
 }
 
 func (s *Ed448Suite) Test_SubRadix(c *C) {
