@@ -235,22 +235,22 @@ func (n *bigNumber) zeroMask() word {
 	x := n.copy().strongReduce()
 	r := word(0)
 
-	r |= x[0] ^ 0
-	r |= x[1] ^ 0
-	r |= x[2] ^ 0
-	r |= x[3] ^ 0
-	r |= x[4] ^ 0
-	r |= x[5] ^ 0
-	r |= x[6] ^ 0
-	r |= x[7] ^ 0
-	r |= x[8] ^ 0
-	r |= x[9] ^ 0
-	r |= x[10] ^ 0
-	r |= x[11] ^ 0
-	r |= x[12] ^ 0
-	r |= x[13] ^ 0
-	r |= x[14] ^ 0
-	r |= x[15] ^ 0
+	r |= x[0]
+	r |= x[1]
+	r |= x[2]
+	r |= x[3]
+	r |= x[4]
+	r |= x[5]
+	r |= x[6]
+	r |= x[7]
+	r |= x[8]
+	r |= x[9]
+	r |= x[10]
+	r |= x[11]
+	r |= x[12]
+	r |= x[13]
+	r |= x[14]
+	r |= x[15]
 
 	return isZeroMask(word(r))
 }

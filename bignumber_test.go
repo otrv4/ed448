@@ -6,6 +6,14 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+func (s *Ed448Suite) Test_Zero(c *C) {
+	notZero := mustDeserialize(serialized{0x01})
+	c.Assert(notZero.isZero(), Equals, false)
+
+	zero := mustDeserialize(serialized{0x00})
+	c.Assert(zero.isZero(), Equals, true)
+}
+
 func (s *Ed448Suite) Test_SetBytes(c *C) {
 	bs := []byte{0x0e}
 	n := new(bigNumber).setBytes(bs)
@@ -24,14 +32,6 @@ func (s *Ed448Suite) Test_SetBytes(c *C) {
 		0xe49cef7, 0xe6f5b8a,
 	}
 	c.Assert(n, DeepEquals, exp)
-}
-
-func (s *Ed448Suite) Test_Zero(c *C) {
-	notZero := mustDeserialize(serialized{0x01})
-	c.Assert(notZero.zero(), Equals, false)
-
-	zero := mustDeserialize(serialized{0x00})
-	c.Assert(zero.zero(), Equals, true)
 }
 
 func (s *Ed448Suite) Test_SumRadix(c *C) {

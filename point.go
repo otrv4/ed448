@@ -492,7 +492,7 @@ func (p *homogeneousProjective) OnCurve() bool {
 	r.sub(r, dx2y2)
 
 	r.strongReduce()
-	return r.zero()
+	return r.isZero()
 }
 
 func rev(in []byte) []byte {
@@ -626,7 +626,7 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	a.t.subW(1)
 
 	// XXX maybe related with constant time
-	ret := a.t.zero()
+	ret := a.t.isZero()
 
 	a.z.setUI(1)
 	a.t = a.x.copy()

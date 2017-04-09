@@ -7,13 +7,17 @@ type serialized [fieldBytes]byte
 
 func (n *bigNumber) copy() *bigNumber {
 	c := &bigNumber{}
-	*c = *n
+	copy(c[:], n[:])
 	return c
 }
 
 func (n *bigNumber) set(x *bigNumber) *bigNumber {
 	copy(n[:], x[:])
 	return n
+}
+
+func (n *bigNumber) isZero() (eq bool) {
+	return n.zeroMask() == lmask
 }
 
 //in is big endian
@@ -37,10 +41,6 @@ func (n *bigNumber) setBytes(in []byte) *bigNumber {
 	}
 
 	return n
-}
-
-func (n *bigNumber) zero() (eq bool) {
-	return n.zeroMask() == lmask
 }
 
 //n = x + y
