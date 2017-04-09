@@ -2,6 +2,12 @@ package ed448
 
 import "fmt"
 
+// XXX: move me to scalars
+type word uint32
+type sword int32
+type dword uint64
+type sdword int64
+
 type bigNumber [limbs]word
 type serialized [fieldBytes]byte
 
