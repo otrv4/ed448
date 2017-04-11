@@ -445,13 +445,13 @@ func (n *bigNumber) isr(x *bigNumber) *bigNumber {
 	return n.mul(l2, l0)
 }
 
-func (n *bigNumber) invert(x *bigNumber) {
-	t1 := &bigNumber{}
-
+func invert(x *bigNumber) *bigNumber {
+	t1, t2 := &bigNumber{}, &bigNumber{}
 	t1.square(x)
-	n.isr(t1)
-	t1.square(n)
-	n.mul(t1, x)
+	t2.isr(t1)
+	t1.square(t2)
+	t2.mul(t1, x)
+	return t2.copy()
 }
 
 func (n *bigNumber) negRaw(x *bigNumber) *bigNumber {

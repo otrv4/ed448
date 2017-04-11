@@ -266,7 +266,7 @@ func (s *Ed448Suite) Test_Invert(c *C) {
 		0xdd725b2, 0xc2ae8ae, 0xf4808a9, 0x40ed04c,
 		0x864dc36, 0x6821f90, 0x8099dc5, 0xcf9ca3d,
 	}
-	n.invert(x)
+	n = invert(x)
 
 	c.Assert(n, DeepEquals, exp)
 }

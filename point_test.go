@@ -9,7 +9,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *Ed448Suite) Test_Point(c *C) {
+func (s *Ed448Suite) Test_NewHomogeneousPoint(c *C) {
 	//Base point
 	gx := []byte{
 		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
@@ -25,7 +25,6 @@ func (s *Ed448Suite) Test_Point(c *C) {
 
 	basePoint, err := newPoint(gx, gy)
 	c.Assert(err, IsNil)
-
 	c.Assert(basePoint.OnCurve(), Equals, true)
 
 	p := basePoint.double()
@@ -33,6 +32,52 @@ func (s *Ed448Suite) Test_Point(c *C) {
 
 	q := basePoint.add(basePoint)
 	c.Assert(q.OnCurve(), Equals, true)
+}
+
+func (s *Ed448Suite) Test_NewExtensiblePoint(c *C) {
+	x := &bigNumber{
+		0x034365c8, 0x06b2a874, 0x0eb875d7, 0x0ae4c7a7,
+		0x0785df04, 0x09929351, 0x01fe8c3b, 0x0f2a0e5f,
+		0x0111d39c, 0x07ab52ba, 0x01df4552, 0x01d87566,
+		0x0f297be2, 0x027c090f, 0x0a81b155, 0x0d1a562b,
+	}
+	y := &bigNumber{
+		0x00da9708, 0x0e7d583e, 0x0dbcc099, 0x0d2dad89,
+		0x05a49ce4, 0x01cb4ddc, 0x0928d395, 0x0098d91d,
+		0x0bff16ce, 0x06f02f9a, 0x0ce27cc1, 0x0dab5783,
+		0x0b553d94, 0x03251a0c, 0x064d70fb, 0x07fe3a2f,
+	}
+
+	exp := &extensibleCoordinates{
+		&bigNumber{
+			0x034365c8, 0x06b2a874, 0x0eb875d7, 0x0ae4c7a7,
+			0x0785df04, 0x09929351, 0x01fe8c3b, 0x0f2a0e5f,
+			0x0111d39c, 0x07ab52ba, 0x01df4552, 0x01d87566,
+			0x0f297be2, 0x027c090f, 0x0a81b155, 0x0d1a562b,
+		},
+		&bigNumber{
+			0x00da9708, 0x0e7d583e, 0x0dbcc099, 0x0d2dad89,
+			0x05a49ce4, 0x01cb4ddc, 0x0928d395, 0x0098d91d,
+			0x0bff16ce, 0x06f02f9a, 0x0ce27cc1, 0x0dab5783,
+			0x0b553d94, 0x03251a0c, 0x064d70fb, 0x07fe3a2f,
+		},
+		&bigNumber{0x01},
+		&bigNumber{
+			0x034365c8, 0x06b2a874, 0x0eb875d7, 0x0ae4c7a7,
+			0x0785df04, 0x09929351, 0x01fe8c3b, 0x0f2a0e5f,
+			0x0111d39c, 0x07ab52ba, 0x01df4552, 0x01d87566,
+			0x0f297be2, 0x027c090f, 0x0a81b155, 0x0d1a562b,
+		},
+		&bigNumber{
+			0x00da9708, 0x0e7d583e, 0x0dbcc099, 0x0d2dad89,
+			0x05a49ce4, 0x01cb4ddc, 0x0928d395, 0x0098d91d,
+			0x0bff16ce, 0x06f02f9a, 0x0ce27cc1, 0x0dab5783,
+			0x0b553d94, 0x03251a0c, 0x064d70fb, 0x07fe3a2f,
+		},
+	}
+	p := newExtensible(x, y)
+	c.Assert(p, DeepEquals, exp)
+	//c.Assert(basePoint.OnCurve(), Equals, true)
 }
 
 func (s *Ed448Suite) Test_MixedAddition(c *C) {
