@@ -206,16 +206,15 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 	return succ, err
 }
 
-func dsaLikeSerialize(out []byte, x *bigNumber, hibit int) {
-	x.strongReduce()
-	// XXX: copy x?
-	j := uint(0)
-	fill := uint(0)
+func dsaLikeSerialize(out []byte, n *bigNumber, hibit int) {
+	n.strongReduce()
+	x := n.copy()
+	j, fill := uint(0), uint(0)
 	buffer := dword(0)
+
 	// XXX: unroll my power!!
 	for i := uint(0); i < 56; i++ {
-		// XXX: hacky, prob 8
-		if fill < uint(8) && j < uint(16) {
+		if fill < uint(8) && j < 16 {
 			buffer |= dword(x[j]) << fill
 			fill += 28
 			j++
@@ -224,6 +223,38 @@ func dsaLikeSerialize(out []byte, x *bigNumber, hibit int) {
 		fill -= 8
 		buffer >>= 8
 	}
+}
+
+// XXX: make limb numbers constants
+func dsaLikeDeserialize(in []byte, hibit int) (*bigNumber, word) {
+	n := &bigNumber{}
+	j, fill := uint(0), uint(0)
+	buffer := dword(0x00)
+	scarry := sdword(0x00)
+
+	// XXX: unroll my power!!
+	// should be 28
+	for i := uint(0); i < uint(16); i++ {
+		for fill < 28 && j < 56 {
+			buffer |= dword(in[j]) << fill
+			fill += 8
+			j++
+		}
+
+		if !(i < uint(16-1)) {
+
+			n[i] = word(buffer)
+		}
+		n[i] = word(buffer & ((dword(1 << 28)) - 1))
+
+		fill -= uint(28)
+		buffer >>= 28
+		scarry = sdword((word(scarry) + n[i] - modulus[i]) >> 8 * 4)
+	}
+
+	// XXX: check me, and add case when hibit is zero
+	succ := ^(word(hibit))
+	return n, succ & isZeroMask(word(buffer)) & ^(isZeroMask(word(scarry)))
 }
 
 func (p *twExtendedPoint) dsaLikeEncode() [57]byte {
