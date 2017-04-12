@@ -25,7 +25,7 @@ func (table *decafBaseTable) lookup(index word) *twNiels {
 
 	for i := 0; i < tableSize; i++ {
 		m := selectMask(index, word(i))
-		for j := 0; j < limbs; j++ {
+		for j := 0; j < nLimbs; j++ {
 			out.a[j] |= m & table.base[i].a[j]
 			out.b[j] |= m & table.base[i].b[j]
 			out.c[j] |= m & table.base[i].c[j]

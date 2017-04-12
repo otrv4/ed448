@@ -213,10 +213,10 @@ func dsaLikeSerialize(out []byte, n *bigNumber, hibit int) {
 	buffer := dword(0)
 
 	// XXX: unroll my power!!
-	for i := uint(0); i < 56; i++ {
-		if fill < uint(8) && j < 16 {
+	for i := uint(0); i < fieldBytes; i++ {
+		if fill < uint(8) && j < nLimbs {
 			buffer |= dword(x[j]) << fill
-			fill += 28
+			fill += radix
 			j++
 		}
 		out[i] = byte(buffer)
@@ -225,7 +225,6 @@ func dsaLikeSerialize(out []byte, n *bigNumber, hibit int) {
 	}
 }
 
-// XXX: make limb numbers constants
 func dsaLikeDeserialize(in []byte, hibit int) (*bigNumber, word) {
 	n := &bigNumber{}
 	j, fill := uint(0), uint(0)
@@ -233,28 +232,30 @@ func dsaLikeDeserialize(in []byte, hibit int) (*bigNumber, word) {
 	scarry := sdword(0x00)
 
 	// XXX: unroll my power!!
-	// should be 28
-	for i := uint(0); i < uint(16); i++ {
-		for fill < 28 && j < 56 {
+	for i := uint(0); i < nLimbs; i++ {
+		for fill < radix && j < fieldBytes {
 			buffer |= dword(in[j]) << fill
 			fill += 8
 			j++
 		}
 
-		if !(i < uint(16-1)) {
+		if !(i < nLimbs-1) {
 
 			n[i] = word(buffer)
 		}
-		n[i] = word(buffer & ((dword(1 << 28)) - 1))
+		n[i] = word(buffer & ((dword(1 << radix)) - 1))
 
-		fill -= uint(28)
-		buffer >>= 28
+		fill -= radix
+		buffer >>= radix
 		scarry = sdword((word(scarry) + n[i] - modulus[i]) >> 8 * 4)
 	}
 
 	// XXX: check me, and add case when hibit is zero
 	succ := ^(word(hibit))
-	return n, succ & isZeroMask(word(buffer)) & ^(isZeroMask(word(scarry)))
+	succ &= isZeroMask(word(buffer))
+	succ &= ^(isZeroMask(word(scarry)))
+
+	return n, succ
 }
 
 func (p *twExtendedPoint) dsaLikeEncode() [57]byte {
@@ -617,10 +618,10 @@ func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, useIdentity w
 // exposed methods
 
 // NewPoint returns an Ed448 point from 4 arrays of uint32.
-func NewPoint(a [limbs]uint32, b [limbs]uint32, c [limbs]uint32, d [limbs]uint32) Point {
+func NewPoint(a [nLimbs]uint32, b [nLimbs]uint32, c [nLimbs]uint32, d [nLimbs]uint32) Point {
 	x, y, z, t := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
-	for i := 0; i < limbs; i++ {
+	for i := 0; i < nLimbs; i++ {
 		x[i] = word(a[i])
 		y[i] = word(b[i])
 		z[i] = word(c[i])

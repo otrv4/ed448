@@ -8,7 +8,7 @@ const (
 	decafTrue  = word(0xffffffff)
 	decafFalse = word(0x00)
 
-	limbs       = 16
+	nLimbs      = 16
 	scalarLimbs = 14
 	radix       = 28
 	radixMask   = word(0xfffffff)

@@ -8,7 +8,7 @@ type sword int32
 type dword uint64
 type sdword int64
 
-type bigNumber [limbs]word
+type bigNumber [nLimbs]word
 type serialized [fieldBytes]byte
 
 func (n *bigNumber) copy() *bigNumber {
@@ -539,8 +539,8 @@ func constantTimeGreaterOrEqualP(n *bigNumber) word {
 }
 
 func (n *bigNumber) weakReduce() *bigNumber {
-	tmp := word(dword(n[limbs-1]) >> radix)
-	n[limbs/2] += tmp
+	tmp := word(dword(n[nLimbs-1]) >> radix)
+	n[nLimbs/2] += tmp
 
 	n[15] = (n[15] & radixMask) + (n[14] >> radix)
 	n[14] = (n[14] & radixMask) + (n[13] >> radix)

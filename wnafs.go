@@ -12,7 +12,7 @@ func constTimeLookup(table []*twPNiels, index word) *twPNiels {
 
 	for i := 0; i < len(table); i++ {
 		m := selectMask(index, word(i))
-		for j := 0; j < limbs; j++ {
+		for j := 0; j < nLimbs; j++ {
 			out.n.a[j] |= m & table[i].n.a[j]
 			out.n.b[j] |= m & table[i].n.b[j]
 			out.n.c[j] |= m & table[i].n.c[j]
