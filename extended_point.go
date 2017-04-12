@@ -206,6 +206,62 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 	return succ, err
 }
 
+func dsaLikeSerialize(out []byte, x *bigNumber, hibit int) {
+	x.strongReduce()
+	// XXX: copy x?
+	j := uint(0)
+	fill := uint(0)
+	buffer := dword(0)
+	// XXX: unroll my power!!
+	for i := uint(0); i < 56; i++ {
+		// XXX: hacky, prob 8
+		if fill < uint(8) && j < uint(16) {
+			buffer |= dword(x[j]) << fill
+			fill += 28
+			j++
+		}
+		out[i] = byte(buffer)
+		fill -= 8
+		buffer >>= 8
+	}
+}
+
+func (p *twExtendedPoint) dsaLikeEncode() [57]byte {
+	// untwist
+	x, y, z, t, u := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	// copy point?
+	// 4-isogeny: 2xy/(y^+x^2), (y^2-x^2)/(2z^2-y^2+x^2)
+	x.square(p.x)
+	t.square(p.y)
+	u.add(x, t)
+	z.add(p.y, p.x)
+	y.square(z)
+	y.sub(u, y)
+	z.sub(t, x)
+	x.square(p.z)
+	t.add(x, x)
+	t.sub(t, z)
+	x.mul(t, y)
+	y.mul(z, u)
+	z.mul(u, t)
+	// set u to zero?
+
+	// convert to affine
+	z = invert(z)
+	t.mul(x, z)
+	x.mul(y, z)
+
+	// serialize and encode, set the low to mul of 4
+	// check : https://tools.ietf.org/html/draft-irtf-cfrg-eddsa-00#section-5.2
+	// https://tools.ietf.org/html/rfc8032#section-5.2
+	var enc [57]byte
+	enc[56] = 0
+	dsaLikeSerialize(enc[:], x, 1)
+	enc[56] |= byte(0x80 & lowBit(t))
+	// wipe out and destroy
+	return enc
+}
+
 func (p *twExtendedPoint) addNielsToExtended(np *twNiels, beforeDouble bool) {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.sub(p.y, p.x)
@@ -525,62 +581,6 @@ func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, useIdentity w
 	serialize(out[:], l0)
 
 	return out, succ
-}
-
-func dsaLikeSerialize(out []byte, x *bigNumber, hibit int) {
-	x.strongReduce()
-	// XXX: copy x?
-	j := uint(0)
-	fill := uint(0)
-	buffer := dword(0)
-	// XXX: unroll my power!!
-	for i := uint(0); i < 56; i++ {
-		// XXX: hacky, prob 8
-		if fill < uint(8) && j < uint(16) {
-			buffer |= dword(x[j]) << fill
-			fill += 28
-			j++
-		}
-		out[i] = byte(buffer)
-		fill -= 8
-		buffer >>= 8
-	}
-}
-
-func (p *twExtendedPoint) dsaLikeEncode() [57]byte {
-	// untwist
-	x, y, z, t, u := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	// copy point?
-	// 4-isogeny: 2xy/(y^+x^2), (y^2-x^2)/(2z^2-y^2+x^2)
-	x.square(p.x)
-	t.square(p.y)
-	u.add(x, t)
-	z.add(p.y, p.x)
-	y.square(z)
-	y.sub(u, y)
-	z.sub(t, x)
-	x.square(p.z)
-	t.add(x, x)
-	t.sub(t, z)
-	x.mul(t, y)
-	y.mul(z, u)
-	z.mul(u, t)
-	// set u to zero?
-
-	// convert to affine
-	z = invert(z)
-	t.mul(x, z)
-	x.mul(y, z)
-
-	// serialize and encode, set the low to mul of 4
-	// check : https://tools.ietf.org/html/draft-irtf-cfrg-eddsa-00#section-5.2
-	// https://tools.ietf.org/html/rfc8032#section-5.2
-	var enc [57]byte
-	enc[56] = 0
-	dsaLikeSerialize(enc[:], x, 1)
-	enc[56] |= byte(0x80 & lowBit(t))
-	// wipe out and destroy
-	return enc
 }
 
 // exposed methods
