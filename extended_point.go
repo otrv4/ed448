@@ -250,8 +250,9 @@ func dsaLikeDeserialize(in []byte, hibit int) (*bigNumber, word) {
 		scarry = sdword((word(scarry) + n[i] - modulus[i]) >> 8 * 4)
 	}
 
-	// XXX: check me, and add case when hibit is zero
-	succ := ^(word(hibit))
+	// XXX: check me, and add case when hibit is one
+	var high word = 0x01
+	succ := -(high)
 	succ &= isZeroMask(word(buffer))
 	succ &= ^(isZeroMask(word(scarry)))
 
@@ -288,10 +289,60 @@ func (p *twExtendedPoint) dsaLikeEncode() [57]byte {
 	// https://tools.ietf.org/html/rfc8032#section-5.2
 	var enc [57]byte
 	enc[56] = 0
-	dsaLikeSerialize(enc[:], x, 1)
+	dsaLikeSerialize(enc[:], x, 0)
 	enc[56] |= byte(0x80 & lowBit(t))
 	// wipe out and destroy
 	return enc
+}
+
+func dsaLikeDecode(p *twExtendedPoint, ser [57]byte) word {
+	low := ^isZeroMask(word(ser[56] & 0x80))
+
+	var cofactorMask uint = 0x80
+	ser[56] &= byte(^(cofactorMask)) //make it zero
+
+	succ := decafTrue
+	succ = isZeroMask(word(ser[56])) //should be true
+
+	var ok word
+	p.y, ok = dsaLikeDeserialize(ser[:], 0) //XXX: hacky: FIX
+	succ &= ok
+
+	p.x.square(p.y)
+	p.z.sub(bigOne, p.x)                       // num = 1-y^2
+	p.t.mulWSignedCurveConstant(p.x, edwardsD) // Dy^2
+	p.t.sub(bigOne, p.t)                       // denom = 1-dy^2 or 1-d + dy^2
+	p.x.mul(p.z, p.t)
+	p.t.isr(p.x)      // 1/sqrt(num * denom) // implement it with check
+	p.x.mul(p.t, p.z) // sqrt(num / denom)
+
+	p.x.decafCondNegate(^lowBit(p.x) ^ low) // CHeCK me!
+	p.z = bigOne.copy()
+
+	// 4-isogeny 2xy/(y^2-ax^2), (y^2+ax^2)/(2-y^2-ax^2)
+	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	c.square(p.x)
+	a.square(p.y)
+	d.add(c, a)
+	p.t.add(p.y, p.x)
+	b.square(p.t)
+	b.sub(b, d)
+	p.t.sub(a, c)
+	p.x.square(p.z)
+	p.z.add(p.x, p.x)
+	a.sub(p.z, d)
+	p.x.mul(a, b)
+	p.z.mul(p.t, a)
+	p.y.mul(p.t, d)
+	p.t.mul(b, d)
+	// wipe a, b, c, d and ser
+
+	valid := p.isOnCurve()
+	if !valid {
+		return decafFalse
+	}
+
+	return succ
 }
 
 func (p *twExtendedPoint) addNielsToExtended(np *twNiels, beforeDouble bool) {
