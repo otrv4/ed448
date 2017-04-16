@@ -206,72 +206,20 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 	return succ, err
 }
 
-func dsaLikeSerialize(out []byte, n *bigNumber, hibit int) {
-	n.strongReduce()
-	x := n.copy()
-	j, fill := uint(0), uint(0)
-	buffer := dword(0)
-
-	// XXX: unroll my power!!
-	for i := uint(0); i < fieldBytes; i++ {
-		if fill < uint(8) && j < nLimbs {
-			buffer |= dword(x[j]) << fill
-			fill += radix
-			j++
-		}
-		out[i] = byte(buffer)
-		fill -= 8
-		buffer >>= 8
-	}
-}
-
-func dsaLikeDeserialize(in []byte, hibit int) (*bigNumber, word) {
-	n := &bigNumber{}
-	j, fill := uint(0), uint(0)
-	buffer := dword(0x00)
-	scarry := sdword(0x00)
-
-	// XXX: unroll my power!!
-	for i := uint(0); i < nLimbs; i++ {
-		for fill < radix && j < fieldBytes {
-			buffer |= dword(in[j]) << fill
-			fill += 8
-			j++
-		}
-
-		if !(i < nLimbs-1) {
-
-			n[i] = word(buffer)
-		}
-		n[i] = word(buffer & ((dword(1 << radix)) - 1))
-
-		fill -= radix
-		buffer >>= radix
-		scarry = sdword((word(scarry) + n[i] - modulus[i]) >> 8 * 4)
-	}
-
-	// XXX: check me, and add case when hibit is one
-	var high word = 0x01
-	succ := -(high)
-	succ &= isZeroMask(word(buffer))
-	succ &= ^(isZeroMask(word(scarry)))
-
-	return n, succ
-}
-
-func (p *twExtendedPoint) dsaLikeEncode() [57]byte {
-	// untwist
+// XXX: make return a slice?
+func (p *twExtendedPoint) dsaLikeEncode() [dsaFieldBytes]byte {
 	x, y, z, t, u := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	// copy point?
-	// 4-isogeny: 2xy/(y^+x^2), (y^2-x^2)/(2z^2-y^2+x^2)
-	x.square(p.x)
-	t.square(p.y)
+	q := p.copy()
+
+	// untwist by 4-isogeny: 2xy/(y^+x^2), (y^2-x^2)/(2z^2-y^2+x^2)
+	x.square(q.x)
+	t.square(q.y)
 	u.add(x, t)
-	z.add(p.y, p.x)
+	z.add(q.y, q.x)
 	y.square(z)
 	y.sub(u, y)
 	z.sub(t, x)
-	x.square(p.z)
+	x.square(q.z)
 	t.add(x, x)
 	t.sub(t, z)
 	x.mul(t, y)
@@ -284,29 +232,23 @@ func (p *twExtendedPoint) dsaLikeEncode() [57]byte {
 	t.mul(x, z)
 	x.mul(y, z)
 
-	// serialize and encode, set the low to mul of 4
-	// check : https://tools.ietf.org/html/draft-irtf-cfrg-eddsa-00#section-5.2
-	// https://tools.ietf.org/html/rfc8032#section-5.2
-	var enc [57]byte
-	enc[56] = 0
-	dsaLikeSerialize(enc[:], x, 0)
-	enc[56] |= byte(0x80 & lowBit(t))
+	var dst [dsaFieldBytes]byte
+	dst[fieldBytes] = byte(allZeros)
+	dsaLikeSerialize(dst[:], x)
+	dst[fieldBytes] |= byte(zeroMask & lowBit(t))
+
 	// wipe out and destroy
-	return enc
+	return dst
 }
 
-func dsaLikeDecode(p *twExtendedPoint, ser [57]byte) word {
-	low := ^isZeroMask(word(ser[56] & 0x80))
+func dsaLikeDecode(p *twExtendedPoint, ser [dsaFieldBytes]byte) word {
+	var cofactorMask uint = zeroMask
 
-	var cofactorMask uint = 0x80
-	ser[56] &= byte(^(cofactorMask)) //make it zero
-
+	low := ^isZeroMask(word(ser[fieldBytes] & zeroMask))
+	ser[fieldBytes] &= byte(^(cofactorMask))
 	succ := decafTrue
-	succ = isZeroMask(word(ser[56])) //should be true
-
-	var ok word
-	p.y, ok = dsaLikeDeserialize(ser[:], 0) //XXX: hacky: FIX
-	succ &= ok
+	succ = isZeroMask(word(ser[fieldBytes]))
+	succ &= dsaLikeDeserialize(p.y, ser[:])
 
 	p.x.square(p.y)
 	p.z.sub(bigOne, p.x)                       // num = 1-y^2
@@ -337,8 +279,8 @@ func dsaLikeDecode(p *twExtendedPoint, ser [57]byte) word {
 	p.t.mul(b, d)
 	// wipe a, b, c, d and ser
 
-	valid := p.isOnCurve()
-	if !valid {
+	ok := p.isOnCurve()
+	if !ok {
 		return decafFalse
 	}
 

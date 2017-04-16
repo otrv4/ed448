@@ -755,6 +755,60 @@ func mustDeserialize(in serialized) *bigNumber {
 	return n
 }
 
+func dsaLikeSerialize(dst []byte, n *bigNumber) {
+	n.strongReduce()
+	x := n.copy()
+
+	j, fill := uint(0), uint(0)
+	buffer := dword(0)
+
+	// XXX: unroll my power!!
+	for i := uint(0); i < fieldBytes; i++ {
+		if fill < uint(8) && j < nLimbs {
+			buffer |= dword(x[j]) << fill
+			fill += radix
+			j++
+		}
+		dst[i] = byte(buffer)
+		fill -= 8
+		buffer >>= 8
+	}
+}
+
+// XXX: make in type serialized?
+func dsaLikeDeserialize(n *bigNumber, in []byte) word {
+	j, fill := uint(0), uint(0)
+	buffer := dword(0x00)
+	scarry := sdword(0x00)
+
+	// XXX: unroll my power!!
+	for i := uint(0); i < nLimbs; i++ {
+		for fill < radix && j < fieldBytes {
+			buffer |= dword(in[j]) << fill
+			fill += 8
+			j++
+		}
+
+		if !(i < nLimbs-1) {
+
+			n[i] = word(buffer)
+		}
+		n[i] = word(buffer & ((dword(1 << radix)) - 1))
+
+		fill -= radix
+		buffer >>= radix
+		scarry = sdword((word(scarry) + n[i] - modulus[i]) >> 8 * 4)
+	}
+
+	// XXX: check me, and add case when hibit is one
+	var high word = 0x01
+	succ := -(high)
+	succ &= isZeroMask(word(buffer))
+	succ &= ^(isZeroMask(word(scarry)))
+
+	return succ
+}
+
 func (n *bigNumber) String() string {
 	dst := make([]byte, fieldBytes)
 	serialize(dst[:], n)

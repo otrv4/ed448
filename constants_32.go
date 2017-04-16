@@ -2,6 +2,7 @@ package ed448
 
 const (
 	lmask    = 0xffffffff
+	zeroMask = 0x80
 	allZeros = word(0x00)
 	allOnes  = word(0xffffffff)
 
@@ -18,7 +19,8 @@ const (
 	edwardsD  = -39081
 
 	// The size of the Goldilocks field, in bytes.
-	fieldBytes = fieldBits / 8 // 56
+	fieldBytes    = fieldBits / 8 // 56
+	dsaFieldBytes = 57
 
 	// The size of the Goldilocks scalars, in bits.
 	scalarBits = fieldBits - 2 // 446
@@ -26,7 +28,6 @@ const (
 	scalarBytes = (scalarBits + 7) / 8 // 56
 
 	wordBits = 32 // 32-bits
-	//wordBits = 64 // 64-bits
 
 	// The number of words in the Goldilocks field.
 	// 14 for 32-bit and 7 for 64-bits
