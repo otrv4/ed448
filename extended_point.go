@@ -242,23 +242,23 @@ func (p *twExtendedPoint) dsaLikeEncode() [dsaFieldBytes]byte {
 }
 
 func dsaLikeDecode(p *twExtendedPoint, ser [dsaFieldBytes]byte) word {
+	succ := decafTrue
 	var cofactorMask uint = zeroMask
 
 	low := ^isZeroMask(word(ser[fieldBytes] & zeroMask))
 	ser[fieldBytes] &= byte(^(cofactorMask))
-	succ := decafTrue
+
 	succ = isZeroMask(word(ser[fieldBytes]))
 	succ &= dsaLikeDeserialize(p.y, ser[:])
 
 	p.x.square(p.y)
-	p.z.sub(bigOne, p.x)                       // num = 1-y^2
-	p.t.mulWSignedCurveConstant(p.x, edwardsD) // Dy^2
-	p.t.sub(bigOne, p.t)                       // denom = 1-dy^2 or 1-d + dy^2
+	p.z.sub(bigOne, p.x)                       // num = 1- (y^2)
+	p.t.mulWSignedCurveConstant(p.x, edwardsD) // d * (y^2)
+	p.t.sub(bigOne, p.t)                       // denom = 1 - d * (y^2)
 	p.x.mul(p.z, p.t)
 	p.t.isr(p.x)      // 1/sqrt(num * denom) // implement it with check
 	p.x.mul(p.t, p.z) // sqrt(num / denom)
-
-	p.x.decafCondNegate(^lowBit(p.x) ^ low) // CHeCK me!
+	p.x.decafCondNegate(^lowBit(p.x) ^ low)
 	p.z = bigOne.copy()
 
 	// 4-isogeny 2xy/(y^2-ax^2), (y^2+ax^2)/(2-y^2-ax^2)
