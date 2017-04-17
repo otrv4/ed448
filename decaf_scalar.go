@@ -9,6 +9,7 @@ type Scalar interface {
 	Add(a, b Scalar)
 	Sub(a, b Scalar)
 	Mul(a, b Scalar)
+	Halve(a Scalar)
 	Encode() []byte
 	Decode(src []byte) error
 }
@@ -109,24 +110,21 @@ func (s *decafScalar) mul(x, y *decafScalar) {
 	s.montgomeryMultiply(s, scalarR2)
 }
 
-func (s *decafScalar) halve(a, b *decafScalar) {
-	out := &decafScalar{}
+func (s *decafScalar) halve(a *decafScalar) {
 	mask := -(a[0] & 1)
 	var chain dword
 	var i uint
 
 	for i = 0; i < scalarWords; i++ {
-		chain += dword(a[i]) + dword(b[i]&mask)
-		out[i] = word(chain)
+		chain += dword(a[i]) + dword(ScalarQ[i]&mask)
+		s[i] = word(chain)
 		chain >>= wordBits
 	}
 	for i = 0; i < scalarWords-1; i++ {
-		out[i] = out[i]>>1 | out[i+1]<<(wordBits-1)
+		s[i] = s[i]>>1 | s[i+1]<<(wordBits-1)
 	}
 
-	out[i] = out[i]>>1 | word(chain<<(wordBits-1))
-
-	copy(s[:], out[:])
+	s[i] = s[i]>>1 | word(chain<<(wordBits-1))
 }
 
 // Serializes an array of words into an array of bytes (little-endian)
@@ -249,6 +247,11 @@ func (s *decafScalar) Sub(x, y Scalar) {
 func (s *decafScalar) Mul(x, y Scalar) {
 	s.montgomeryMultiply(x.(*decafScalar), y.(*decafScalar))
 	s.montgomeryMultiply(s, scalarR2)
+}
+
+// Halve halfs a scalar. The scalars may used the same memory.
+func (s *decafScalar) Halve(x Scalar) {
+	s.halve(x.(*decafScalar))
 }
 
 // Encode serializes a scalar to wire format.

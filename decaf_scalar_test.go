@@ -178,10 +178,9 @@ func (s *Ed448Suite) Test_ScalarMultiplication(c *C) {
 
 func (s *Ed448Suite) Test_ScalarHalve(c *C) {
 	a := &decafScalar{0x0c}
-	b := &decafScalar{0x04}
 
 	out := new(decafScalar)
-	out.halve(a, b)
+	out.halve(a)
 
 	exp := &decafScalar{0x06}
 

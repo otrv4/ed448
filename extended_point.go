@@ -166,7 +166,7 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
-// XXX: should this return a bool and and error?
+// XXX: should this return a bool and an error?
 func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -429,7 +429,7 @@ func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
 
 	scalar1x := &decafScalar{}
 	scalar1x.add(scalar, decafPrecompTable.scalarAdjustment)
-	scalar1x.halve(scalar1x, ScalarQ)
+	scalar1x.halve(scalar1x)
 
 	multiples := p.prepareFixedWindow(nTable)
 
@@ -473,7 +473,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 	}
 	scalar2 := &decafScalar{}
 	scalar2.add(scalar, decafPrecompTable.scalarAdjustment)
-	scalar2.halve(scalar2, ScalarQ)
+	scalar2.halve(scalar2)
 
 	var np *twNiels
 	for i := int(decafCombSpacing - 1); i >= 0; i-- {
