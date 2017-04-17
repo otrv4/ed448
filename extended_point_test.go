@@ -618,7 +618,7 @@ func (s *Ed448Suite) Test_DsaLikeEncode(c *C) {
 
 	var invalid [56]byte
 
-	c.Assert(func() { p.dsaLikeEncode(invalid[:]) }, Panics, "Attempted an encode with a destination that is not 57 bytes")
+	c.Assert(func() { p.dsaLikeEncode(invalid[:]) }, Panics, "Attempted to encode with a destination that is not 57 bytes")
 }
 
 func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
@@ -674,7 +674,7 @@ func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
 
 	invalid := make([]byte, 56)
 
-	c.Assert(func() { dsaLikeDecode(p, invalid) }, Panics, "Attempted an encode with a destination that is not 57 bytes")
+	c.Assert(func() { dsaLikeDecode(p, invalid) }, Panics, "Attempted to decode with a source that is not 57 bytes")
 }
 
 func (s *Ed448Suite) Test_AddNielsToExtended(c *C) {

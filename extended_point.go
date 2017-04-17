@@ -208,10 +208,9 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 	return succ, err
 }
 
-// XXX: make return a slice?
 func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	if len(dst) != dsaFieldBytes {
-		panic("Attempted an encode with a destination that is not 57 bytes")
+		panic("Attempted to encode with a destination that is not 57 bytes")
 	}
 
 	x, y, z, t, u := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
@@ -231,7 +230,8 @@ func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	x.mul(t, y)
 	y.mul(z, u)
 	z.mul(u, t)
-	// set u to zero?
+
+	u.set(bigZero)
 
 	// convert to affine
 	z = invert(z)
@@ -242,12 +242,16 @@ func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	dsaLikeSerialize(dst[:], x)
 	dst[fieldBytes] |= byte(zeroMask & lowBit(t))
 
-	// wipe out and destroy
+	// wipe out
+	x.set(bigZero)
+	y.set(bigZero)
+	z.set(bigZero)
+	t.set(bigZero)
 }
 
 func dsaLikeDecode(p *twExtendedPoint, src []byte) word {
 	if len(src) != dsaFieldBytes {
-		panic("Attempted an encode with a destination that is not 57 bytes")
+		panic("Attempted to decode with a source that is not 57 bytes")
 	}
 
 	succ := decafTrue
@@ -285,7 +289,13 @@ func dsaLikeDecode(p *twExtendedPoint, src []byte) word {
 	p.z.mul(p.t, a)
 	p.y.mul(p.t, d)
 	p.t.mul(b, d)
-	// wipe a, b, c, d and src
+
+	// wipe out
+	a.set(bigZero)
+	b.set(bigZero)
+	c.set(bigZero)
+	d.set(bigZero)
+	src = make([]byte, 57)
 
 	ok := p.isOnCurve()
 	if !ok {
@@ -618,7 +628,7 @@ func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, useIdentity w
 
 // exposed methods
 
-// NewPoint returns an Ed448 point from 4 arrays of uint32.
+// NewPoint returns an Ed448 point from 4 arrays of 16 uint32.
 func NewPoint(a [nLimbs]uint32, b [nLimbs]uint32, c [nLimbs]uint32, d [nLimbs]uint32) Point {
 	x, y, z, t := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -665,7 +675,7 @@ func (p *twExtendedPoint) IsOnCurve() bool {
 	return p.isOnCurve()
 }
 
-// Equals compares whether two points (p, q) are equal .
+// Equals compares whether two points (p, q) are equal.
 func (p *twExtendedPoint) Equals(q Point) bool {
 	valid := p.equals(q.(*twExtendedPoint))
 	return valid == decafTrue
