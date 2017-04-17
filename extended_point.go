@@ -11,6 +11,7 @@ type Point interface {
 	Sub(q, r Point)
 	Encode() []byte
 	Decode(src []byte, identity bool) (bool, error)
+	DSAEncode() []byte
 }
 
 // Extended Homogenous Projective coordinates: (X : Y : T : Z), which
@@ -207,7 +208,11 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 }
 
 // XXX: make return a slice?
-func (p *twExtendedPoint) dsaLikeEncode() [dsaFieldBytes]byte {
+func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
+	if len(dst) != dsaFieldBytes {
+		panic("Attempted an encode with a destination that is not 57 bytes")
+	}
+
 	x, y, z, t, u := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	q := p.copy()
 
@@ -232,13 +237,11 @@ func (p *twExtendedPoint) dsaLikeEncode() [dsaFieldBytes]byte {
 	t.mul(x, z)
 	x.mul(y, z)
 
-	var dst [dsaFieldBytes]byte
 	dst[fieldBytes] = byte(allZeros)
 	dsaLikeSerialize(dst[:], x)
 	dst[fieldBytes] |= byte(zeroMask & lowBit(t))
 
 	// wipe out and destroy
-	return dst
 }
 
 func dsaLikeDecode(p *twExtendedPoint, ser [dsaFieldBytes]byte) word {
@@ -680,6 +683,16 @@ func (p *twExtendedPoint) Sub(q, r Point) {
 }
 
 // Encode returns the encoding of a point (p) as a sequence of bytes.
+// This uses the 'decaf' technique. See `Decaf: Eliminating cofactors through
+// point compression``, Mike Hamburg, Advances in Cryptology (Crypto 2015).
+// This technique removes the cofactor through quotients and isogenies.
+// The internal representation of points is as "even" elements of a twisted
+// Edwards curve with a=-1. Using this subgroup removes a factor of 2 from the
+// cofactor. The remaining factor of 2 is removed with a quotient group: any two
+// points which differ by an element of the 2- or 4-torsion subgroup are
+// considered equal to each other.
+// When a point is written out to wire format, it is converted (by isogeny)
+// to a Jacobi quartic curve. The x-coordinate of this point is written out.
 func (p *twExtendedPoint) Encode() []byte {
 	out := make([]byte, fieldBytes)
 	p.decafEncode(out)
@@ -699,6 +712,16 @@ func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) (bool, error) {
 		return false, err
 	}
 	return valid == decafTrue, nil
+}
+
+// DSAEncode returns the encoding of a point (p) as a sequence of bytes.
+// This uses the eddsa techinique. See ``Edwards-Curve Digital Signature
+// Algorithm (EdDSA)``, S. Josefsson and I. Liusvaara, Internet Research Task
+// Force (IRTF).
+func (p *twExtendedPoint) DSAEncode() []byte {
+	out := make([]byte, dsaFieldBytes)
+	p.dsaLikeEncode(out)
+	return out
 }
 
 // PointScalarMul returns the multiplication of a given point (p) by a given

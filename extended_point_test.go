@@ -600,7 +600,9 @@ func (s *Ed448Suite) Test_DsaLikeEncode(c *C) {
 		},
 	}
 
-	out := p.dsaLikeEncode()
+	var out [57]byte
+	p.dsaLikeEncode(out[:])
+
 	exp := [57]byte{
 		0xa5, 0xd9, 0xce, 0xa4, 0x06, 0x89, 0xa4, 0x13,
 		0x94, 0xf0, 0x69, 0x32, 0xfe, 0xe0, 0xdb, 0x11,
@@ -613,6 +615,10 @@ func (s *Ed448Suite) Test_DsaLikeEncode(c *C) {
 	}
 
 	c.Assert(out, DeepEquals, exp)
+
+	var invalid [56]byte
+
+	c.Assert(func() { p.dsaLikeEncode(invalid[:]) }, Panics, "Attempted an encode with a destination that is not 57 bytes")
 }
 
 func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
