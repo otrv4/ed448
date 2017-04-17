@@ -667,10 +667,14 @@ func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
 		},
 	}
 
-	succ := dsaLikeDecode(p, ser)
+	succ := dsaLikeDecode(p, ser[:])
 
 	c.Assert(p, DeepEquals, exp)
 	c.Assert(succ, DeepEquals, decafTrue)
+
+	invalid := make([]byte, 56)
+
+	c.Assert(func() { dsaLikeDecode(p, invalid) }, Panics, "Attempted an encode with a destination that is not 57 bytes")
 }
 
 func (s *Ed448Suite) Test_AddNielsToExtended(c *C) {

@@ -12,6 +12,7 @@ type Point interface {
 	Encode() []byte
 	Decode(src []byte, identity bool) (bool, error)
 	DSAEncode() []byte
+	DSADecode(src []byte) bool
 }
 
 // Extended Homogenous Projective coordinates: (X : Y : T : Z), which
@@ -244,15 +245,19 @@ func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	// wipe out and destroy
 }
 
-func dsaLikeDecode(p *twExtendedPoint, ser [dsaFieldBytes]byte) word {
+func dsaLikeDecode(p *twExtendedPoint, src []byte) word {
+	if len(src) != dsaFieldBytes {
+		panic("Attempted an encode with a destination that is not 57 bytes")
+	}
+
 	succ := decafTrue
 	var cofactorMask uint = zeroMask
 
-	low := ^isZeroMask(word(ser[fieldBytes] & zeroMask))
-	ser[fieldBytes] &= byte(^(cofactorMask))
+	low := ^isZeroMask(word(src[fieldBytes] & zeroMask))
+	src[fieldBytes] &= byte(^(cofactorMask))
 
-	succ = isZeroMask(word(ser[fieldBytes]))
-	succ &= dsaLikeDeserialize(p.y, ser[:])
+	succ = isZeroMask(word(src[fieldBytes]))
+	succ &= dsaLikeDeserialize(p.y, src[:])
 
 	p.x.square(p.y)
 	p.z.sub(bigOne, p.x)                       // num = 1- (y^2)
@@ -280,7 +285,7 @@ func dsaLikeDecode(p *twExtendedPoint, ser [dsaFieldBytes]byte) word {
 	p.z.mul(p.t, a)
 	p.y.mul(p.t, d)
 	p.t.mul(b, d)
-	// wipe a, b, c, d and ser
+	// wipe a, b, c, d and src
 
 	ok := p.isOnCurve()
 	if !ok {
@@ -718,10 +723,18 @@ func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) (bool, error) {
 // This uses the eddsa techinique. See ``Edwards-Curve Digital Signature
 // Algorithm (EdDSA)``, S. Josefsson and I. Liusvaara, Internet Research Task
 // Force (IRTF).
+// Multiplies the point to the cofactor first.
 func (p *twExtendedPoint) DSAEncode() []byte {
 	out := make([]byte, dsaFieldBytes)
 	p.dsaLikeEncode(out)
 	return out
+}
+
+// DSADecode gives the decoding of a point (p) as a sequence of bytes (src).
+func (p *twExtendedPoint) DSADecode(src []byte) bool {
+	ok := dsaLikeDecode(p, src)
+
+	return ok == decafTrue
 }
 
 // PointScalarMul returns the multiplication of a given point (p) by a given
