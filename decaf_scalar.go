@@ -12,6 +12,7 @@ type Scalar interface {
 	Halve(a Scalar)
 	Encode() []byte
 	Decode(src []byte) error
+	DecodeLong(src []byte)
 }
 
 type decafScalar [scalarWords]word
@@ -268,4 +269,9 @@ func (s *decafScalar) Decode(src []byte) error {
 	}
 	barrettDeserializeAndReduce(s[:], src, &curvePrimeOrder)
 	return nil
+}
+
+// DecodeLong reads a scalar from wire format or from bytes and reduces mod scalar prime.
+func (s *decafScalar) DecodeLong(src []byte) {
+	s.decodeLong(src)
 }
