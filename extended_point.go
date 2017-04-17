@@ -418,6 +418,17 @@ func (p *twExtendedPoint) toPNiels() *twPNiels {
 	}
 }
 
+func (p *twExtendedPoint) isogenizeToMontgomery() []byte {
+	var out [56]byte
+
+	p.t = invert(p.x) // 1/x
+	p.z.mul(p.t, p.y) // y/x
+	p.y.square(p.z)   // (y/x)^2
+
+	dsaLikeSerialize(out[:], p.y)
+	return out[:]
+}
+
 func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
 	const decafWindowBits = 5            //move this to const file
 	const window = decafWindowBits       //5
