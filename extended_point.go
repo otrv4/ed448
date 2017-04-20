@@ -9,7 +9,6 @@ type Point interface {
 	Copy() Point
 	Add(q, r Point)
 	Sub(q, r Point)
-	IsogenizeToMont() []byte
 	Encode() []byte
 	Decode(src []byte, identity bool) (bool, error)
 	DSAEncode() []byte
@@ -756,10 +755,6 @@ func (p *twExtendedPoint) DSADecode(src []byte) bool {
 	ok := dsaLikeDecode(p, src)
 
 	return ok == decafTrue
-}
-
-func (p *twExtendedPoint) IsogenizeToMont() []byte {
-	return p.isogenizeToMontgomery()
 }
 
 // PointScalarMul returns the multiplication of a given point (p) by a given
