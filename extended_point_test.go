@@ -677,6 +677,52 @@ func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
 	c.Assert(func() { dsaLikeDecode(p, invalid) }, Panics, "Attempted to decode with a source that is not 57 bytes")
 }
 
+func (s *Ed448Suite) Test_DsaLikeDecodeAndEncode(c *C) {
+	basePoint := &twExtendedPoint{
+		&bigNumber{
+			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x00000003, 0x00000000, 0x00000000, 0x00000000,
+			0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		},
+		&bigNumber{
+			0x0f752992, 0x081e6d37, 0x01c28721, 0x03078ead,
+			0x0394666c, 0x0135cfd2, 0x00506061, 0x041149c5,
+			0x0f5490b3, 0x031d30e4, 0x090dc141, 0x09020149,
+			0x04c1e328, 0x052341b0, 0x03c10a1b, 0x01423785,
+		},
+		&bigNumber{
+			0x0ffffffb, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		},
+		&bigNumber{
+			0x00660415, 0x08f205b7, 0x0fd3824f, 0x0881c60c,
+			0x0d08500d, 0x0377a638, 0x04672615, 0x08c66d5d,
+			0x08e08e13, 0x0e52fa55, 0x01b6983d, 0x087770ae,
+			0x0a0aa7ff, 0x04388f55, 0x05cf1a91, 0x0b4d9a78,
+		},
+	}
+
+	var enc [57]byte
+	basePoint.dsaLikeEncode(enc[:])
+	dec := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	doubleBase := basePoint.double(false)
+	doubleBase = doubleBase.double(false)
+
+	valid := dsaLikeDecode(dec, enc[:])
+	valid &= dec.equals(doubleBase)
+
+	c.Assert(valid, DeepEquals, decafTrue)
+}
+
 func (s *Ed448Suite) Test_AddNielsToExtended(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{0x00},

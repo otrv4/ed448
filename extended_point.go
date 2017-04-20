@@ -215,17 +215,16 @@ func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	}
 
 	x, y, z, t, u := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	q := p.copy()
 
 	// untwist by 4-isogeny: 2xy/(y^+x^2), (y^2-x^2)/(2z^2-y^2+x^2)
-	x.square(q.x)
-	t.square(q.y)
+	x.square(p.x)
+	t.square(p.y)
 	u.add(x, t)
-	z.add(q.y, q.x)
+	z.add(p.y, p.x)
 	y.square(z)
 	y.sub(u, y)
 	z.sub(t, x)
-	x.square(q.z)
+	x.square(p.z)
 	t.add(x, x)
 	t.sub(t, z)
 	x.mul(t, y)
