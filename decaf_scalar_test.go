@@ -235,9 +235,10 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 
 func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 	var buf []byte
-	exp := decodeLong(buf)
+	x := &decafScalar{}
+	out := decodeLong(x, buf)
 
-	c.Assert(exp, DeepEquals, scalarZero)
+	c.Assert(out, DeepEquals, scalarZero)
 
 	buf = []byte{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72, 0x36,
@@ -249,14 +250,15 @@ func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 		0x58, 0xd2, 0x75, 0x4b, 0x39, 0xbc, 0xa8, 0x74,
 	}
 
-	exp = &decafScalar{
+	exp := &decafScalar{
 		0x2a1c3d02, 0x12f970e8, 0x41d97de7, 0x6a547b38,
 		0xdaa8c88e, 0x9f299b75, 0x01075c7b, 0x3b874ad9,
 		0xe1c0b914, 0xc8bd0b68, 0xc3f34776, 0x2f2d9082,
 		0x4b75d258, 0x34a8bc39,
 	}
 
-	out := decodeLong(buf)
+	x = scalarZero
+	out = decodeLong(x, buf)
 
 	c.Assert(out, DeepEquals, exp)
 
@@ -277,8 +279,9 @@ func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 		0xac5eb1a1, 0x32a3e4eb,
 	}
 
-	out2 := decodeLong(buf)
-	c.Assert(out2, DeepEquals, exp)
+	x = scalarZero
+	out = decodeLong(x, buf)
+	c.Assert(out, DeepEquals, exp)
 }
 
 // Exported Functions
@@ -384,7 +387,7 @@ func (s *Ed448Suite) Test_ExportedScalarDecode(c *C) {
 	}
 
 	out := new(decafScalar)
-	ok := out.Decode(bytes)
+	ok := out.BarretDecode(bytes)
 
 	c.Assert(ok, ErrorMatches, "ed448: cannot decode a scalar from a byte array with a length unequal to 56")
 }

@@ -11,8 +11,7 @@ type Scalar interface {
 	Mul(a, b Scalar)
 	Halve(a Scalar)
 	Encode() []byte
-	Decode(src []byte) error
-	DecodeLong(src []byte)
+	BarretDecode(src []byte) error
 }
 
 type decafScalar [scalarWords]word
@@ -169,33 +168,35 @@ func (s *decafScalar) decode(b []byte) word {
 	return word(accum)
 }
 
-func decodeLong(b []byte) *decafScalar {
-	x, y := &decafScalar{}, &decafScalar{}
+// HACKY: either the param or the return
+func decodeLong(s *decafScalar, b []byte) *decafScalar {
+	y := &decafScalar{}
 	bLen := len(b)
 	size := bLen - (bLen % fieldBytes)
 
 	if bLen == 0 {
-		return scalarZero.copy()
+		s = scalarZero.copy()
+		return s
 	}
 
 	if size == bLen {
 		size -= fieldBytes
 	}
-	x.decodeShort(b[size:], uint(bLen-size))
+	s.decodeShort(b[size:], uint(bLen-size))
 
 	if bLen == scalarBytes {
-		x.mul(x, &decafScalar{0x01})
-		return x
+		s.mul(s, &decafScalar{0x01})
+		return s
 	}
 
 	for size == bLen-(bLen%fieldBytes) {
 		size -= scalarBytes
-		x.montgomeryMultiply(x, scalarR2)
+		s.montgomeryMultiply(s, scalarR2)
 		y.decode(b[size:])
-		x.add(x, y)
+		s.add(s, y)
 	}
 
-	return x.copy()
+	return s.copy()
 }
 
 //Exported methods
@@ -262,7 +263,8 @@ func (s *decafScalar) Encode() []byte {
 }
 
 // Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
-func (s *decafScalar) Decode(src []byte) error {
+// XXX: this will reduce with barret, change name and receiver
+func (s *decafScalar) BarretDecode(src []byte) error {
 	if len(src) < fieldBytes {
 		return errors.New("ed448: cannot decode a scalar from a byte array with a length unequal to 56")
 	}
@@ -270,7 +272,8 @@ func (s *decafScalar) Decode(src []byte) error {
 	return nil
 }
 
-// DecodeLong reads a scalar from wire format or from bytes and reduces mod scalar prime.
-func (s *decafScalar) DecodeLong(src []byte) {
-	s = decodeLong(src)
+// Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
+// XXX: make scalar part of signature as it will generate confusion otherwise
+func Decode(x Scalar, src []byte) Scalar {
+	return decodeLong(x.(*decafScalar), src)
 }
