@@ -169,34 +169,33 @@ func (s *decafScalar) decode(b []byte) word {
 	return word(accum)
 }
 
-// XXX: implement variable size arg
-func (s *decafScalar) decodeLong(b []byte) {
-	if len(b) == 0 {
-		s = scalarZero.copy()
-	}
-
-	size := len(b) - (len(b) % fieldBytes)
-	if size == len(b) {
-		size -= fieldBytes
-	}
-
+func decodeLong(b []byte) *decafScalar {
 	x, y := &decafScalar{}, &decafScalar{}
+	bLen := len(b)
+	size := bLen - (bLen % fieldBytes)
 
-	x.decodeShort(b[size:], uint(len(b)-size))
-
-	if len(b) == scalarBytes {
-		s.mul(x, &decafScalar{0x01})
-
+	if bLen == 0 {
+		return scalarZero.copy()
 	}
 
-	for size == len(b)-(len(b)%fieldBytes) {
+	if size == bLen {
 		size -= fieldBytes
+	}
+	x.decodeShort(b[size:], uint(bLen-size))
+
+	if bLen == scalarBytes {
+		x.mul(x, &decafScalar{0x01})
+		return x
+	}
+
+	for size == bLen-(bLen%fieldBytes) {
+		size -= scalarBytes
 		x.montgomeryMultiply(x, scalarR2)
-		y.decode(b[:size])
+		y.decode(b[size:])
 		x.add(x, y)
 	}
 
-	s = x.copy()
+	return x.copy()
 }
 
 //Exported methods
@@ -273,5 +272,5 @@ func (s *decafScalar) Decode(src []byte) error {
 
 // DecodeLong reads a scalar from wire format or from bytes and reduces mod scalar prime.
 func (s *decafScalar) DecodeLong(src []byte) {
-	s.decodeLong(src)
+	s = decodeLong(src)
 }
