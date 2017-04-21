@@ -286,8 +286,6 @@ func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 
 // Exported Functions
 func (s *Ed448Suite) Test_NewScalar(c *C) {
-	lessBytes := make([]byte, 55)
-	moreBytes := make([]byte, 57)
 	bytes := []byte{
 		0x25, 0x8a, 0x52, 0x63, 0xd9, 0xf0, 0xfa, 0xad,
 		0x9d, 0x50, 0x40, 0x8a, 0xf0, 0x76, 0x66, 0xe3,
@@ -306,9 +304,6 @@ func (s *Ed448Suite) Test_NewScalar(c *C) {
 	}
 
 	c.Assert(NewScalar(), DeepEquals, &decafScalar{})
-	c.Assert(func() { NewScalar(moreBytes, lessBytes) }, Panics, "too many arguments to function call")
-	c.Assert(func() { NewScalar(lessBytes) }, Panics, "byte input needs to be size 56")
-	c.Assert(func() { NewScalar(moreBytes) }, Panics, "byte input needs to be size 56")
 	c.Assert(NewScalar(bytes), DeepEquals, exp)
 }
 

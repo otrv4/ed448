@@ -214,11 +214,7 @@ func NewScalar(in ...[]byte) Scalar {
 	out := &decafScalar{}
 
 	bytes := in[0][:]
-	if len(bytes) != 56 {
-		panic("byte input needs to be size 56")
-	}
-	barrettDeserializeAndReduce(out[:], bytes, &curvePrimeOrder)
-	return out
+	return decodeLong(out, bytes)
 }
 
 // Equals compares two scalars. Returns true if they are the same; false, otherwise.
