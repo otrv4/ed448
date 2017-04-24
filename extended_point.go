@@ -9,6 +9,7 @@ type Point interface {
 	Copy() Point
 	Add(q, r Point)
 	Sub(q, r Point)
+	Double() Point
 	Encode() []byte
 	Decode(src []byte, identity bool) (bool, error)
 	DSAEncode() []byte
@@ -705,6 +706,11 @@ func (p *twExtendedPoint) Add(q, r Point) {
 // Sub gives the subtraction of two points (q, r) and produces a thrid point (p).
 func (p *twExtendedPoint) Sub(q, r Point) {
 	p.sub(q.(*twExtendedPoint), r.(*twExtendedPoint))
+}
+
+// Double gives the doubling of a point (p).
+func (p *twExtendedPoint) Double() Point {
+	return p.double(false)
 }
 
 // Encode returns the encoding of a point (p) as a sequence of bytes.
