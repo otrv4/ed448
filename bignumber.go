@@ -640,7 +640,11 @@ func (n *bigNumber) strongReduce() *bigNumber {
 	n[15] = word(scarry) & radixMask
 	scarry >>= 28
 
-	// second for
+	// uncommon case: it was >= p, so now scarry = 0 and this = x
+	// common case: it was < p, so now scarry = -1 and this = x - p + 2^255
+	// so let's add back in p.  will carry back off the top for 2^255.
+	// it can be asserted:
+	//assert(isZero(scarry) | isZero(scarry+1));
 
 	scarryMask := word(scarry) & word(radixMask)
 	carry := dword(0)
