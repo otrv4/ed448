@@ -2,7 +2,6 @@ package ed448
 
 import "fmt"
 
-// XXX: move me to scalars
 type word uint32
 type sword int32
 type dword uint64
@@ -11,12 +10,23 @@ type sdword int64
 type bigNumber [nLimbs]word
 type serialized [fieldBytes]byte
 
+func isZeroMask(n word) word {
+	nn := dword(n)
+	nn = nn - 1
+	return word(nn >> wordBits)
+}
+
+func (n *bigNumber) isZero() (eq bool) {
+	return n.zeroMask() == lmask
+}
+
 func (n *bigNumber) copy() *bigNumber {
 	c := &bigNumber{}
 	copy(c[:], n[:])
 	return c
 }
 
+// XXX: delete this
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	r := word(0)
 	x := n.copy().strongReduce()
@@ -42,6 +52,9 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	return r == 0
 }
 
+// XXX: make this the canonical equals
+// Compare n==x
+// If it is equal, it will return 0. Otherwise the lmask.
 func (n *bigNumber) decafEq(x *bigNumber) word {
 	y := &bigNumber{}
 	y.sub(n, x)
@@ -65,7 +78,7 @@ func (n *bigNumber) decafEq(x *bigNumber) word {
 	ret |= y[13]
 	ret |= y[14]
 
-	return word((dword(ret) - 1) >> 32)
+	return isZeroMask(ret)
 }
 
 func (n *bigNumber) set(x *bigNumber) *bigNumber {
@@ -117,12 +130,6 @@ func (n *bigNumber) setUI(y dword) *bigNumber {
 	return n
 }
 
-func isZeroMask(n word) word {
-	nn := dword(n)
-	nn = nn - 1
-	return word(nn >> wordBits)
-}
-
 func (n *bigNumber) zeroMask() word {
 	x := n.copy().strongReduce()
 	r := word(0)
@@ -147,10 +154,7 @@ func (n *bigNumber) zeroMask() word {
 	return isZeroMask(word(r))
 }
 
-func (n *bigNumber) isZero() (eq bool) {
-	return n.zeroMask() == lmask
-}
-
+// Return high bit of x = low bit of 2x mod p
 func highBit(x *bigNumber) word {
 	y := &bigNumber{}
 	y.add(x, x)
@@ -562,13 +566,17 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	return n
 }
 
+// Reduce to canonical form
 func (n *bigNumber) strongReduce() *bigNumber {
+	// XXX: change this for performance
 	// clear high
 	n[8] += n[15] >> 28
 	n[0] += n[15] >> 28
 	n[15] &= radixMask
 
-	//first for
+	// total is less than 2p
+
+	// compute total_value - p.  No need to reduce mod p.
 
 	scarry := sdword(0)
 	scarry += sdword(n[0]) - 0xfffffff

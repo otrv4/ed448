@@ -4,6 +4,20 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+func (s *Ed448Suite) Test_ZeroMask(c *C) {
+
+	c.Assert(bigZero.zeroMask(), Equals, word(lmask))
+	c.Assert(bigOne.zeroMask(), Equals, word(0x00))
+}
+
+func (s *Ed448Suite) Test_IsZero(c *C) {
+	n := mustDeserialize(serialized{0x01})
+	c.Assert(n.isZero(), Equals, false)
+
+	n = mustDeserialize(serialized{0x00})
+	c.Assert(n.isZero(), Equals, true)
+}
+
 func (s *Ed448Suite) Test_Equals(c *C) {
 	n, _ := deserialize(serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -75,25 +89,17 @@ func (s *Ed448Suite) Test_SetBytes(c *C) {
 	c.Assert(n, DeepEquals, exp)
 }
 
-func (s *Ed448Suite) Test_ZeroMask(c *C) {
-
-	c.Assert(bigZero.zeroMask(), Equals, word(lmask))
-	c.Assert(bigOne.zeroMask(), Equals, word(0x00))
-}
-
-func (s *Ed448Suite) Test_IsZero(c *C) {
-	n := mustDeserialize(serialized{0x01})
-	c.Assert(n.isZero(), Equals, false)
-
-	n = mustDeserialize(serialized{0x00})
-	c.Assert(n.isZero(), Equals, true)
-}
-
 func (s *Ed448Suite) Test_HighBit(c *C) {
 	n := &bigNumber{0xdeadbeef}
 	h := highBit(n)
 
 	c.Assert(h, Equals, word(0x00))
+
+	n = &bigNumber{0x04}
+	h = highBit(n)
+
+	l := &bigNumber{0x08}
+	c.Assert(h, Equals, lowBit(l))
 }
 
 func (s *Ed448Suite) Test_LowBit(c *C) {
