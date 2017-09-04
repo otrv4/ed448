@@ -561,6 +561,7 @@ func (n *bigNumber) weakReduce() *bigNumber {
 	n[3] = (n[3] & radixMask) + (n[2] >> radix)
 	n[2] = (n[2] & radixMask) + (n[1] >> radix)
 	n[1] = (n[1] & radixMask) + (n[0] >> radix)
+
 	n[0] = (n[0] & radixMask) + tmp
 
 	return n
@@ -568,14 +569,10 @@ func (n *bigNumber) weakReduce() *bigNumber {
 
 // Reduce to canonical form
 func (n *bigNumber) strongReduce() *bigNumber {
-	// XXX: change this for performance
 	// clear high
-	n[8] += n[15] >> 28
-	n[0] += n[15] >> 28
-	n[15] &= radixMask
+	n.weakReduce()
 
 	// total is less than 2p
-
 	// compute total_value - p.  No need to reduce mod p.
 
 	scarry := sdword(0)
