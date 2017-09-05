@@ -21,7 +21,7 @@ func (c *decafCurveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (*privateKey,
 	copy(k.symKey(), sym[:])
 
 	skb := decafPseudoRandomFunction(sym[:])
-	secretKey := &decafScalar{}
+	secretKey := &scalar{}
 
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
 
@@ -48,7 +48,7 @@ func (c *decafCurveT) decafGenerateKeys(r io.Reader) (k *privateKey, err error) 
 func (c *decafCurveT) decafComputeSecret(myPriv *privateKey, yourPub [fieldBytes]byte) ([]byte, word) {
 	var delta, less uint16
 	var ser [fieldBytes]byte
-	var sk decafScalar
+	var sk scalar
 	invalid := "decaf_448_ss_invalid"
 
 	priv := myPriv.secretKey()
@@ -104,7 +104,7 @@ func (c *decafCurveT) decafComputeSecret(myPriv *privateKey, yourPub [fieldBytes
 	return shared[:], ok
 }
 
-func decafDeriveNonce(msg []byte, symKey []byte) *decafScalar {
+func decafDeriveNonce(msg []byte, symKey []byte) *scalar {
 	h := sha3.NewShake256()
 	h.Write(msg)
 	h.Write(symKey)
@@ -112,14 +112,14 @@ func decafDeriveNonce(msg []byte, symKey []byte) *decafScalar {
 	var out [64]byte
 	h.Read(out[:])
 
-	dst := &decafScalar{}
+	dst := &scalar{}
 
 	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
 
 	return dst
 }
 
-func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) *decafScalar {
+func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) *scalar {
 	h := sha3.NewShake256()
 	h.Write(msg)
 	h.Write(pubKey)
@@ -127,21 +127,21 @@ func decafDeriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []by
 	var out [64]byte
 	h.Read(out[:])
 
-	dst := &decafScalar{}
+	dst := &scalar{}
 
 	barrettDeserializeAndReduce(dst[:], out[:], &curvePrimeOrder)
 
 	return dst
 }
 
-func (c *decafCurveT) decafDeriveTemporarySignature(nonce *decafScalar) (dst [fieldBytes]byte) {
+func (c *decafCurveT) decafDeriveTemporarySignature(nonce *scalar) (dst [fieldBytes]byte) {
 	point := precomputedScalarMul(nonce)
 	point.decafEncode(dst[:])
 	return
 }
 
 func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
-	secretKeyWords := &decafScalar{}
+	secretKeyWords := &scalar{}
 	//XXX: should secret words be destroyed?
 
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
@@ -194,7 +194,7 @@ func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k 
 	// XXX: hacky. FIX ME.
 	ret &= ret1
 
-	response := &decafScalar{}
+	response := &scalar{}
 	ret &= response.decode(signature[56:])
 
 	pkPoint = decafDoubleNonSecretScalarMul(pkPoint, response, challenge)

@@ -1,9 +1,9 @@
 package ed448
 
-func scheduleScalarForCombs(schedule []word, scalar decafScalar) {
+func scheduleScalarForCombs(schedule []word, sc scalar) {
 	table := baseTable
 	tmp := make([]word, len(schedule))
-	copy(tmp, scalar[:])
+	copy(tmp, sc[:])
 
 	tmp[len(tmp)-1] &= (word(1) << (scalarBits % wordBits)) - 1
 

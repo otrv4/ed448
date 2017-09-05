@@ -4,12 +4,12 @@ type smvtControl struct {
 	power, addend int
 }
 
-func recodeWNAF(control []smvtControl, scalar *decafScalar, nBits, tableBits uint) (position word) {
+func recodeWNAF(control []smvtControl, s *scalar, nBits, tableBits uint) (position word) {
 	current := 0
 	var i, j int
 	position = 0
 	for i = int(nBits - 1); i >= 0; i-- {
-		bit := (scalar[i/wordBits] >> uint(i%wordBits)) & 1
+		bit := (s[i/wordBits] >> uint(i%wordBits)) & 1
 		current = (2 * current) + int(bit)
 
 		// Sizing: |current| >= 2^(tableBits+1) -> |current| = 2^0
@@ -98,7 +98,7 @@ func decafPrepareWNAFTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 	}
 }
 
-func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre *decafScalar, precmp []*twNiels) {
+func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre *scalar, precmp []*twNiels) {
 	tableBitsVar := uint(4) //SCALARMUL_WNAF_COMBO_TABLE_BITS;
 	nbitsVar := uint(446)
 	nbitsPre := uint(446)
@@ -159,17 +159,17 @@ func linearComboVarFixedVt(working *twExtensible, scalarVar, scalarPre *decafSca
 	}
 }
 
-func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafScalar) *twExtendedPoint {
+func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *scalar) *twExtendedPoint {
 	const decafWindowBits = 5
 	const window = decafWindowBits       //5
 	const windowMask = (1 << window) - 1 //0x0001f 31
 	const windowTMask = windowMask >> 1  //0x0000f 15
 	const nTable = 1 << (window - 1)     //0x00010 16
 
-	scalar1x := &decafScalar{}
+	scalar1x := &scalar{}
 	scalar1x.add(scalarB, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x)
-	scalar2x := &decafScalar{}
+	scalar2x := &scalar{}
 	scalar2x.add(scalarC, decafPrecompTable.scalarAdjustment)
 	scalar2x.halve(scalar2x)
 
@@ -217,7 +217,7 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *decafSca
 	return out
 }
 
-func decafDoubleNonSecretScalarMul(p *twExtendedPoint, scalarPre, scalarVar *decafScalar) *twExtendedPoint {
+func decafDoubleNonSecretScalarMul(p *twExtendedPoint, scalarPre, scalarVar *scalar) *twExtendedPoint {
 	tableBitsVar := uint(3) // DECAF_WNAF_VAR_TABLE_BITS
 	tableBitsPre := uint(5) // DECAF_WNAF_FIXED_TABLE_BITS
 

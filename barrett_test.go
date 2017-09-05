@@ -14,11 +14,11 @@ func (s *Ed448Suite) Test_BarrettDeserializeAndReduce(c *C) {
 		0xd3, 0x74, 0x3e, 0x3b, 0x7b, 0x21, 0x70, 0x01,
 	}
 
-	result := decafScalar{}
+	result := scalar{}
 
 	barrettDeserializeAndReduce(result[:], serialized[:], &curvePrimeOrder)
 
-	c.Assert(result, DeepEquals, decafScalar{
+	c.Assert(result, DeepEquals, scalar{
 		0x3e3f0106, 0x109e3fb3, 0x2334dede, 0x44759a6a,
 		0x4f184169, 0x5052b779, 0xe27da003, 0x8a15ee89,
 		0x39f344af, 0x9ba62c78, 0x1db45bbe, 0x32836a25,
@@ -38,12 +38,12 @@ func (s *Ed448Suite) Test_BarrettDeserialize(c *C) {
 		0x51, 0x12, 0xb1, 0x35, 0x3d, 0xac, 0x04, 0xc8,
 	}
 
-	result := decafScalar{}
+	result := scalar{}
 
 	reduced := barrettDeserialize(result[:], serialized[:], &curvePrimeOrder)
 	c.Assert(reduced, Equals, false)
 
-	c.Assert(result, DeepEquals, decafScalar{
+	c.Assert(result, DeepEquals, scalar{
 		0x655b58fe, 0x18653891, 0x3390fe9d, 0x47acbe48,
 		0x280965ee, 0x0504e5de, 0x43d4a6d9, 0xfda21854,
 		0xee64f2f1, 0xe7c5aeae, 0xde2ea468, 0x4ae66076,
@@ -64,7 +64,7 @@ func (s *Ed448Suite) Test_BarrettDeserialize(c *C) {
 	reduced = barrettDeserialize(result[:], serialized[:], &curvePrimeOrder)
 	c.Assert(reduced, Equals, true)
 
-	c.Assert(result, DeepEquals, decafScalar{
+	c.Assert(result, DeepEquals, scalar{
 		0x63528a25, 0xadfaf0d9, 0x8a40509d, 0xe36676f0,
 		0x1b86c23d, 0xb8185401, 0xcd763b1b, 0xfda21855,
 		0xee64f2f1, 0xe7c5aeae, 0xde2ea468, 0x4ae66076,
@@ -73,14 +73,14 @@ func (s *Ed448Suite) Test_BarrettDeserialize(c *C) {
 }
 
 func (s *Ed448Suite) Test_BarrettNegate(c *C) {
-	n := decafScalar{
+	n := scalar{
 		0x6c226d73, 0x70edcfc3, 0x44156c47, 0x84f4695,
 		0xe72606ac, 0x9d0ce5e5, 0xed96d3ba, 0x9ff3fa11,
 		0x4a15c383, 0xca38a0af, 0xead789b3, 0xb96613ba,
 		0x48ba4461, 0x34eb2031,
 	}
 
-	notN := decafScalar{
+	notN := scalar{
 		0x3f35d780, 0xb28af2cf, 0x49b0230d, 0x191d7bdd,
 		0xc7b02fe4, 0x2741f563, 0x8f33502f, 0x600c05ed,
 		0xb5ea3c7c, 0x35c75f50, 0x1528764c, 0x4699ec45,
@@ -93,28 +93,28 @@ func (s *Ed448Suite) Test_BarrettNegate(c *C) {
 }
 
 func (s *Ed448Suite) Test_BarrettMac(c *C) {
-	accum := decafScalar{
+	accum := scalar{
 		0xc7a99dbd, 0xb92054cc, 0x79b10a3e, 0x38afe6b9,
 		0x859aa259, 0x007e0791, 0x91958009, 0x1ed45cd0,
 		0xbbfa381b, 0x1f427b27, 0xb194eb5c, 0x501789df,
 		0x1616d689, 0x17db93b0,
 	}
 
-	x := decafScalar{
+	x := scalar{
 		0x3f35d780, 0xb28af2cf, 0x49b0230d, 0x191d7bdd,
 		0xc7b02fe4, 0x2741f563, 0x8f33502f, 0x600c05ed,
 		0xb5ea3c7c, 0x35c75f50, 0x1528764c, 0x4699ec45,
 		0xb745bb9e, 0x0b14dfce,
 	}
 
-	y := decafScalar{
+	y := scalar{
 		0x2efd441f, 0xa8ca47de, 0x88454c7c, 0x5a017e1a,
 		0xfb3701a9, 0xe0b9be0d, 0xf72947eb, 0x235c0b74,
 		0x39fdaa66, 0x80783803, 0x1306b28f, 0x02cffb4e,
 		0x3a114311, 0x22b8f8d1,
 	}
 
-	expected := decafScalar{
+	expected := scalar{
 		0x908c5c63, 0x21ab566a, 0x936bf39e, 0xa2c8ba5b,
 		0xf885f518, 0xc1f2945d, 0x5cb06b4a, 0xe86d3f14,
 		0xdd6bfcd0, 0x74fadd00, 0x4a750a8c, 0x8962c665,

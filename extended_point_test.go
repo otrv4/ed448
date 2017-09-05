@@ -1435,7 +1435,7 @@ func (s *Ed448Suite) Test_PointScalarMul(c *C) {
 		},
 	}
 
-	scalar := &decafScalar{
+	scalar := &scalar{
 		0x6ee372b7, 0xe128ae78, 0x1533427c, 0xad0b7015,
 		0x307f665e, 0xde8026c1, 0xb64629d1, 0xab454c66,
 		0x3fe5bf1a, 0x083f8304, 0x3c003777, 0xdef437f6,
@@ -1475,7 +1475,7 @@ func (s *Ed448Suite) Test_PointScalarMul(c *C) {
 }
 
 func (s *Ed448Suite) Test_PrecomputedScalarMultiplication(c *C) {
-	scalar := &decafScalar{0x00}
+	scalar := &scalar{0x00}
 
 	p := precomputedScalarMul(scalar)
 
@@ -1520,7 +1520,7 @@ func (s *Ed448Suite) Test_DirectPointScalarMul(c *C) {
 		0x07, 0x95, 0x47, 0x40, 0x8a, 0x04, 0x70, 0xf9,
 	}
 
-	a := &decafScalar{
+	a := &scalar{
 		0x453f802c, 0x7e2d5889, 0xa70126da, 0x61a6a678,
 		0x0b5c56a3, 0xea09aee0, 0x1709ce56, 0x40d598c0,
 		0xdf189be8, 0xc34478b7, 0x856266c9, 0x10d7a6ae,

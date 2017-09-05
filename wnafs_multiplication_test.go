@@ -7,7 +7,7 @@ import (
 )
 
 func (s *Ed448Suite) Test_RecodeWNAFCompareFull(c *C) {
-	scalar := &decafScalar{
+	scalar := &scalar{
 		0x120854c7, 0x6a241ba0, 0x41468997, 0x11e8f8aa,
 		0x1c0815bf, 0xea9551e7, 0x71cfde7f, 0x462af8b2,
 		0x7a3ac97f, 0x6ae5489c, 0x7adb6891, 0x0797f552,
@@ -92,7 +92,7 @@ func (s *Ed448Suite) Test_RecodeWNAFForScalarZero(c *C) {
 	tableBitsPre := uint(5)
 	controlLen := nbitsPre/(tableBitsPre+1) + 3
 	controlPre := make([]smvtControl, controlLen)
-	sig := &decafScalar{}
+	sig := &scalar{}
 
 	pos := recodeWNAF(controlPre[:], sig, nbitsPre, tableBitsPre)
 
@@ -106,7 +106,7 @@ func (s *Ed448Suite) Test_RecodeWNAFForChallenge(c *C) {
 	tableBits := uint(4)
 	controlLen := nbits/(tableBits+1) + 3
 	control := make([]smvtControl, controlLen)
-	challenge := &decafScalar{
+	challenge := &scalar{
 		0xfd27ffdd, 0xa4a42c92, 0xd9464f36, 0xac8078dd,
 		0x91e922f8, 0x76ebe5e8, 0x4f1d8f84, 0x968d2c41,
 		0x857c5a17, 0x9f74691c, 0x3595bd83, 0x5b966fb6,
@@ -121,7 +121,7 @@ func (s *Ed448Suite) Test_RecodeWNAFForChallenge(c *C) {
 }
 
 func (s *Ed448Suite) Test_DecafRecodeWNAFFull(c *C) {
-	scalar := &decafScalar{
+	scalar := &scalar{
 		0x120854c7, 0x6a241ba0, 0x41468997, 0x11e8f8aa,
 		0x1c0815bf, 0xea9551e7, 0x71cfde7f, 0x462af8b2,
 		0x7a3ac97f, 0x6ae5489c, 0x7adb6891, 0x0797f552,
@@ -212,7 +212,7 @@ func (s *Ed448Suite) Test_DecafRecodeWNAFForScalarZero(c *C) {
 	tableBitsPre := uint(5)
 	controlLen := scalarBits/(tableBitsPre+1) + 3
 	controlPre := make([]smvtControl, controlLen)
-	sig := &decafScalar{
+	sig := &scalar{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	}
 
@@ -876,14 +876,14 @@ func (s *Ed448Suite) Test_WNAFSMultiplication(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	a := &decafScalar{
+	a := &scalar{
 		0x6c226d73, 0x70edcfc3, 0x44156c47, 0x084f4695,
 		0xe72606ac, 0x9d0ce5e5, 0xed96d3ba, 0x9ff3fa11,
 		0x4a15c383, 0xca38a0af, 0xead789b3, 0xb96613ba,
 		0x48ba4461, 0x34eb2031,
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0x2118b8c6, 0x4356acd5, 0x26d7e73c, 0x459174b7,
 		0xf10bea31, 0x83e528bb, 0xb960d695, 0xd0da7e28,
 		0xbad7f9a1, 0xe9f5ba01, 0x94ea1518, 0x12c58cca,
@@ -923,14 +923,14 @@ func (s *Ed448Suite) Test_WNAFSMultiplicationCase3(c *C) {
 		new(bigNumber).setBytes(pu),
 	}
 
-	a := &decafScalar{
+	a := &scalar{
 		0x150252d4, 0x91f90541, 0xfbc32870, 0x5055d9f0,
 		0x3e5d3a5c, 0xec7fe32d, 0xd043954a, 0xd6038f2e,
 		0x41d8bc06, 0xff202e0e, 0xda461aa0, 0xf8e1491a,
 		0xf2ce123c, 0xfb54751,
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0xc6a3102f, 0xe9e887ee, 0x393be2cb, 0xd6dbb642,
 		0x3a20bf34, 0x8a75ad11, 0x093a1124, 0x592da916,
 		0xaf4ef0b8, 0x92d3af99, 0xcd91dae6, 0xa55b2817,
@@ -983,7 +983,7 @@ func (s *Ed448Suite) Test_DoubleScalarmul(c *C) {
 		},
 	}
 
-	a := &decafScalar{
+	a := &scalar{
 		0x9a1044c6, 0x92f78393, 0x68cea2bc, 0x5f23f942,
 		0xd4384e9e, 0x76969060, 0x4d82f8cc, 0xb8016c73,
 		0x1db9b587, 0x061aca05, 0x9f0333f5, 0x5a2a7f4a,
@@ -1017,7 +1017,7 @@ func (s *Ed448Suite) Test_DoubleScalarmul(c *C) {
 		},
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0x3aad8a3d, 0x7cbae122, 0xed340da1, 0x1e37d7eb,
 		0x2a2e914d, 0xcae48b24, 0x9e50875c, 0xc5b5e48b,
 		0x89d9f0e4, 0xdf9d2321, 0x8775f116, 0xd1868de2,
@@ -1084,14 +1084,14 @@ func (s *Ed448Suite) Test_DecafDoubleNonSecretScalarMulWhenTablesAreNotEqual(c *
 		},
 	}
 
-	a := &decafScalar{
+	a := &scalar{
 		0xd9436800, 0x1290c087, 0x33c051b3, 0xf9e8460f,
 		0xfcbb9385, 0x78d7514f, 0x41ca69be, 0xafd5666e,
 		0xac3e587b, 0xcd707df7, 0x084a91cd, 0x1f398369,
 		0xf5ca959a, 0x1be183fc,
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0x2378c292, 0x216cc272, 0xc44edb49, 0xffffffff,
 		0xffffffff, 0xffffffff, 0x3fffffff, 0x2378c292,
 		0x216cc272, 0xc44edb49, 0x31430f14, 0xffffffff,
@@ -1158,14 +1158,14 @@ func (s *Ed448Suite) Test_DecafDoubleNonSecretScalarMulWhenTablesAreEqual(c *C) 
 		},
 	}
 
-	a := &decafScalar{
+	a := &scalar{
 		0x08ed77fa, 0x85c49151, 0xa0dd2874, 0x7188bced,
 		0x9a34c3bd, 0xab1aeece, 0xea37a24c, 0x8dd2eab4,
 		0x8610f125, 0xb3eb60c0, 0x8aaa9ab0, 0xf19e004b,
 		0x78fe2593, 0x3aa1dd0f,
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0x4b91949b, 0x8366b93a, 0xea749b37, 0x94751b8c,
 		0xe11471b6, 0xae84f274, 0xa0f9e9df, 0x6f6684b1,
 		0x1b7da377, 0xd27c53a6, 0x140a1a92, 0x5c6e4d8a,
@@ -1232,8 +1232,8 @@ func (s *Ed448Suite) Test_DecafDoubleNonSecretScalarMulWhenScalarsAreZero(c *C) 
 		},
 	}
 
-	a := &decafScalar{0x00}
-	b := &decafScalar{0x00}
+	a := &scalar{0x00}
+	b := &scalar{0x00}
 
 	exp := &twExtendedPoint{
 		&bigNumber{0x00},

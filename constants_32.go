@@ -66,7 +66,7 @@ var (
 	bigOne  = &bigNumber{0x01}
 	bigTwo  = &bigNumber{0x02}
 
-	scalarZero = &decafScalar{0x00}
+	scalarZero = &scalar{0x00}
 
 	identity = &twExtendedPoint{
 		&bigNumber{0x00},
@@ -85,15 +85,15 @@ var (
 		0x49, 0x7a, 0x5b, 0xb2, 0xc0, 0xc0, 0xfe, 0x12,
 	})
 
-	//ScalarQ is the prime order of the curve.
-	ScalarQ = &decafScalar{
+	//ScalarQ is the prime order of the curve (q).
+	ScalarQ = &scalar{
 		0xab5844f3, 0x2378c292, 0x8dc58f55, 0x216cc272,
 		0xaed63690, 0xc44edb49, 0x7cca23e9, 0xffffffff,
 		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
 		0xffffffff, 0x3fffffff,
 	}
 
-	scalarR2 = &decafScalar{
+	scalarR2 = &scalar{
 		0x049b9b60, 0xe3539257, 0xc1b195d9, 0x7af32c4b,
 		0x88ea1859, 0x0d66de23, 0x5ee4d838, 0xae17cf72,
 		0xa3c47c44, 0x1a9cc14b, 0xe4d070af, 0x2052bcb7,

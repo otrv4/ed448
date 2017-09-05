@@ -14,10 +14,10 @@ type Scalar interface {
 	BarretDecode(src []byte) error
 }
 
-type decafScalar [scalarWords]word
+type scalar [scalarWords]word
 
-func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
-	out := &decafScalar{}
+func (s *scalar) montgomeryMultiply(x, y *scalar) {
+	out := &scalar{}
 	carry := word(0x00)
 
 	for i := 0; i < scalarWords; i++ {
@@ -48,7 +48,7 @@ func (s *decafScalar) montgomeryMultiply(x, y *decafScalar) {
 	copy(s[:], out[:])
 }
 
-func (s *decafScalar) equals(x *decafScalar) bool {
+func (s *scalar) equals(x *scalar) bool {
 	diff := word(0x00)
 	for i := uintZero; i < scalarWords; i++ {
 		diff |= s[i] ^ x[i]
@@ -56,18 +56,18 @@ func (s *decafScalar) equals(x *decafScalar) bool {
 	return word(((dword(diff))-1)>>wordBits) == decafTrue
 }
 
-func (s *decafScalar) copy() *decafScalar {
-	out := &decafScalar{}
+func (s *scalar) copy() *scalar {
+	out := &scalar{}
 	copy(out[:], s[:])
 	return out
 }
 
-func (s *decafScalar) set(w word) {
+func (s *scalar) set(w word) {
 	s[0] = w
 }
 
-func (s *decafScalar) subExtra(minuend *decafScalar, subtrahend *decafScalar, carry word) {
-	out := &decafScalar{}
+func (s *scalar) subExtra(minuend *scalar, subtrahend *scalar, carry word) {
+	out := &scalar{}
 	var chain sdword
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -87,8 +87,8 @@ func (s *decafScalar) subExtra(minuend *decafScalar, subtrahend *decafScalar, ca
 	copy(s[:], out[:])
 }
 
-func (s *decafScalar) add(a, b *decafScalar) {
-	out := &decafScalar{}
+func (s *scalar) add(a, b *scalar) {
+	out := &scalar{}
 	var chain dword
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -100,17 +100,17 @@ func (s *decafScalar) add(a, b *decafScalar) {
 	copy(s[:], out[:])
 }
 
-func (s *decafScalar) sub(x, y *decafScalar) {
+func (s *scalar) sub(x, y *scalar) {
 	noExtra := word(0x00)
 	s.subExtra(x, y, noExtra)
 }
 
-func (s *decafScalar) mul(x, y *decafScalar) {
+func (s *scalar) mul(x, y *scalar) {
 	s.montgomeryMultiply(x, y)
 	s.montgomeryMultiply(s, scalarR2)
 }
 
-func (s *decafScalar) halve(a *decafScalar) {
+func (s *scalar) halve(a *scalar) {
 	mask := -(a[0] & 1)
 	var chain dword
 	var i uint
@@ -128,7 +128,7 @@ func (s *decafScalar) halve(a *decafScalar) {
 }
 
 // Serializes an array of words into an array of bytes (little-endian)
-func (s *decafScalar) serialize(dst []byte) error {
+func (s *scalar) serialize(dst []byte) error {
 	wordBytes := wordBits / 8
 	if len(dst) < fieldBytes {
 		return errors.New("dst length smaller than fieldBytes")
@@ -143,7 +143,7 @@ func (s *decafScalar) serialize(dst []byte) error {
 	return nil
 }
 
-func (s *decafScalar) decodeShort(b []byte, size uint) {
+func (s *scalar) decodeShort(b []byte, size uint) {
 	k := uint(0)
 	for i := uint(0); i < scalarLimbs; i++ {
 		out := word(0)
@@ -154,7 +154,7 @@ func (s *decafScalar) decodeShort(b []byte, size uint) {
 	}
 }
 
-func (s *decafScalar) decode(b []byte) word {
+func (s *scalar) decode(b []byte) word {
 	s.decodeShort(b, scalarBytes)
 
 	accum := sdword(0x00)
@@ -163,14 +163,14 @@ func (s *decafScalar) decode(b []byte) word {
 		accum >>= wordBits
 	}
 
-	s.mul(s, &decafScalar{0x01})
+	s.mul(s, &scalar{0x01})
 
 	return word(accum)
 }
 
 // HACKY: either the param or the return
-func decodeLong(s *decafScalar, b []byte) *decafScalar {
-	y := &decafScalar{}
+func decodeLong(s *scalar, b []byte) *scalar {
+	y := &scalar{}
 	bLen := len(b)
 	size := bLen - (bLen % fieldBytes)
 
@@ -185,7 +185,7 @@ func decodeLong(s *decafScalar, b []byte) *decafScalar {
 	s.decodeShort(b[size:], uint(bLen-size))
 
 	if bLen == scalarBytes {
-		s.mul(s, &decafScalar{0x01})
+		s.mul(s, &scalar{0x01})
 		return s
 	}
 
@@ -208,51 +208,51 @@ func NewScalar(in ...[]byte) Scalar {
 	}
 
 	if in == nil {
-		return &decafScalar{}
+		return &scalar{}
 	}
 
-	out := &decafScalar{}
+	out := &scalar{}
 
 	bytes := in[0][:]
 	return decodeLong(out, bytes)
 }
 
 // Equals compares two scalars. Returns true if they are the same; false, otherwise.
-func (s *decafScalar) Equals(x Scalar) bool {
-	return s.equals(x.(*decafScalar))
+func (s *scalar) Equals(x Scalar) bool {
+	return s.equals(x.(*scalar))
 }
 
 // Copy copies scalars.
-func (s *decafScalar) Copy() Scalar {
-	out := &decafScalar{}
+func (s *scalar) Copy() Scalar {
+	out := &scalar{}
 	copy(out[:], s[:])
 	return out
 }
 
 // Add adds two scalars. The scalars may use the same memory.
-func (s *decafScalar) Add(x, y Scalar) {
-	s.add(x.(*decafScalar), y.(*decafScalar))
+func (s *scalar) Add(x, y Scalar) {
+	s.add(x.(*scalar), y.(*scalar))
 }
 
 // Sub subtracts two scalars. The scalars may use the same memory.
-func (s *decafScalar) Sub(x, y Scalar) {
+func (s *scalar) Sub(x, y Scalar) {
 	noExtra := word(0)
-	s.subExtra(x.(*decafScalar), y.(*decafScalar), noExtra)
+	s.subExtra(x.(*scalar), y.(*scalar), noExtra)
 }
 
 // Mul multiplies two scalars. The scalars may use the same memory.
-func (s *decafScalar) Mul(x, y Scalar) {
-	s.montgomeryMultiply(x.(*decafScalar), y.(*decafScalar))
+func (s *scalar) Mul(x, y Scalar) {
+	s.montgomeryMultiply(x.(*scalar), y.(*scalar))
 	s.montgomeryMultiply(s, scalarR2)
 }
 
 // Halve halfs a scalar. The scalars may used the same memory.
-func (s *decafScalar) Halve(x Scalar) {
-	s.halve(x.(*decafScalar))
+func (s *scalar) Halve(x Scalar) {
+	s.halve(x.(*scalar))
 }
 
 // Encode serializes a scalar to wire format.
-func (s *decafScalar) Encode() []byte {
+func (s *scalar) Encode() []byte {
 	dst := make([]byte, fieldBytes)
 	s.serialize(dst)
 	return dst
@@ -260,7 +260,7 @@ func (s *decafScalar) Encode() []byte {
 
 // Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
 // XXX: this will reduce with barret, change name and receiver
-func (s *decafScalar) BarretDecode(src []byte) error {
+func (s *scalar) BarretDecode(src []byte) error {
 	if len(src) < fieldBytes {
 		return errors.New("ed448: cannot decode a scalar from a byte array with a length unequal to 56")
 	}
@@ -271,5 +271,5 @@ func (s *decafScalar) BarretDecode(src []byte) error {
 // Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
 // XXX: make scalar part of signature as it will generate confusion otherwise
 func Decode(x Scalar, src []byte) Scalar {
-	return decodeLong(x.(*decafScalar), src)
+	return decodeLong(x.(*scalar), src)
 }

@@ -429,7 +429,7 @@ func (p *twExtendedPoint) isogenizeToMontgomery() []byte {
 	return out[:]
 }
 
-func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
+func pointScalarMul(p *twExtendedPoint, s *scalar) *twExtendedPoint {
 	const decafWindowBits = 5            //move this to const file
 	const window = decafWindowBits       //5
 	const windowMask = (1 << window) - 1 //0x0001f 31
@@ -438,8 +438,8 @@ func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
 
 	out := &twExtendedPoint{}
 
-	scalar1x := &decafScalar{}
-	scalar1x.add(scalar, decafPrecompTable.scalarAdjustment)
+	scalar1x := &scalar{}
+	scalar1x.add(s, decafPrecompTable.scalarAdjustment)
 	scalar1x.halve(scalar1x)
 
 	multiples := p.prepareFixedWindow(nTable)
@@ -475,15 +475,15 @@ func pointScalarMul(p *twExtendedPoint, scalar *decafScalar) *twExtendedPoint {
 	return out
 }
 
-func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
+func precomputedScalarMul(s *scalar) *twExtendedPoint {
 	p := &twExtendedPoint{
 		new(bigNumber),
 		new(bigNumber),
 		new(bigNumber),
 		new(bigNumber),
 	}
-	scalar2 := &decafScalar{}
-	scalar2.add(scalar, decafPrecompTable.scalarAdjustment)
+	scalar2 := &scalar{}
+	scalar2.add(s, decafPrecompTable.scalarAdjustment)
 	scalar2.halve(scalar2)
 
 	var np *twNiels
@@ -523,7 +523,7 @@ func precomputedScalarMul(scalar *decafScalar) *twExtendedPoint {
 
 // using the montgomery ladder
 // XXX: implement the one not using montgomery?
-func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, useIdentity word) ([fieldBytes]byte, word) {
+func directPointScalarMul(p [fieldBytes]byte, s *scalar, useIdentity word) ([fieldBytes]byte, word) {
 	var out [56]byte
 	xa, xs, zs, l0, l1 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -540,7 +540,7 @@ func directPointScalarMul(p [fieldBytes]byte, scalar *decafScalar, useIdentity w
 	pflip := word(0x00)
 	for i := scalarBits - 1; i >= 0; i-- {
 		// Augmented Montgomery ladder
-		flip := -(scalar[i/wordBits] >> word(i%wordBits) & 1)
+		flip := -(s[i/wordBits] >> word(i%wordBits) & 1)
 		// Differential add
 		xs.addRaw(xa, za)
 		zs.sub(xa, za)
@@ -766,20 +766,20 @@ func (p *twExtendedPoint) DSADecode(src []byte) bool {
 // PointScalarMul returns the multiplication of a given point (p) by a given
 // scalar (a): q * a.
 func PointScalarMul(q Point, a Scalar) Point {
-	return pointScalarMul(q.(*twExtendedPoint), a.(*decafScalar))
+	return pointScalarMul(q.(*twExtendedPoint), a.(*scalar))
 }
 
 // PrecomputedScalarMul returns the multiplication of a given scalar (a) by the
 // precomputed base point of the curve: basePoint * a.
 func PrecomputedScalarMul(a Scalar) Point {
-	return precomputedScalarMul(a.(*decafScalar))
+	return precomputedScalarMul(a.(*scalar))
 }
 
 // PointDoubleScalarMul returns the addition of two multiplications: a given
 // point (q) by a given scalar (a) and a given point (r) by a given scalar (b):
 // q * a + r * b.
 func PointDoubleScalarMul(q, r Point, a, b Scalar) Point {
-	return doubleScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
+	return doubleScalarMul(q.(*twExtendedPoint), r.(*twExtendedPoint), a.(*scalar), b.(*scalar))
 }
 
 // PointDoubleScalarMulNonsecret returns the addition of two multiplications:
@@ -788,5 +788,5 @@ func PointDoubleScalarMul(q, r Point, a, b Scalar) Point {
 // @warning: This function takes variable time, and may leak the scalars used.
 // It is designed for signature verification.
 func PointDoubleScalarMulNonsecret(q Point, a, b Scalar) Point {
-	return decafDoubleNonSecretScalarMul(q.(*twExtendedPoint), a.(*decafScalar), b.(*decafScalar))
+	return decafDoubleNonSecretScalarMul(q.(*twExtendedPoint), a.(*scalar), b.(*scalar))
 }

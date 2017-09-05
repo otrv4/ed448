@@ -3,22 +3,22 @@ package ed448
 import . "gopkg.in/check.v1"
 
 func (s *Ed448Suite) Test_MontgomeryMultiplication(c *C) {
-	a := &decafScalar{
+	a := &scalar{
 		0xd013f18b, 0xa03bc31f, 0xa5586c00, 0x5269ccea,
 		0x80becb3f, 0x38058556, 0x736c3c5b, 0x07909887,
 		0x87190ede, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
-	b := &decafScalar{0x01}
+	b := &scalar{0x01}
 
-	exp := &decafScalar{
+	exp := &scalar{
 		0xf19fb32f, 0x62bc6ae6, 0xed626086, 0x0e2d81d7,
 		0x7a83d54b, 0x38e73799, 0x485ad3d6, 0x45399c9e,
 		0x824b12d9, 0x5ae842c9, 0x5ca5b606, 0x3c0978b3,
 		0x893b4262, 0x22c93812,
 	}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	out.montgomeryMultiply(a, b)
 
 	c.Assert(out, DeepEquals, exp)
@@ -28,54 +28,54 @@ func (s *Ed448Suite) Test_MontgomeryMultiplication(c *C) {
 	// by identity
 	c.Assert(out, DeepEquals, a)
 
-	a = &decafScalar{
+	a = &scalar{
 		0xd013f18b, 0xa03bc31f, 0xa5586c00, 0x5269ccea,
 		0x80becb3f, 0x38058556, 0x736c3c5b, 0x07909887,
 		0x87190ede, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
 
-	out = new(decafScalar)
+	out = new(scalar)
 	out.montgomeryMultiply(a, scalarZero)
 
 	//by zero
 	c.Assert(out, DeepEquals, scalarZero)
 
-	x := &decafScalar{
+	x := &scalar{
 		0xffb823a3, 0xc96a3c35, 0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764, 0xc0be082e, 0xa8cb0ae8,
 		0xa8fa552b, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
-	y := &decafScalar{
+	y := &scalar{
 		0xd8bedc42, 0x686eb329, 0xe416b899, 0x17aa6d9b,
 		0x1e30b38b, 0x188c6b1a, 0xd099595b, 0xbc343bcb,
 		0x1adaa0e7, 0x24e8d499, 0x8e59b308, 0x0a92de2d,
 		0xcae1cb68, 0x16c5450a,
 	}
 
-	exp = &decafScalar{
+	exp = &scalar{
 		0x14aec10b, 0x426d3399, 0x3f79af9e, 0xb1f67159,
 		0x6aa5e214, 0x33819c2b, 0x19c30a89, 0x480bdc8b,
 		0x7b3e1c0f, 0x5e01dfc8, 0x9414037f, 0x345954ce,
 		0x611e7191, 0x19381160,
 	}
 
-	out = new(decafScalar)
+	out = new(scalar)
 	out.montgomeryMultiply(x, y)
 
 	c.Assert(out, DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_ScalarEquality(c *C) {
-	a := &decafScalar{
+	a := &scalar{
 		0xffb823a3, 0xc96a3c35, 0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764, 0xc0be082e, 0xa8cb0ae8,
 		0xa8fa552b, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0xfffd23f3, 0xcf6a4c35, 0x7f8ed27d, 0x087b8fb9,
 		0x7d9ac31a, 0x74d65764, 0x30be082e, 0x68cb14e8,
 		0xaaaa552b, 0x3aae8588, 0x2c3dc273, 0x68cf88ac,
@@ -86,7 +86,7 @@ func (s *Ed448Suite) Test_ScalarEquality(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarCopy(c *C) {
-	exp := &decafScalar{
+	exp := &scalar{
 		0xffb823a3, 0xc96a3c35, 0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764, 0xc0be082e, 0xa8cb0ae8,
 		0xa8fa552b, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
@@ -97,20 +97,20 @@ func (s *Ed448Suite) Test_ScalarCopy(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarSet(c *C) {
-	a := &decafScalar{}
+	a := &scalar{}
 	a.set(word(0xee))
 
-	exp := &decafScalar{0xee}
+	exp := &scalar{0xee}
 
 	c.Assert(a, DeepEquals, exp)
 
-	b := &decafScalar{
+	b := &scalar{
 		0x529eec33, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,
 		0x44a725bf, 0xeec492d9, 0x0cd77058, 0x00000002,
 	}
 	b.set(word(0x2aae8688))
 
-	exp = &decafScalar{
+	exp = &scalar{
 		0x2aae8688, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,
 		0x44a725bf, 0xeec492d9, 0x0cd77058, 0x00000002,
 	}
@@ -119,52 +119,52 @@ func (s *Ed448Suite) Test_ScalarSet(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarAddition(c *C) {
-	a := &decafScalar{
+	a := &scalar{
 		0x529eec33, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,
 		0x44a725bf, 0xeec492d9, 0x0cd77058, 0x00000002,
 	}
 
-	b := &decafScalar{0x01}
+	b := &scalar{0x01}
 
-	exp := &decafScalar{
+	exp := &scalar{
 		0x529eec34, 0x721cf5b5, 0xc8e9c2ab, 0x7a4cf635,
 		0x44a725bf, 0xeec492d9, 0x0cd77058, 0x00000002,
 	}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	out.add(a, b)
 
 	c.Assert(out, DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_ScalarSubtraction(c *C) {
-	a := &decafScalar{0x0d}
-	b := &decafScalar{0x0c}
+	a := &scalar{0x0d}
+	b := &scalar{0x0c}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	out.sub(a, b)
 
-	exp := &decafScalar{0x01}
+	exp := &scalar{0x01}
 
 	c.Assert(out, DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_ScalarMultiplication(c *C) {
-	a := &decafScalar{
+	a := &scalar{
 		0xffb823a3, 0xc96a3c35, 0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764, 0xc0be082e, 0xa8cb0ae8,
 		0xa8fa552b, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0xd8bedc42, 0x686eb329, 0xe416b899, 0x17aa6d9b,
 		0x1e30b38b, 0x188c6b1a, 0xd099595b, 0xbc343bcb,
 		0x1adaa0e7, 0x24e8d499, 0x8e59b308, 0x0a92de2d,
 		0xcae1cb68, 0x16c5450a,
 	}
 
-	exp := &decafScalar{
+	exp := &scalar{
 		0xa18d010a, 0x1f5b3197, 0x994c9c2b, 0x6abd26f5,
 		0x08a3a0e4, 0x36a14920, 0x74e9335f, 0x07bcd931,
 		0xf2d89c1e, 0xb9036ff6, 0x203d424b, 0xfccd61b3,
@@ -175,12 +175,12 @@ func (s *Ed448Suite) Test_ScalarMultiplication(c *C) {
 }
 
 func (s *Ed448Suite) Test_ScalarHalve(c *C) {
-	a := &decafScalar{0x0c}
+	a := &scalar{0x0c}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	out.halve(a)
 
-	exp := &decafScalar{0x06}
+	exp := &scalar{0x06}
 
 	c.Assert(out, DeepEquals, exp)
 }
@@ -196,14 +196,14 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 		0x58, 0xd2, 0x75, 0x4b, 0x39, 0xbc, 0xa8, 0x74,
 	}
 
-	exp := &decafScalar{
+	exp := &scalar{
 		0x2a1c3d02, 0x12f970e8, 0x41d97de7, 0x6a547b38,
 		0xdaa8c88e, 0x9f299b75, 0x01075c7b, 0x3b874ad9,
 		0xe1c0b914, 0xc8bd0b68, 0xc3f34776, 0x2f2d9082,
 		0x4b75d258, 0x34a8bc39,
 	}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	ok := out.decode(buf)
 
 	c.Assert(out, DeepEquals, exp)
@@ -219,14 +219,14 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 		0x93, 0x25, 0xfe, 0x78, 0x0f, 0xdd, 0xa1, 0x3a,
 	}
 
-	exp = &decafScalar{
+	exp = &scalar{
 		0x08ed77fa, 0x85c49151, 0xa0dd2874, 0x7188bced,
 		0x9a34c3bd, 0xab1aeece, 0xea37a24c, 0x8dd2eab4,
 		0x8610f125, 0xb3eb60c0, 0x8aaa9ab0, 0xf19e004b,
 		0x78fe2593, 0x3aa1dd0f,
 	}
 
-	out = new(decafScalar)
+	out = new(scalar)
 	ok = out.decode(buf1)
 
 	c.Assert(out, DeepEquals, exp)
@@ -235,7 +235,7 @@ func (s *Ed448Suite) Test_ScalarDecode(c *C) {
 
 func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 	var buf []byte
-	x := &decafScalar{}
+	x := &scalar{}
 	out := decodeLong(x, buf)
 
 	c.Assert(out, DeepEquals, scalarZero)
@@ -250,7 +250,7 @@ func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 		0x58, 0xd2, 0x75, 0x4b, 0x39, 0xbc, 0xa8, 0x74,
 	}
 
-	exp := &decafScalar{
+	exp := &scalar{
 		0x2a1c3d02, 0x12f970e8, 0x41d97de7, 0x6a547b38,
 		0xdaa8c88e, 0x9f299b75, 0x01075c7b, 0x3b874ad9,
 		0xe1c0b914, 0xc8bd0b68, 0xc3f34776, 0x2f2d9082,
@@ -272,7 +272,7 @@ func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 		0xa1, 0xb1, 0x5e, 0xac, 0xeb, 0xe4, 0xa3, 0xb2,
 		0x0}
 
-	exp = &decafScalar{
+	exp = &scalar{
 		0x7d9d5b0a, 0xe9bc6e73, 0xe16ac2d8, 0xdd13bfdc,
 		0xfdb68ed4, 0x1fa36b12, 0x29fbe30b, 0xd11ab314,
 		0x94421341, 0x840d9bdb, 0x517a43ec, 0xbd859b5a,
@@ -296,19 +296,19 @@ func (s *Ed448Suite) Test_NewScalar(c *C) {
 		0x51, 0x12, 0xb1, 0x35, 0x3d, 0xac, 0x04, 0x08,
 	}
 
-	exp := &decafScalar{
+	exp := &scalar{
 		0x63528a25, 0xadfaf0d9, 0x8a40509d, 0xe36676f0,
 		0x1b86c23d, 0xb8185401, 0xcd763b1b, 0xfda21855,
 		0xee64f2f1, 0xe7c5aeae, 0xde2ea468, 0x4ae66076,
 		0x35b11251, 0x0804ac3d,
 	}
 
-	c.Assert(NewScalar(), DeepEquals, &decafScalar{})
+	c.Assert(NewScalar(), DeepEquals, &scalar{})
 	c.Assert(NewScalar(bytes), DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_ExportedScalarCopy(c *C) {
-	exp := &decafScalar{
+	exp := &scalar{
 		0xffb823a3, 0xc96a3c35, 0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764, 0xc0be082e, 0xa8cb0ae8,
 		0xa8fa552b, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
@@ -319,50 +319,50 @@ func (s *Ed448Suite) Test_ExportedScalarCopy(c *C) {
 }
 
 func (s *Ed448Suite) Test_ExportedScalarEquals(c *C) {
-	a := new(decafScalar)
+	a := new(scalar)
 	b := a.Copy()
 	c.Assert(a.Equals(b), Equals, true)
 }
 
 func (s *Ed448Suite) Test_ExportedScalarAddition(c *C) {
-	a := &decafScalar{0x01}
-	b := &decafScalar{0x02}
-	exp := &decafScalar{0x03}
+	a := &scalar{0x01}
+	b := &scalar{0x02}
+	exp := &scalar{0x03}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	out.Add(a, b)
 
 	c.Assert(out, DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_ExportedScalarSubtraction(c *C) {
-	a := &decafScalar{0x0d}
-	b := &decafScalar{0x0c}
+	a := &scalar{0x0d}
+	b := &scalar{0x0c}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	out.Sub(a, b)
 
-	exp := &decafScalar{0x01}
+	exp := &scalar{0x01}
 
 	c.Assert(out, DeepEquals, exp)
 }
 
 func (s *Ed448Suite) Test_ExportedScalarMultiplication(c *C) {
-	a := &decafScalar{
+	a := &scalar{
 		0xffb823a3, 0xc96a3c35, 0x7f8ed27d, 0x087b8fb9,
 		0x1d9ac30a, 0x74d65764, 0xc0be082e, 0xa8cb0ae8,
 		0xa8fa552b, 0x2aae8688, 0x2c3dc273, 0x47cf8cac,
 		0x3b089f07, 0x1e63e807,
 	}
 
-	b := &decafScalar{
+	b := &scalar{
 		0xd8bedc42, 0x686eb329, 0xe416b899, 0x17aa6d9b,
 		0x1e30b38b, 0x188c6b1a, 0xd099595b, 0xbc343bcb,
 		0x1adaa0e7, 0x24e8d499, 0x8e59b308, 0x0a92de2d,
 		0xcae1cb68, 0x16c5450a,
 	}
 
-	exp := &decafScalar{
+	exp := &scalar{
 		0xa18d010a, 0x1f5b3197, 0x994c9c2b, 0x6abd26f5,
 		0x08a3a0e4, 0x36a14920, 0x74e9335f, 0x07bcd931,
 		0xf2d89c1e, 0xb9036ff6, 0x203d424b, 0xfccd61b3,
@@ -381,7 +381,7 @@ func (s *Ed448Suite) Test_ExportedScalarDecode(c *C) {
 		0x25, 0xf1, 0x10, 0x86, 0xc0, 0x60, 0xeb, 0xb3,
 	}
 
-	out := new(decafScalar)
+	out := new(scalar)
 	ok := out.BarretDecode(bytes)
 
 	c.Assert(ok, ErrorMatches, "ed448: cannot decode a scalar from a byte array with a length unequal to 56")

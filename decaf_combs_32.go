@@ -8,7 +8,7 @@ var decafPrecompTable = &decafBaseTable{}
 
 type decafBaseTable struct {
 	base             nielsTable
-	scalarAdjustment *decafScalar
+	scalarAdjustment *scalar
 }
 
 func selectMask(index word, current word) word {
@@ -519,7 +519,7 @@ func init() {
 	}
 
 	decafPrecompTable.base = t[:]
-	decafPrecompTable.scalarAdjustment = &decafScalar{
+	decafPrecompTable.scalarAdjustment = &scalar{
 		0x4a7bb0cf, 0xc873d6d5,
 		0x23a70aad, 0xe933d8d7,
 		0x129c96fd, 0xbb124b65,
