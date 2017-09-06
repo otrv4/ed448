@@ -277,6 +277,10 @@ func decodeLong(s *scalar, b []byte) *scalar {
 	return s.copy()
 }
 
+func (s *scalar) destroy() {
+	copy(s[:], scalarZero[:])
+}
+
 //Exported methods
 
 // NewScalar returns a Scalar in Ed448 with decaf

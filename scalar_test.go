@@ -327,6 +327,15 @@ func (s *Ed448Suite) Test_ScalarDecodeLong(c *C) {
 	c.Assert(out, DeepEquals, exp)
 }
 
+func (s *Ed448Suite) Test_ScalarDestroy(c *C) {
+	sc := &scalar{}
+	copy(sc[:], ScalarQ[:])
+
+	sc.destroy()
+
+	c.Assert(sc, DeepEquals, scalarZero)
+}
+
 // Exported Functions
 func (s *Ed448Suite) Test_NewScalar(c *C) {
 	bytes := []byte{
