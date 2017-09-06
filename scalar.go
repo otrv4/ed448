@@ -48,6 +48,10 @@ func (s *scalar) montgomeryMultiply(x, y *scalar) {
 	copy(s[:], out[:])
 }
 
+func (s *scalar) montgomerySquare(x *scalar) {
+	s.montgomeryMultiply(x, x)
+}
+
 func (s *scalar) equals(x *scalar) bool {
 	diff := word(0x00)
 	for i := uintZero; i < scalarWords; i++ {
@@ -66,6 +70,8 @@ func (s *scalar) set(w word) {
 	s[0] = w
 }
 
+// {minuend , accum} - subtrahend + (one or mor) q
+// Must have carry <= 1
 func (s *scalar) subExtra(minuend *scalar, subtrahend *scalar, carry word) {
 	out := &scalar{}
 	var chain sdword
@@ -76,7 +82,7 @@ func (s *scalar) subExtra(minuend *scalar, subtrahend *scalar, carry word) {
 		chain >>= wordBits
 	}
 
-	borrow := chain + sdword(carry)
+	borrow := chain + sdword(carry) // 0 or -1
 	chain = 0
 
 	for i := uintZero; i < scalarWords; i++ {
@@ -88,16 +94,14 @@ func (s *scalar) subExtra(minuend *scalar, subtrahend *scalar, carry word) {
 }
 
 func (s *scalar) add(a, b *scalar) {
-	out := &scalar{}
 	var chain dword
 
 	for i := uintZero; i < scalarWords; i++ {
 		chain += dword(a[i]) + dword(b[i])
-		out[i] = word(chain)
+		s[i] = word(chain)
 		chain >>= wordBits
 	}
-	out.subExtra(out, ScalarQ, word(chain))
-	copy(s[:], out[:])
+	s.subExtra(s, ScalarQ, word(chain))
 }
 
 func (s *scalar) sub(x, y *scalar) {
