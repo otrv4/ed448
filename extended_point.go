@@ -117,6 +117,13 @@ func (p *twExtendedPoint) negate(q *twExtendedPoint) {
 	p.t.sub(bigZero, q.t)
 }
 
+func (p *twExtendedPoint) torque(q *twExtendedPoint) {
+	p.x.sub(bigZero, q.x)
+	p.y.sub(bigZero, q.y)
+	p.z = q.z.copy()
+	p.t = q.t.copy()
+}
+
 // Based on Hisil's formula 5.1.3: Doubling in E^e
 func (p *twExtendedPoint) doubleInternal(beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
