@@ -190,7 +190,7 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 	skb := pseudoRandomFunction(symmetricKey)
 	secretKey := scalar{}
 	secretKey.BarretDecode(skb)
-	secretKey.serialize(k.secretKey())
+	secretKey.encode(k.secretKey())
 
 	publicKey := c.multiplyByBase(secretKey)
 	serializedPublicKey := publicKey.untwistAndDoubleAndSerialize()
@@ -252,7 +252,7 @@ func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, err er
 
 	// signature = tmpSignature || nonce
 	copy(s[:fieldBytes], tmpSig[:])
-	nonce.serialize(s[fieldBytes:])
+	nonce.encode(s[fieldBytes:])
 
 	//XXX SECURITY Should we wipe nonce, gsk, secretKeyWords, tmpSig, challenge?
 

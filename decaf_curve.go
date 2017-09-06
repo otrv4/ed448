@@ -25,7 +25,7 @@ func (c *decafCurveT) decafDerivePrivateKey(sym [symKeyBytes]byte) (*privateKey,
 
 	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
 
-	err := secretKey.serialize(k.secretKey())
+	err := secretKey.encode(k.secretKey())
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]
 	nonce.sub(nonce, challenge)
 
 	copy(sig[:fieldBytes], tmpSignature[:])
-	nonce.serialize(sig[fieldBytes:])
+	nonce.encode(sig[fieldBytes:])
 
 	//XXX: should nonce and challenge be destroyed?
 	return

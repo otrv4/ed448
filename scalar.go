@@ -204,7 +204,7 @@ func (s *scalar) halve(a *scalar) {
 }
 
 // Serializes an array of words into an array of bytes (little-endian)
-func (s *scalar) serialize(dst []byte) error {
+func (s *scalar) encode(dst []byte) error {
 	wordBytes := wordBits / 8
 	if len(dst) < fieldBytes {
 		return errors.New("dst length smaller than fieldBytes")
@@ -332,7 +332,7 @@ func (s *scalar) Halve(x Scalar) {
 // Encode serializes a scalar to wire format.
 func (s *scalar) Encode() []byte {
 	dst := make([]byte, fieldBytes)
-	s.serialize(dst)
+	s.encode(dst)
 	return dst
 }
 
