@@ -54,6 +54,7 @@ func (s *scalar) montgomerySquare(x *scalar) {
 	s.montgomeryMultiply(x, x)
 }
 
+// Invert a scalar: 1/s
 func (s *scalar) invert() bool {
 	// Fermat's little theorem, sliding window algorithm
 	preComp := make([]*scalar, 8)
@@ -119,7 +120,8 @@ func (s *scalar) invert() bool {
 	copy(s[:], out[:])
 
 	// XXX: memzero
-	return out.equals(scalarZero)
+	// True is the output is not zero
+	return out.equals(scalarZero) != true
 }
 
 func (s *scalar) equals(x *scalar) bool {

@@ -107,7 +107,7 @@ func (s *Ed448Suite) Test_ScalarInverse(c *C) {
 	ok := a.invert()
 
 	c.Assert(a, DeepEquals, exp)
-	c.Assert(ok, Equals, false)
+	c.Assert(ok, Equals, true)
 
 }
 
