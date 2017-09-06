@@ -110,6 +110,13 @@ func (p *twExtendedPoint) sub(q *twExtendedPoint, r *twExtendedPoint) {
 	p.t.mul(b, c)
 }
 
+func (p *twExtendedPoint) negate(q *twExtendedPoint) {
+	p.x.sub(bigZero, q.x)
+	p.y = q.y.copy()
+	p.z = q.z.copy()
+	p.t.sub(bigZero, q.t)
+}
+
 // Based on Hisil's formula 5.1.3: Doubling in E^e
 func (p *twExtendedPoint) doubleInternal(beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
