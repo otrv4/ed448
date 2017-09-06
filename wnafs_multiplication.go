@@ -49,7 +49,7 @@ func recodeWNAF(control []smvtControl, s *scalar, nBits, tableBits uint) (positi
 
 func (p *twExtendedPoint) prepareFixedWindow(nTable int) []*twPNiels {
 	pOriginal := p.copy()
-	pn := p.copy().double(false).toPNiels()
+	pn := p.copy().doubleInternal(false).toPNiels()
 	out := make([]*twPNiels, nTable)
 	out[0] = pOriginal.toPNiels()
 	for i := 1; i < nTable; i++ {
@@ -85,7 +85,7 @@ func decafPrepareWNAFTable(dst []*twPNiels, p *twExtendedPoint, tableSize uint) 
 		return
 	}
 
-	p.double(false)
+	p.doubleInternal(false)
 
 	twOp := p.toPNiels()
 
@@ -201,9 +201,9 @@ func doubleScalarMul(pointB, pointC *twExtendedPoint, scalarB, scalarC *scalar) 
 			//for no particular reason.  Double WINDOW times, but only compute t on
 			//the last one.
 			for j := 0; j < window-1; j++ {
-				out.double(true)
+				out.doubleInternal(true)
 			}
-			out.double(false)
+			out.doubleInternal(false)
 			out.addProjectiveNielsToExtended(mul1pn, false)
 		}
 		mul2pn := constTimeLookup(multiples2, word(bits2&windowTMask))
@@ -268,7 +268,7 @@ func decafDoubleNonSecretScalarMul(p *twExtendedPoint, scalarPre, scalarVar *sca
 		cv := i == controlVar[contv].power
 		cp := i == controlPre[contp].power
 
-		out.double(i != 0 && !(cv || cp))
+		out.doubleInternal(i != 0 && !(cv || cp))
 
 		if cv {
 			if controlVar[contv].addend > 0 {

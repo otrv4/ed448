@@ -376,7 +376,7 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 		},
 	}
 
-	p.double(false)
+	p.doubleInternal(false)
 
 	c.Assert(p, DeepEquals, exp)
 
@@ -414,7 +414,7 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 		},
 	}
 
-	q.double(true)
+	q.doubleInternal(true)
 
 	c.Assert(q, DeepEquals, exp)
 }
@@ -714,8 +714,8 @@ func (s *Ed448Suite) Test_DsaLikeDecodeAndEncode(c *C) {
 		&bigNumber{},
 	}
 
-	doubleBase := basePoint.double(false)
-	doubleBase = doubleBase.double(false)
+	doubleBase := basePoint.double()
+	doubleBase = doubleBase.double()
 
 	valid := dsaLikeDecode(dec, enc[:])
 	valid &= dec.equals(doubleBase)

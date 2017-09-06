@@ -111,7 +111,7 @@ func (p *twExtendedPoint) sub(q *twExtendedPoint, r *twExtendedPoint) {
 }
 
 // Based on Hisil's formula 5.1.3: Doubling in E^e
-func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
+func (p *twExtendedPoint) doubleInternal(beforeDouble bool) *twExtendedPoint {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	c.square(p.x)
 	a.square(p.y)
@@ -132,6 +132,10 @@ func (p *twExtendedPoint) double(beforeDouble bool) *twExtendedPoint {
 		p.t.mul(b, d)
 	}
 	return p
+}
+
+func (p *twExtendedPoint) double() *twExtendedPoint {
+	return p.doubleInternal(false)
 }
 
 func (p *twExtendedPoint) decafEncode(dst []byte) {
@@ -466,9 +470,9 @@ func pointScalarMul(p *twExtendedPoint, s *scalar) *twExtendedPoint {
 			//extensible here for no particular reason.  Double
 			//5 (window) times, but only compute out.t on the last one.
 			for j := 0; j < window-1; j++ {
-				out.double(true)
+				out.doubleInternal(true)
 			}
-			out.double(false)
+			out.doubleInternal(false)
 			out.addProjectiveNielsToExtended(pNeg, false)
 		}
 	}
@@ -489,7 +493,7 @@ func precomputedScalarMul(s *scalar) *twExtendedPoint {
 	var np *twNiels
 	for i := int(decafCombSpacing - 1); i >= 0; i-- {
 		if i != int(decafCombSpacing-1) {
-			p.double(false)
+			p.doubleInternal(false)
 		}
 
 		for j := uintZero; j < decafCombNumber; j++ {
@@ -710,7 +714,7 @@ func (p *twExtendedPoint) Sub(q, r Point) {
 
 // Double gives the doubling of a point (p).
 func (p *twExtendedPoint) Double() Point {
-	return p.double(false)
+	return p.double()
 }
 
 // Encode returns the encoding of a point (p) as a sequence of bytes.
