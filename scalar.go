@@ -1,6 +1,8 @@
 package ed448
 
-import "errors"
+import (
+	"errors"
+)
 
 // Scalar is a interface of a Ed448 scalar
 type Scalar interface {
@@ -50,6 +52,74 @@ func (s *scalar) montgomeryMultiply(x, y *scalar) {
 
 func (s *scalar) montgomerySquare(x *scalar) {
 	s.montgomeryMultiply(x, x)
+}
+
+func (s *scalar) invert() bool {
+	// Fermat's little theorem, sliding window algorithm
+	preComp := make([]*scalar, 8)
+	for i := range preComp {
+		preComp[i] = new(scalar)
+	}
+
+	out := &scalar{}
+	scalarWindowBits := uint(3)
+	last := (1 << scalarWindowBits) - 1
+
+	// Precompute preCmp = [a^1, a^3, ...]
+	preComp[0].montgomeryMultiply(s, scalarR2)
+
+	if last > 0 {
+		preComp[last].montgomeryMultiply(preComp[0], preComp[0])
+	}
+
+	for i := 1; i <= last; i++ {
+		preComp[i].montgomeryMultiply(preComp[i-1], preComp[last])
+	}
+
+	// Sliding window
+	var residue, trailing, started uint
+	for i := scalarBits - 1; i >= int(-scalarWindowBits); i-- {
+		if started != 0 {
+			out.montgomerySquare(out)
+		}
+
+		var w word
+		if i >= 0 {
+			w = ScalarQ[i/wordBits]
+		} else {
+			w = 0x00
+		}
+
+		if i >= 0 && i < int(wordBits) {
+			w -= 2
+		}
+		residue = uint((word(residue) << 1) | ((w >> (uint(i) % wordBits)) & 1))
+		if residue>>scalarWindowBits != 0 {
+			trailing = residue
+			residue = 0
+		}
+
+		if trailing > 0 && (trailing&((1<<scalarWindowBits)-1)) == 0 {
+			if started != 0 {
+				out.montgomeryMultiply(out, preComp[trailing>>(scalarWindowBits+1)])
+			} else {
+				out = preComp[trailing>>(scalarWindowBits+1)].copy()
+				started = 1
+			}
+
+			trailing = 0
+		}
+		trailing <<= 1
+	}
+
+	// demontgomerize
+	one := &scalar{0x01}
+	out.montgomeryMultiply(out, one)
+
+	copy(s[:], out[:])
+
+	// XXX: memzero
+	return out.equals(scalarZero)
 }
 
 func (s *scalar) equals(x *scalar) bool {

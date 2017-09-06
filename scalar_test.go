@@ -89,6 +89,28 @@ func (s *Ed448Suite) Test_MontgomerySquare(c *C) {
 
 }
 
+func (s *Ed448Suite) Test_ScalarInverse(c *C) {
+	a := &scalar{
+		0x3ac84414, 0x2381c577, 0x765665e6, 0x7ad87d3c,
+		0x1be79ea1, 0x10b1fe80, 0x73bf5fc4, 0xe892b6ec,
+		0x1946e0b9, 0x97b2cb1a, 0x40f3f31a, 0xdcb2e06c,
+		0x628dad63, 0x127a1c5f,
+	}
+
+	exp := &scalar{
+		0x034653d2, 0x66a1783c, 0xa5ec956b, 0x30a35363,
+		0x31c4586f, 0x9199bcc0, 0xeb2f34da, 0x83f624f7,
+		0x8bb70775, 0x8e34702d, 0x8bcd73fd, 0xbee7c614,
+		0x45874923, 0x0892726c,
+	}
+
+	ok := a.invert()
+
+	c.Assert(a, DeepEquals, exp)
+	c.Assert(ok, Equals, false)
+
+}
+
 func (s *Ed448Suite) Test_ScalarEquality(c *C) {
 	a := &scalar{
 		0xffb823a3, 0xc96a3c35, 0x7f8ed27d, 0x087b8fb9,
