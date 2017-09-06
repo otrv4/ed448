@@ -12,8 +12,10 @@ type Scalar interface {
 	Sub(a, b Scalar)
 	Mul(a, b Scalar)
 	Halve(a Scalar)
+	Invert() bool
 	Encode() []byte
 	BarretDecode(src []byte) error
+	Decode(src []byte)
 }
 
 type scalar [scalarWords]word
@@ -274,6 +276,7 @@ func decodeLong(s *scalar, b []byte) *scalar {
 		s.add(s, y)
 	}
 
+	y.destroy()
 	return s.copy()
 }
 
@@ -333,6 +336,11 @@ func (s *scalar) Halve(x Scalar) {
 	s.halve(x.(*scalar))
 }
 
+// Invert inverts a scalar. The scalars may used the same memory.
+func (s *scalar) Invert() bool {
+	return s.invert()
+}
+
 // Encode serializes a scalar to wire format.
 func (s *scalar) Encode() []byte {
 	dst := make([]byte, fieldBytes)
@@ -351,7 +359,6 @@ func (s *scalar) BarretDecode(src []byte) error {
 }
 
 // Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
-// XXX: make scalar part of signature as it will generate confusion otherwise
-func Decode(x Scalar, src []byte) Scalar {
-	return decodeLong(x.(*scalar), src)
+func (s *scalar) Decode(src []byte) {
+	decodeLong(s, src)
 }
