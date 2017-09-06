@@ -129,7 +129,7 @@ func (s *scalar) equals(x *scalar) bool {
 	for i := uintZero; i < scalarWords; i++ {
 		diff |= s[i] ^ x[i]
 	}
-	return word(((dword(diff))-1)>>wordBits) == decafTrue
+	return isZeroMask(diff) == decafTrue
 }
 
 func (s *scalar) copy() *scalar {
@@ -191,12 +191,12 @@ func (s *scalar) halve(a *scalar) {
 	var chain dword
 	var i uint
 
-	for i = 0; i < scalarWords; i++ {
+	for i = uintZero; i < scalarWords; i++ {
 		chain += dword(a[i]) + dword(ScalarQ[i]&mask)
 		s[i] = word(chain)
 		chain >>= wordBits
 	}
-	for i = 0; i < scalarWords-1; i++ {
+	for i = uintZero; i < scalarWords-1; i++ {
 		s[i] = s[i]>>1 | s[i+1]<<(wordBits-1)
 	}
 
@@ -210,20 +210,22 @@ func (s *scalar) serialize(dst []byte) error {
 		return errors.New("dst length smaller than fieldBytes")
 	}
 
-	for i := 0; i*wordBytes < fieldBytes; i++ {
-		for j := 0; j < wordBytes; j++ {
-			b := s[i] >> uint(8*j)
-			dst[wordBytes*i+j] = byte(b)
+	k := uintZero
+	for i := uintZero; i < scalarLimbs; i++ {
+		for j := uintZero; j < uint(wordBytes); j++ {
+			b := s[i] >> (8 * j)
+			dst[k] = byte(b)
+			k++
 		}
 	}
 	return nil
 }
 
 func (s *scalar) decodeShort(b []byte, size uint) {
-	k := uint(0)
-	for i := uint(0); i < scalarLimbs; i++ {
+	k := uintZero
+	for i := uintZero; i < scalarLimbs; i++ {
 		out := word(0)
-		for j := uint(0); j < 4 && k < size; j, k = j+1, k+1 {
+		for j := uintZero; j < 4 && k < size; j, k = j+1, k+1 {
 			out |= (word(b[k])) << (8 * j)
 		}
 		s[i] = out
