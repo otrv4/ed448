@@ -52,6 +52,8 @@ const (
 	decafCombTeeth   = uint(0x05)
 	decafCombSpacing = uint(0x12)
 
+	decafWindowBits = int(0x05)
+
 	uintZero = uint(0)
 
 	montgomeryFactor = word(0xae918bc5)
@@ -98,6 +100,17 @@ var (
 		0x88ea1859, 0x0d66de23, 0x5ee4d838, 0xae17cf72,
 		0xa3c47c44, 0x1a9cc14b, 0xe4d070af, 0x2052bcb7,
 		0xf823b729, 0x3402a939,
+	}
+
+	// TODO: only use this one
+	scalarAdjustment = &scalar{
+		0x4a7bb0cf, 0xc873d6d5,
+		0x23a70aad, 0xe933d8d7,
+		0x129c96fd, 0xbb124b65,
+		0x335dc163, 0x00000008,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
 	}
 
 	//BasePoint is the base point of the curve.
