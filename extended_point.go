@@ -6,6 +6,7 @@ import "errors"
 type Point interface {
 	IsOnCurve() bool
 	Equals(q Point) bool
+	EqualsMask(q Point) uint32
 	Copy() Point
 	Add(q, r Point)
 	Sub(q, r Point)
@@ -708,6 +709,11 @@ func (p *twExtendedPoint) IsOnCurve() bool {
 func (p *twExtendedPoint) Equals(q Point) bool {
 	valid := p.equals(q.(*twExtendedPoint))
 	return valid == decafTrue
+}
+
+// EqualsMask compares whether two points (p, q) are equal.
+func (p *twExtendedPoint) EqualsMask(q Point) uint32 {
+	return uint32(p.equals(q.(*twExtendedPoint)))
 }
 
 // Copy returns a copy of a given point (p).

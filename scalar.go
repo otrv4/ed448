@@ -7,6 +7,7 @@ import (
 // Scalar is a interface of a Ed448 scalar
 type Scalar interface {
 	Equals(a Scalar) bool
+	EqualsMask(a Scalar) uint32
 	Copy() Scalar
 	Add(a, b Scalar)
 	Sub(a, b Scalar)
@@ -127,11 +128,15 @@ func (s *scalar) invert() bool {
 }
 
 func (s *scalar) equals(x *scalar) bool {
+	return word(s.equalsMask(x)) == decafTrue
+}
+
+func (s *scalar) equalsMask(x *scalar) uint32 {
 	diff := word(0x00)
 	for i := uintZero; i < scalarWords; i++ {
 		diff |= s[i] ^ x[i]
 	}
-	return isZeroMask(diff) == decafTrue
+	return uint32(isZeroMask(diff))
 }
 
 func (s *scalar) copy() *scalar {
@@ -305,6 +310,11 @@ func NewScalar(in ...[]byte) Scalar {
 // Equals compares two scalars. Returns true if they are the same; false, otherwise.
 func (s *scalar) Equals(x Scalar) bool {
 	return s.equals(x.(*scalar))
+}
+
+// EqualsMask compares two scalars.
+func (s *scalar) EqualsMask(x Scalar) uint32 {
+	return s.equalsMask(x.(*scalar))
 }
 
 // Copy copies scalars.
