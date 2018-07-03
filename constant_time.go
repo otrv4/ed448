@@ -37,9 +37,9 @@ func constantTimeSelectPoint(bfalse, btrue *twExtendedPoint, mask word) *twExten
 	ret := &twExtendedPoint{}
 
 	ret.x = constantTimeSelectBigNumber(bfalse.x, btrue.x, mask)
-	ret.y = constantTimeSelectBigNumber(bfalse.x, btrue.x, mask)
-	ret.z = constantTimeSelectBigNumber(bfalse.x, btrue.x, mask)
-	ret.t = constantTimeSelectBigNumber(bfalse.x, btrue.x, mask)
+	ret.y = constantTimeSelectBigNumber(bfalse.y, btrue.y, mask)
+	ret.z = constantTimeSelectBigNumber(bfalse.z, btrue.z, mask)
+	ret.t = constantTimeSelectBigNumber(bfalse.t, btrue.t, mask)
 
 	return ret
 }
