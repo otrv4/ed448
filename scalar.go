@@ -257,7 +257,7 @@ func (s *scalar) decode(b []byte) word {
 func decodeLong(s *scalar, b []byte) *scalar {
 	y := &scalar{}
 	bLen := len(b)
-	size := bLen - (bLen % fieldBytes)
+	size := bLen - (bLen % scalarSerBytes)
 
 	if bLen == 0 {
 		s = scalarZero.copy()
@@ -265,7 +265,7 @@ func decodeLong(s *scalar, b []byte) *scalar {
 	}
 
 	if size == bLen {
-		size -= fieldBytes
+		size -= scalarSerBytes
 	}
 	s.decodeShort(b[size:], uint(bLen-size))
 
@@ -274,8 +274,8 @@ func decodeLong(s *scalar, b []byte) *scalar {
 		return s
 	}
 
-	for size == bLen-(bLen%fieldBytes) {
-		size -= scalarBytes
+	for size > 0 {
+		size -= scalarSerBytes
 		s.montgomeryMultiply(s, scalarR2)
 		y.decode(b[size:])
 		s.add(s, y)

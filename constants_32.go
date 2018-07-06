@@ -19,8 +19,9 @@ const (
 	edwardsD  = -39081
 
 	// The size of the Goldilocks field, in bytes.
-	fieldBytes    = fieldBits / 8 // 56
-	dsaFieldBytes = 57
+	fieldBytes     = fieldBits / 8 // 56
+	scalarSerBytes = 56
+	dsaFieldBytes  = 57
 
 	// The size of the Goldilocks scalars, in bits.
 	scalarBits = fieldBits - 2 // 446
