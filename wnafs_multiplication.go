@@ -1,7 +1,53 @@
 package ed448
 
+import (
+	"math/bits"
+)
+
 type smvtControl struct {
 	power, addend int
+}
+
+const bOver16 = uint(2)
+
+func recodeWNAF2(control []smvtControl, s *scalar, tableBits uint) word {
+	tableSize := 446/(tableBits+1) + 3
+	position := tableSize - 1
+
+	control[position].power = -1
+	control[position].addend = 0
+	position--
+
+	current := uint64(s[0] & 0xFFFF)
+	mask := uint32((1 << (tableBits + 1)) - 1)
+
+	for w := uint(1); w < 30; w++ {
+		if w < 28 {
+			// Refill the 16 high bits of current
+			current += uint64(uint32((s[w/bOver16] >> uint((16 * (w % bOver16)))) << 16))
+		}
+
+		for current&0xFFFF != 0 {
+			pos := uint32(bits.TrailingZeros32(uint32(current)))
+			odd := uint32(current) >> pos
+			delta := int32(odd & mask)
+			if odd&(1<<(tableBits+1)) != 0 {
+				delta -= (1 << (tableBits + 1))
+			}
+			current = uint64(int64(current) - int64(delta<<pos))
+			control[position].power = int(pos) + 16*(int(w)-1)
+			control[position].addend = int(delta)
+			position--
+		}
+		current >>= 16
+	}
+
+	position++
+	n := uint(tableSize - position)
+	for i := uint(0); i < n; i++ {
+		control[i] = control[i+position]
+	}
+	return word(n - 1)
 }
 
 func recodeWNAF(control []smvtControl, s *scalar, nBits, tableBits uint) (position word) {
@@ -224,10 +270,10 @@ func decafDoubleNonSecretScalarMul(p *twExtendedPoint, scalarPre, scalarVar *sca
 	var controlVar [115]smvtControl // nbitsVar/(tableBitsVar+1)+3
 	var controlPre [77]smvtControl  // nbitsPre/(tableBitsPre+1)+3
 
-	recodeWNAF(controlPre[:], scalarPre, scalarBits, tableBitsPre)
-	recodeWNAF(controlVar[:], scalarVar, scalarBits, tableBitsVar)
+	recodeWNAF2(controlPre[:], scalarPre, tableBitsPre)
+	recodeWNAF2(controlVar[:], scalarVar, tableBitsVar)
 
-	var precmpVar [32]*twPNiels
+	var precmpVar [8]*twPNiels
 	decafPrepareWNAFTable(precmpVar[:], p, tableBitsVar)
 
 	contp := 0
@@ -236,7 +282,6 @@ func decafDoubleNonSecretScalarMul(p *twExtendedPoint, scalarPre, scalarVar *sca
 	index := controlVar[0].addend >> 1
 
 	i := controlVar[0].power
-
 	out := &twExtendedPoint{
 		&bigNumber{0x00},
 		&bigNumber{0x00},

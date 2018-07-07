@@ -58,48 +58,27 @@ func DSASign(sym [57]byte, pub Point, msg []byte) [114]byte {
 	return sig
 }
 
+var scalarFour = NewScalar([]byte{0x04})
+
 // DSAVerify implements EdDSA style verifying for Ed448
 // equivalent of goldilocks_ed48_verify
 func DSAVerify(sig [114]byte, pub Point, msg []byte) bool {
+	pub2 := PointScalarMul(pub, scalarFour)
+	sig1 := make([]byte, 57)
+	copy(sig1, sig[:57])
+	sig2 := make([]byte, 57)
+	copy(sig2, sig[57:])
 	rPoint := NewPoint([16]uint32{}, [16]uint32{}, [16]uint32{}, [16]uint32{})
-	// should fail if this fails
-	rPoint.DSADecode(sig[:])
+	rPoint.DSADecode(sig1)
 
-	// API_NS(scalar_p) challenge_scalar;
-	// {
-	//     /* Compute the challenge */
-	//     hash_ctx_p hash;
-	//     hash_init_with_dom(hash,prehashed,0,context,context_len);
-	//     hash_update(hash,signature,GOLDILOCKS_EDDSA_448_PUBLIC_BYTES);
-	//     hash_update(hash,pubkey,GOLDILOCKS_EDDSA_448_PUBLIC_BYTES);
-	//     hash_update(hash,message,message_len);
-	//     uint8_t challenge[2*GOLDILOCKS_EDDSA_448_PRIVATE_BYTES];
-	//     hash_final(hash,challenge,sizeof(challenge));
-	//     hash_destroy(hash);
-	//     API_NS(scalar_decode_long)(challenge_scalar,challenge,sizeof(challenge));
-	//     goldilocks_bzero(challenge,sizeof(challenge));
-	// }
-	// API_NS(scalar_sub)(challenge_scalar, API_NS(scalar_zero), challenge_scalar);
+	challenge := make([]byte, 114)
+	hashWithDom(challenge, append(append(sig1, pub.DSAEncode()...), msg...))
+	challengeScalar := NewScalar(challenge)
+	challengeScalar.Sub(scalarZero, challengeScalar)
 
-	// API_NS(scalar_p) response_scalar;
-	// API_NS(scalar_decode_long)(
-	//     response_scalar,
-	//     &signature[GOLDILOCKS_EDDSA_448_PUBLIC_BYTES],
-	//     GOLDILOCKS_EDDSA_448_PRIVATE_BYTES
-	// );
+	responseScalar := NewScalar(sig2)
 
-	// for (unsigned c=1; c<GOLDILOCKS_448_EDDSA_DECODE_RATIO; c<<=1) {
-	//     API_NS(scalar_add)(response_scalar,response_scalar,response_scalar);
-	// }
+	pk := PointDoubleScalarMulNonsecret(pub2, responseScalar, challengeScalar)
 
-	// /* pk_point = -c(x(P)) + (cx + k)G = kG */
-	// API_NS(base_double_scalarmul_non_secret)(
-	//     pk_point,
-	//     response_scalar,
-	//     pk_point,
-	//     challenge_scalar
-	// );
-	// return goldilocks_succeed_if(API_NS(point_eq(pk_point,r_point)));
-
-	return false
+	return pk.Equals(rPoint)
 }
