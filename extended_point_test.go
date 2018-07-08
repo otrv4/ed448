@@ -798,6 +798,7 @@ func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
 			0x03b0c3d7, 0x07002ba2, 0x0f4e320f, 0x03eafa71,
 		},
 	}
+	exp = pointScalarMul(exp, scalarOneFourth.(*scalar))
 
 	succ := dsaLikeDecode(p, ser[:])
 
@@ -846,11 +847,8 @@ func (s *Ed448Suite) Test_DsaLikeDecodeAndEncode(c *C) {
 		&bigNumber{},
 	}
 
-	doubleBase := basePoint.double()
-	doubleBase = doubleBase.double()
-
 	valid := dsaLikeDecode(dec, enc[:])
-	valid &= dec.equals(doubleBase)
+	valid &= dec.equals(basePoint)
 
 	c.Assert(valid, DeepEquals, decafTrue)
 }

@@ -148,4 +148,15 @@ var (
 		0xfffffe, 0xffffffff, 0xffffff, 0xffffffff,
 		0xffffff, 0xffffffff, 0xffffff, 0xffffffff,
 	}
+
+	scalarOne       Scalar
+	scalarOneFourth Scalar
 )
+
+func init() {
+	oneBuf := [privKeyBytes]byte{0x01}
+	scalarOne = NewScalar(oneBuf[:])
+	scalarOneFourth = NewScalar(oneBuf[:])
+	scalarOneFourth.Halve(scalarOneFourth)
+	scalarOneFourth.Halve(scalarOneFourth)
+}

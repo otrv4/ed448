@@ -74,6 +74,7 @@ func DSAVerify(sig [114]byte, pub Point, msg []byte) bool {
 	sig2 := copyBytes(sig[57:], 57)
 	rPoint := NewPoint([16]uint32{}, [16]uint32{}, [16]uint32{}, [16]uint32{})
 	rPoint.DSADecode(sig1)
+	rPoint = PointScalarMul(rPoint, scalarFour)
 
 	challenge := make([]byte, 114)
 	hashWithDom(challenge, append(append(sig1, pub.DSAEncode()...), msg...))

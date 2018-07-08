@@ -1,6 +1,8 @@
 package ed448
 
-import "errors"
+import (
+	"errors"
+)
 
 // Point is a interface of a Ed448 point
 type Point interface {
@@ -322,6 +324,12 @@ func dsaLikeDecode(p *twExtendedPoint, srcOrg []byte) word {
 	if !ok {
 		return decafFalse
 	}
+
+	res := pointScalarMul(p, scalarOneFourth.(*scalar))
+	p.x = res.x
+	p.y = res.y
+	p.z = res.z
+	p.t = res.t
 
 	return succ
 }
