@@ -153,3 +153,52 @@ func (s *Ed448Suite) Test_DSAVerify_doesntVerifyAnIncorrectSignature(c *C) {
 
 	c.Assert(DSAVerify(sig, pub, msg), Equals, false)
 }
+
+func (s *Ed448Suite) Test_DSASign_rfcTestVector1_noMsg(c *C) {
+	_, pub := deriveKeypair(rfcTestVector1_sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector1_expectedPub[:])
+	sig := DSASign(rfcTestVector1_sym, pub, rfcTestVector1_msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector1_sig)
+}
+
+func (s *Ed448Suite) Test_DSASign_rfcTestVector2_1oct(c *C) {
+	_, pub := deriveKeypair(rfcTestVector2_sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector2_expectedPub[:])
+	sig := DSASign(rfcTestVector2_sym, pub, rfcTestVector2_msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector2_sig)
+}
+
+func (s *Ed448Suite) Test_DSASign_rfcTestVector3_12oct(c *C) {
+	_, pub := deriveKeypair(rfcTestVector3_sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector3_expectedPub[:])
+	sig := DSASign(rfcTestVector3_sym, pub, rfcTestVector3_msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector3_sig)
+}
+
+func (s *Ed448Suite) Test_DSASign_rfcTestVector4_13oct(c *C) {
+	_, pub := deriveKeypair(rfcTestVector4_sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector4_expectedPub[:])
+	sig := DSASign(rfcTestVector4_sym, pub, rfcTestVector4_msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector4_sig)
+}
+
+func (s *Ed448Suite) Test_DSASign_rfcTestVector5_64oct(c *C) {
+	_, pub := deriveKeypair(rfcTestVector5_sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector5_expectedPub[:])
+	sig := DSASign(rfcTestVector5_sym, pub, rfcTestVector5_msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector5_sig)
+}
+
+func (s *Ed448Suite) Test_DSASign_rfcTestVector6_256oct(c *C) {
+	_, pub := deriveKeypair(rfcTestVector6_sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector6_expectedPub[:])
+	sig := DSASign(rfcTestVector6_sym, pub, rfcTestVector6_msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector6_sig)
+}
+
+func (s *Ed448Suite) Test_DSASign_rfcTestVector7_1023oct(c *C) {
+	_, pub := deriveKeypair(rfcTestVector7_sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector7_expectedPub[:])
+	sig := DSASign(rfcTestVector7_sym, pub, rfcTestVector7_msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector7_sig)
+}
