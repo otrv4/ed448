@@ -60,14 +60,18 @@ func DSASign(sym [57]byte, pub Point, msg []byte) [114]byte {
 
 var scalarFour = NewScalar([]byte{0x04})
 
+func copyBytes(b []byte, l uint) []byte {
+	bb := make([]byte, l)
+	copy(bb, b)
+	return bb
+}
+
 // DSAVerify implements EdDSA style verifying for Ed448
 // equivalent of goldilocks_ed48_verify
 func DSAVerify(sig [114]byte, pub Point, msg []byte) bool {
 	pub2 := PointScalarMul(pub, scalarFour)
-	sig1 := make([]byte, 57)
-	copy(sig1, sig[:57])
-	sig2 := make([]byte, 57)
-	copy(sig2, sig[57:])
+	sig1 := copyBytes(sig[:], 57)
+	sig2 := copyBytes(sig[57:], 57)
 	rPoint := NewPoint([16]uint32{}, [16]uint32{}, [16]uint32{}, [16]uint32{})
 	rPoint.DSADecode(sig1)
 
@@ -77,7 +81,6 @@ func DSAVerify(sig [114]byte, pub Point, msg []byte) bool {
 	challengeScalar.Sub(scalarZero, challengeScalar)
 
 	responseScalar := NewScalar(sig2)
-
 	pk := PointDoubleScalarMulNonsecret(pub2, responseScalar, challengeScalar)
 
 	return pk.Equals(rPoint)

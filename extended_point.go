@@ -268,10 +268,12 @@ func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	t.set(bigZero)
 }
 
-func dsaLikeDecode(p *twExtendedPoint, src []byte) word {
-	if len(src) != dsaFieldBytes {
+func dsaLikeDecode(p *twExtendedPoint, srcOrg []byte) word {
+	if len(srcOrg) != dsaFieldBytes {
 		panic("Attempted to decode with a source that is not 57 bytes")
 	}
+	src := make([]byte, dsaFieldBytes)
+	copy(src, srcOrg)
 
 	succ := decafTrue
 	var cofactorMask uint = zeroMask
