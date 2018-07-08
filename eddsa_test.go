@@ -155,105 +155,105 @@ func (s *Ed448Suite) Test_DSAVerify_doesntVerifyAnIncorrectSignature(c *C) {
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector1(c *C) {
-	_, pub := deriveKeypair(rfcTestVector1_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector1_expectedPub[:])
-	sig := DSASign(rfcTestVector1_sym, pub, rfcTestVector1_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector1_sig[:])
+	_, pub := deriveKeypair(rfcTestVector1Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector1ExpectedPub[:])
+	sig := DSASign(rfcTestVector1Sym, pub, rfcTestVector1Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector1Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector2(c *C) {
-	_, pub := deriveKeypair(rfcTestVector2_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector2_expectedPub[:])
-	sig := DSASign(rfcTestVector2_sym, pub, rfcTestVector2_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector2_sig[:])
+	_, pub := deriveKeypair(rfcTestVector2Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector2ExpectedPub[:])
+	sig := DSASign(rfcTestVector2Sym, pub, rfcTestVector2Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector2Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector4(c *C) {
-	_, pub := deriveKeypair(rfcTestVector4_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector4_expectedPub[:])
-	sig := DSASign(rfcTestVector4_sym, pub, rfcTestVector4_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector4_sig[:])
+	_, pub := deriveKeypair(rfcTestVector4Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector4ExpectedPub[:])
+	sig := DSASign(rfcTestVector4Sym, pub, rfcTestVector4Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector4Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector5(c *C) {
-	_, pub := deriveKeypair(rfcTestVector5_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector5_expectedPub[:])
-	sig := DSASign(rfcTestVector5_sym, pub, rfcTestVector5_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector5_sig[:])
+	_, pub := deriveKeypair(rfcTestVector5Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector5ExpectedPub[:])
+	sig := DSASign(rfcTestVector5Sym, pub, rfcTestVector5Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector5Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector6(c *C) {
-	_, pub := deriveKeypair(rfcTestVector6_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector6_expectedPub[:])
-	sig := DSASign(rfcTestVector6_sym, pub, rfcTestVector6_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector6_sig[:])
+	_, pub := deriveKeypair(rfcTestVector6Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector6ExpectedPub[:])
+	sig := DSASign(rfcTestVector6Sym, pub, rfcTestVector6Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector6Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector7(c *C) {
-	_, pub := deriveKeypair(rfcTestVector7_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector7_expectedPub[:])
-	sig := DSASign(rfcTestVector7_sym, pub, rfcTestVector7_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector7_sig[:])
+	_, pub := deriveKeypair(rfcTestVector7Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector7ExpectedPub[:])
+	sig := DSASign(rfcTestVector7Sym, pub, rfcTestVector7Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector7Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector8(c *C) {
-	_, pub := deriveKeypair(rfcTestVector8_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector8_expectedPub[:])
-	sig := DSASign(rfcTestVector8_sym, pub, rfcTestVector8_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector8_sig[:])
+	_, pub := deriveKeypair(rfcTestVector8Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector8ExpectedPub[:])
+	sig := DSASign(rfcTestVector8Sym, pub, rfcTestVector8Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector8Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSASign_rfcTestVector9(c *C) {
-	_, pub := deriveKeypair(rfcTestVector9_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector9_expectedPub[:])
-	sig := DSASign(rfcTestVector9_sym, pub, rfcTestVector9_msg)
-	c.Assert(sig[:], DeepEquals, rfcTestVector9_sig[:])
+	_, pub := deriveKeypair(rfcTestVector9Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector9ExpectedPub[:])
+	sig := DSASign(rfcTestVector9Sym, pub, rfcTestVector9Msg)
+	c.Assert(sig[:], DeepEquals, rfcTestVector9Sig[:])
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector1(c *C) {
-	_, pub := deriveKeypair(rfcTestVector1_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector1_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector1_sig, pub, rfcTestVector1_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector1Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector1ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector1Sig, pub, rfcTestVector1Msg), Equals, true)
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector2(c *C) {
-	_, pub := deriveKeypair(rfcTestVector2_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector2_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector2_sig, pub, rfcTestVector2_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector2Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector2ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector2Sig, pub, rfcTestVector2Msg), Equals, true)
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector4(c *C) {
-	_, pub := deriveKeypair(rfcTestVector4_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector4_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector4_sig, pub, rfcTestVector4_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector4Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector4ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector4Sig, pub, rfcTestVector4Msg), Equals, true)
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector5(c *C) {
-	_, pub := deriveKeypair(rfcTestVector5_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector5_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector5_sig, pub, rfcTestVector5_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector5Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector5ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector5Sig, pub, rfcTestVector5Msg), Equals, true)
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector6(c *C) {
-	_, pub := deriveKeypair(rfcTestVector6_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector6_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector6_sig, pub, rfcTestVector6_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector6Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector6ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector6Sig, pub, rfcTestVector6Msg), Equals, true)
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector7(c *C) {
-	_, pub := deriveKeypair(rfcTestVector7_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector7_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector7_sig, pub, rfcTestVector7_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector7Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector7ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector7Sig, pub, rfcTestVector7Msg), Equals, true)
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector8(c *C) {
-	_, pub := deriveKeypair(rfcTestVector8_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector8_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector8_sig, pub, rfcTestVector8_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector8Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector8ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector8Sig, pub, rfcTestVector8Msg), Equals, true)
 }
 
 func (s *Ed448Suite) Test_DSAVerify_rfcTestVector9(c *C) {
-	_, pub := deriveKeypair(rfcTestVector9_sym)
-	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector9_expectedPub[:])
-	c.Assert(DSAVerify(rfcTestVector9_sig, pub, rfcTestVector9_msg), Equals, true)
+	_, pub := deriveKeypair(rfcTestVector9Sym)
+	c.Assert(pub.DSAEncode(), DeepEquals, rfcTestVector9ExpectedPub[:])
+	c.Assert(DSAVerify(rfcTestVector9Sig, pub, rfcTestVector9Msg), Equals, true)
 }
