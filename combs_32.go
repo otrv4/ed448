@@ -12,10 +12,25 @@ type fixedBaseTable struct {
 	adjustments adjustmentsTable
 }
 
-//TODO: Make this lookup constant time, just like in decaf_combs_32.go
 func (table *fixedBaseTable) lookup(j, t, idx uint) *twNiels {
-	nin := j << (t - 1)
-	return table.combs[nin+idx].copy()
+	index := word((j << (t - 1)) + idx)
+	tableSize := len(table.combs)
+	out := &twNiels{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	for i := 0; i < tableSize; i++ {
+		m := selectMask(index, word(i))
+		for jx := 0; jx < nLimbs; jx++ {
+			out.a[jx] |= m & table.combs[i].a[jx]
+			out.b[jx] |= m & table.combs[i].b[jx]
+			out.c[jx] |= m & table.combs[i].c[jx]
+		}
+	}
+
+	return out
 }
 
 var baseTable = &fixedBaseTable{}
