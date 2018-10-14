@@ -5,7 +5,6 @@ func mask(a, b *bigNumber, mask word) {
 	for k := 0; k < len(b); k++ {
 		a[k] = word(mask) & b[k]
 	}
-	return
 }
 
 // mask needs to be either decafTrue or decafFalse
