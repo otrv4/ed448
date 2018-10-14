@@ -25,7 +25,7 @@ func (a *montgomery) montgomeryStep() {
 	a.xd.mul(L0, a.zd)
 	L0.subRaw(a.zd, L1)
 	L0.bias(4 - 2*1 /*is32 ? 2 : 4*/)
-	//XXX 64bits don't need this reduce
+	//TODO 64bits don't need this reduce
 	L0.weakReduce()
 	a.zd.mul(L0, L1)
 }

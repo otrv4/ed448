@@ -65,7 +65,7 @@ func barrettDeserializeAndReduce(dst []word, serial []byte, p *barrettPrime) {
 
 func barrettReduce(dst []word, carry word, p *barrettPrime) {
 	for wordsLeft := word(len(dst)); wordsLeft >= p.wordsInP; wordsLeft-- {
-		//XXX PERF unroll
+		//TODO PERF unroll
 		for repeat := 0; repeat < 2; repeat++ {
 			mand := dst[wordsLeft-1] >> p.pShift
 			dst[wordsLeft-1] &= (word(1) << p.pShift) - 1
@@ -130,7 +130,7 @@ func subExtPacked(dst, x, y []word, mask word) word {
 	return word(carry)
 }
 
-//XXX Is this the same as mulAddVWW_g() ?
+//TODO Is this the same as mulAddVWW_g() ?
 func widemac(accum []word, mier []word, mand, carry word) word {
 	for i := 0; i < len(mier); i++ {
 		product := dword(mand) * dword(mier[i])

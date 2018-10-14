@@ -40,7 +40,7 @@ var (
 	// 0415467406032909029192869357953282578032075146446173674602635247710,
 	// gy=29881921007848149267601793044393067343754404015408024209592824137233
 	// 1506189835876003536878655418784733982303233503462500531545062832660
-	// XXX: change to correct in hex
+	// TODO: change to correct in hex
 	basePoint = mustNewPoint([]byte{
 		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
 		0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,
@@ -208,7 +208,7 @@ func (c *curveT) generateKey(read io.Reader) (k privateKey, err error) {
 	return c.derivePrivateKey(symKey)
 }
 
-//XXX Is private only the secret part of the privateKey?
+//TODO Is private only the secret part of the privateKey?
 func (c *curveT) computeSecret(private, public []byte) []byte {
 	var sk scalar
 	var pub serialized
@@ -226,16 +226,16 @@ func (c *curveT) computeSecret(private, public []byte) []byte {
 	gxy := make([]byte, fieldBytes)
 	serialize(gxy, pk)
 
-	//XXX SECURITY should we wipe the temporary variables?
+	//TODO SECURITY should we wipe the temporary variables?
 
-	//XXX add error conditions based on succ and msucc
+	//TODO add error conditions based on succ and msucc
 	return gxy
 }
 
 func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, err error) {
 	secretKeyWords := scalar{}
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
-		//XXX SECURITY should we wipe secretKeyWords?
+		//TODO SECURITY should we wipe secretKeyWords?
 		err = errors.New("corrupted private key")
 		return
 	}
@@ -254,7 +254,7 @@ func (c *curveT) sign(msg []byte, k *privateKey) (s [signatureBytes]byte, err er
 	copy(s[:fieldBytes], tmpSig[:])
 	nonce.encode(s[fieldBytes:])
 
-	//XXX SECURITY Should we wipe nonce, gsk, secretKeyWords, tmpSig, challenge?
+	//TODO SECURITY Should we wipe nonce, gsk, secretKeyWords, tmpSig, challenge?
 
 	/* response = 2(nonce_secret - sk*challenge)
 	 * Nonce = 8[nonce_secret]*G
@@ -272,7 +272,7 @@ func (c *curveT) deriveTemporarySignature(nonce scalar) (dst [fieldBytes]byte) {
 	return
 }
 
-//XXX Should pubKey have a fixed size here?
+//TODO Should pubKey have a fixed size here?
 func deriveChallenge(pubKey []byte, tmpSignature [fieldBytes]byte, msg []byte) *scalar {
 	h := sha512.New()
 	h.Write(pubKey)
@@ -295,7 +295,7 @@ func deriveNonce(msg []byte, symKey []byte) (dst scalar) {
 
 	barrettDeserializeAndReduce(dst[:], h.Sum(nil), &curvePrimeOrder)
 
-	//XXX SECURITY should we wipe r?
+	//TODO SECURITY should we wipe r?
 	return
 }
 

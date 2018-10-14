@@ -452,7 +452,7 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
-//XXX This can be replaced by extensible for simplicity if we neither use ADD
+//TODO This can be replaced by extensible for simplicity if we neither use ADD
 //on the basePoint in test and benchmark (it is not used elsewhere)
 type homogeneousProjective struct {
 	x, y, z *bigNumber
@@ -506,7 +506,7 @@ func rev(in []byte) []byte {
 }
 
 // See Hisil, formula 5.1
-//XXX Used only for testing
+//TODO Used only for testing
 func (p *homogeneousProjective) double() *homogeneousProjective {
 	x1 := p.x
 	y1 := p.y
@@ -527,7 +527,7 @@ func (p *homogeneousProjective) double() *homogeneousProjective {
 	yy.mulCopy(yy, e)
 	zz := e.mulCopy(e, j)
 
-	//XXX PERF Should it change the same instance instead?
+	//TODO PERF Should it change the same instance instead?
 	return &homogeneousProjective{
 		xx, yy, zz,
 	}
@@ -579,7 +579,7 @@ func (p *homogeneousProjective) add(p2 *homogeneousProjective) *homogeneousProje
 	}
 }
 
-//XXX Move: bigNumber should not know about points
+//TODO Move: bigNumber should not know about points
 func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	a := &twExtensible{
 		x: new(bigNumber),
@@ -625,7 +625,7 @@ func (sz *bigNumber) deserializeAndTwistApprox() (*twExtensible, bool) {
 	a.y.mul(a.z, L0)
 	a.t.subW(1)
 
-	// XXX maybe related with constant time
+	// TODO maybe related with constant time
 	ret := a.t.isZero()
 
 	a.z.setUI(1)

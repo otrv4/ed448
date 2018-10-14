@@ -26,7 +26,7 @@ func (n *bigNumber) copy() *bigNumber {
 	return c
 }
 
-// XXX: delete this
+// TODO: delete this
 func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	r := word(0)
 	x := n.copy().strongReduce()
@@ -52,7 +52,7 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 	return r == 0
 }
 
-// XXX: make this the canonical equals
+// TODO: make this the canonical equals
 // Compare n==x
 // If it is equal, it will return 0. Otherwise the lmask.
 func (n *bigNumber) decafEq(x *bigNumber) word {
@@ -387,7 +387,7 @@ func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 	return karatsubaMul(n, x, y)
 }
 
-//XXX Security this is not constant time
+//TODO Security this is not constant time
 func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c sdword) *bigNumber {
 	if c >= 0 {
 		return n.mulW(x, dword(c))
@@ -417,7 +417,7 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	return n
 }
 
-// XXX: check me
+// TODO: check me
 func (n *bigNumber) isr(x *bigNumber) bool {
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
@@ -509,7 +509,7 @@ func (n *bigNumber) conditionalSwap(x *bigNumber, swap word) *bigNumber {
 }
 
 func constantTimeSelect(x, y *bigNumber, first word) *bigNumber {
-	//XXX this is probably more complicate than it should
+	//TODO this is probably more complicate than it should
 	return y.copy().conditionalSwap(x.copy(), first)
 }
 
@@ -777,7 +777,7 @@ func dsaLikeSerialize(dst []byte, n *bigNumber) {
 	j, fill := uint(0), uint(0)
 	buffer := dword(0)
 
-	// XXX: unroll my power!!
+	// TODO: unroll my power!!
 	for i := uint(0); i < fieldBytes; i++ {
 		if fill < uint(8) && j < nLimbs {
 			buffer |= dword(x[j]) << fill
@@ -790,13 +790,13 @@ func dsaLikeSerialize(dst []byte, n *bigNumber) {
 	}
 }
 
-// XXX: make in type serialized?
+// TODO: make in type serialized?
 func dsaLikeDeserialize(n *bigNumber, in []byte) word {
 	j, fill := uint(0), uint(0)
 	buffer := dword(0x00)
 	scarry := sdword(0x00)
 
-	// XXX: unroll my power!!
+	// TODO: unroll my power!!
 	for i := uint(0); i < nLimbs; i++ {
 		for fill < radix && j < fieldBytes {
 			buffer |= dword(in[j]) << fill
@@ -815,7 +815,7 @@ func dsaLikeDeserialize(n *bigNumber, in []byte) word {
 		scarry = sdword((word(scarry) + n[i] - modulus[i]) >> 8 * 4)
 	}
 
-	// XXX: check me, and add case when hibit is one
+	// TODO: check me, and add case when hibit is one
 	var high word = 0x01
 	succ := -(high)
 	succ &= isZeroMask(word(buffer))

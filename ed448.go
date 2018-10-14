@@ -6,7 +6,7 @@ import (
 )
 
 // Curve is the interface that wraps the basic curve methods.
-//XXX It would be better with the use of privateKey and publicKey types.
+//TODO It would be better with the use of privateKey and publicKey types.
 type Curve interface {
 	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
 	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)
@@ -59,7 +59,7 @@ func (ed *curveT) ComputeSecret(private [privKeyBytes]byte, public [pubKeyBytes]
 }
 
 //DecafCurve is the interface that wraps the basic curve methods in decaf.
-//XXX: change this name
+//TODO: change this name
 type DecafCurve interface {
 	GenerateKeys() (priv [privKeyBytes]byte, pub [pubKeyBytes]byte, ok bool)
 	Sign(priv [privKeyBytes]byte, message []byte) (signature [signatureBytes]byte, ok bool)

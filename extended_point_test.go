@@ -969,7 +969,7 @@ func (s *Ed448Suite) Test_AddNielsToExtended(c *C) {
 
 	r.addNielsToExtended(np, false)
 
-	// XXX: this fails when not compared one by one
+	// TODO: this fails when not compared one by one
 	c.Assert(r.x, DeepEquals, exp.x)
 	c.Assert(r.y, DeepEquals, exp.y)
 	c.Assert(r.z, DeepEquals, exp.z)
@@ -1536,7 +1536,7 @@ func (s *Ed448Suite) Test_IsogenizeToMontgomery(c *C) {
 	c.Assert(rsl, DeepEquals, exp)
 }
 
-// XXX: add assoc mul and distributive
+// TODO: add assoc mul and distributive
 func (s *Ed448Suite) Test_PointScalarMul(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{

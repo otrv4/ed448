@@ -188,7 +188,7 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
-// XXX: should this return a bool and an error?
+// TODO: should this return a bool and an error?
 func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
@@ -388,7 +388,7 @@ func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, befo
 // Convert from the extended twisted Edwards representation of a point to affine
 // Given (X : Y : Z : T), compute X/Z^2, Y/Z^3 and ignore T.
 // If the point is ∞ it returns 0, 0.
-// XXX: check me
+// TODO: check me
 func (p *twExtendedPoint) toAffine() *affineCoordinates {
 	out := &affineCoordinates{
 		&bigNumber{},
@@ -411,7 +411,7 @@ func (p *twExtendedPoint) toAffine() *affineCoordinates {
 	return out
 }
 
-//XXX: extendedPoint should not know about twNiels
+//TODO: extendedPoint should not know about twNiels
 func (np *twNiels) toExtended() *twExtendedPoint {
 	p := &twExtendedPoint{
 		&bigNumber{},
@@ -550,7 +550,7 @@ func precomputedScalarMul(s *scalar) *twExtendedPoint {
 }
 
 // using the montgomery ladder
-// XXX: implement the one not using montgomery?
+// TODO: implement the one not using montgomery?
 func directPointScalarMul(p [fieldBytes]byte, s *scalar, useIdentity word) ([fieldBytes]byte, word) {
 	var out [56]byte
 	xa, xs, zs, l0, l1 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
@@ -600,8 +600,8 @@ func directPointScalarMul(p [fieldBytes]byte, s *scalar, useIdentity word) ([fie
 	xa.conditionalSwap(xd, pflip)
 	za.conditionalSwap(zd, pflip)
 
-	// XXX: should be constant time
-	// reserialize XXX: simplify this reserialization
+	// TODO: should be constant time
+	// reserialize TODO: simplify this reserialization
 	xzD, xzA, xzS, den, l2, l3 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
 	xzS.mul(xs, zs)

@@ -122,7 +122,7 @@ func (s *scalar) invert() bool {
 
 	copy(s[:], out[:])
 
-	// XXX: memzero
+	// TODO: memzero
 	// True is the output is not zero
 	return out.equals(scalarZero) != true
 }
@@ -359,7 +359,7 @@ func (s *scalar) Encode() []byte {
 }
 
 // Decode reads a scalar from wire format or from bytes and reduces mod scalar prime.
-// XXX: this will reduce with barret, change name and receiver
+// TODO: this will reduce with barret, change name and receiver
 func (s *scalar) BarretDecode(src []byte) error {
 	if len(src) < fieldBytes {
 		return errors.New("ed448: cannot decode a scalar from a byte array with a length unequal to 56")

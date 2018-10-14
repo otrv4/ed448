@@ -100,7 +100,7 @@ func (c *decafCurveT) decafComputeSecret(myPriv *privateKey, yourPub [fieldBytes
 	var shared [fieldBytes]byte
 	hash.Read(shared[:])
 
-	//XXX: should we wipe ser bytes?
+	//TODO: should we wipe ser bytes?
 	return shared[:], ok
 }
 
@@ -142,7 +142,7 @@ func (c *decafCurveT) decafDeriveTemporarySignature(nonce *scalar) (dst [fieldBy
 
 func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]byte, err error) {
 	secretKeyWords := &scalar{}
-	//XXX: should secret words be destroyed?
+	//TODO: should secret words be destroyed?
 
 	if ok := barrettDeserialize(secretKeyWords[:], k.secretKey(), &curvePrimeOrder); !ok {
 		err = errors.New("Corrupted private key")
@@ -159,7 +159,7 @@ func (c *decafCurveT) decafSign(msg []byte, k *privateKey) (sig [signatureBytes]
 	copy(sig[:fieldBytes], tmpSignature[:])
 	nonce.encode(sig[fieldBytes:])
 
-	//XXX: should nonce and challenge be destroyed?
+	//TODO: should nonce and challenge be destroyed?
 	return
 }
 
@@ -191,7 +191,7 @@ func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k 
 	if err != nil {
 		return false, err
 	}
-	// XXX: hacky. FIX ME.
+	// TODO: hacky. FIX ME.
 	ret &= ret1
 
 	response := &scalar{}

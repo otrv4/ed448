@@ -49,7 +49,7 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 		isSquare = decafTrue
 	}
 
-	// XXX: check decafFalse
+	// TODO: check decafFalse
 	c = constantTimeSelect(r0, bigOne, decafFalse) // r? = isSquare ? 1 : r0
 
 	e.mul(b, c)
@@ -77,6 +77,6 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	p.y.mul(e, a) // (1+s^2)(1-s^2)
 	p.z.mul(a, b) // (1-s^2)t
 
-	// XXX: check valid
+	// TODO: check valid
 	return p
 }
