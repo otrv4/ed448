@@ -1,6 +1,5 @@
 package ed448
 
-//TODO need a constant time implement
 func mask(a, b *bigNumber, mask word) {
 	for k := 0; k < len(b); k++ {
 		a[k] = word(mask) & b[k]
