@@ -68,6 +68,7 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	p.y.mul(e, a) // (1+s^2)(1-s^2)
 	p.z.mul(a, b) // (1-s^2)t
 
-	// TODO: check valid
+	// assert(API_NS(point_valid)(p));
+
 	return p
 }
