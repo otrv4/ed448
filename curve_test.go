@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Ed448Suite) Test_RadixBasePointIsOnCurve(c *C) {
-	c.Assert(basePoint.OnCurve(), Equals, true)
+	c.Assert(testPoint().OnCurve(), Equals, true)
 }
 
 func (s *Ed448Suite) Test_RadixMultiplyByBase(c *C) {

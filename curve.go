@@ -34,35 +34,7 @@ var (
 
 	//edCons: -39081
 	edCons = mustDeserialize(serialized{0xa9, 0x98}) // unsigned
-
-	//This is the base point in the curve 4E
-	// gx: 22458004029592430018760433409989603624678964163256413424612546168695
-	// 0415467406032909029192869357953282578032075146446173674602635247710,
-	// gy=29881921007848149267601793044393067343754404015408024209592824137233
-	// 1506189835876003536878655418784733982303233503462500531545062832660
-	// TODO: change to correct in hex
-	basePoint = mustNewPoint([]byte{
-		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
-		0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,
-		0x96, 0x3d, 0xc6, 0x94, 0x2d, 0x93, 0xf3,
-		0xaa, 0x7e, 0x14, 0x96, 0xfa, 0xec, 0x9c,
-		0x70, 0xd0, 0x59, 0x3c, 0x5c, 0x06, 0x5f,
-		0x24, 0x33, 0xf7, 0xad, 0x26, 0x6a, 0x3a,
-		0x45, 0x98, 0x60, 0xf4, 0xaf, 0x4f, 0x1b,
-		0xff, 0x92, 0x26, 0xea, 0xa0, 0x7e, 0x29,
-	},
-		[]byte{0x13},
-	)
 )
-
-func mustNewPoint(x, y []byte) *homogeneousProjective {
-	p, err := newPoint(x, y)
-	if err != nil {
-		panic("failed to create point")
-	}
-
-	return p
-}
 
 func (c *curveT) multiplyMontgomery(in *bigNumber, s scalar, nbits, extraDoubles int) (*bigNumber, word) {
 	mont := new(montgomery)
