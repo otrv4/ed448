@@ -41,13 +41,12 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	a.mul(c, n)
 	square := b.isr(a)
 
-	c = constantTimeSelect(r0, bigOne, square) // r? = isSquare ? 1 : r0
-
+	c = constantTimeSelect(bigOne, r0, square) // r? = isSquare ? 1 : r0
 	e.mul(b, c)
 
 	// s2 = +- |N . e|
 	a.mul(n, e)
-	a.decafCondNegate(highBit(a) ^ square) // NB
+	a.decafCondNegate(lowBit(a) ^ ^square) // NB
 
 	// t2 = -+ cN(r - 1)((a - (2 * d))e)^ 2 - 1
 	c.mulWSignedCurveConstant(e, 1-2*edwardsD) // ( a - (2 * d))e

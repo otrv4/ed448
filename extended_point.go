@@ -191,7 +191,6 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 // TODO: should this return a bool and an error?
 func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-
 	n, succ := deserializeReturnMask(src)
 	zero := n.decafEq(bigZero)
 	if useIdentity {
@@ -228,6 +227,52 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 		return succ, err
 	}
 	return succ, err
+}
+
+func decafDecodeNew(dst *twExtendedPoint, src serialized, useIdentity bool) error {
+	s2 := &bigNumber{}
+	num := &bigNumber{}
+	tmp := &bigNumber{}
+	tmp2 := &bigNumber{}
+	isr := &bigNumber{}
+	den := dst.t
+	ynum := dst.z
+
+	s, succ := deserializeReturnMask(src)
+	zero := s.decafEq(bigZero)
+	if useIdentity {
+		succ &= decafTrue | ^zero
+	} else {
+		succ &= decafFalse | ^zero
+	}
+	succ &= ^highBit(s)
+
+	s2.square(s)
+	den.sub(bigOne, s2)
+	ynum.add(bigOne, s2)
+	num.mulWSignedCurveConstant(s2, 4-4*(edwardsD))
+	tmp.square(den)
+	num.add(tmp, num)
+	tmp2.mul(num, tmp)
+	succ &= isr.isr(tmp2)
+	tmp.mul(isr, den)
+	dst.y.mul(tmp, ynum)
+	tmp2.mul(tmp, s)
+	tmp2.add(tmp2, tmp2)
+	tmp.mul(tmp2, isr)
+	dst.x.mul(tmp, num)
+
+	tmp.mul(tmp2, factor)
+
+	dst.x.decafCondNegate(lowBit(tmp))
+	dst.z.set(bigOne)
+	dst.t.mul(dst.x, dst.y)
+
+	if succ != decafTrue {
+		return errors.New("unable to decode given point")
+	}
+
+	return nil
 }
 
 func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
