@@ -417,8 +417,7 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	return n
 }
 
-// TODO: check me
-func (n *bigNumber) isr(x *bigNumber) bool {
+func (n *bigNumber) isr(x *bigNumber) word {
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
 	l2 := new(bigNumber)
@@ -446,13 +445,12 @@ func (n *bigNumber) isr(x *bigNumber) bool {
 	l0.square(l2)
 	l1.mul(x, l0)
 	l0.squareN(l1, 223)
-	tmp := n.mul(l2, l0)
-
+	l1.mul(l2, l0)
 	l2.square(l1)
 	l0.mul(l2, x)
-	n = tmp.copy()
+	n.set(l1)
 
-	return l0.equals(bigOne)
+	return l0.decafEq(bigOne)
 }
 
 func invert(x *bigNumber) *bigNumber {

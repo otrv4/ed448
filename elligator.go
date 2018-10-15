@@ -12,8 +12,6 @@ package ed448
 func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	r, a, b, c, n, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
-	var isSquare word
-
 	p := &twExtendedPoint{
 		x: new(bigNumber),
 		y: new(bigNumber),
@@ -43,20 +41,13 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	a.mul(c, n)
 	square := b.isr(a)
 
-	if square {
-		isSquare = decafFalse
-	} else {
-		isSquare = decafTrue
-	}
-
-	// TODO: check decafFalse
-	c = constantTimeSelect(r0, bigOne, decafFalse) // r? = isSquare ? 1 : r0
+	c = constantTimeSelect(r0, bigOne, square) // r? = isSquare ? 1 : r0
 
 	e.mul(b, c)
 
 	// s2 = +- |N . e|
 	a.mul(n, e)
-	a.decafCondNegate(highBit(a) ^ isSquare) // NB
+	a.decafCondNegate(highBit(a) ^ square) // NB
 
 	// t2 = -+ cN(r - 1)((a - (2 * d))e)^ 2 - 1
 	c.mulWSignedCurveConstant(e, 1-2*edwardsD) // ( a - (2 * d))e
@@ -64,7 +55,7 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	e.sub(r, bigOne)
 	c.mul(b, e)
 	b.mul(c, n)
-	b.decafCondNegate(isSquare)
+	b.decafCondNegate(square)
 	b.sub(b, bigOne)
 
 	// isogenize
