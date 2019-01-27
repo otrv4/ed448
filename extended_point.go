@@ -229,12 +229,12 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 	return succ, err
 }
 
-func decafDecodeNew(dst *twExtendedPoint, src serialized, useIdentity bool) error {
+func decafDecodeNew(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	s2 := &bigNumber{}
 	num := &bigNumber{}
 	tmp := &bigNumber{}
 	tmp2 := &bigNumber{}
-	isr := &bigNumber{}
+	isr := dst.x
 	den := dst.t
 	ynum := dst.z
 
@@ -245,12 +245,12 @@ func decafDecodeNew(dst *twExtendedPoint, src serialized, useIdentity bool) erro
 	} else {
 		succ &= decafFalse | ^zero
 	}
-	succ &= ^highBit(s)
+	succ &= ^lowBit(s)
 
 	s2.square(s)
 	den.sub(bigOne, s2)
 	ynum.add(bigOne, s2)
-	num.mulWSignedCurveConstant(s2, 4-4*(edwardsD))
+	num.mulWSignedCurveConstant(s2, -4*(edwardsD-1))
 	tmp.square(den)
 	num.add(tmp, num)
 	tmp2.mul(num, tmp)
@@ -261,18 +261,19 @@ func decafDecodeNew(dst *twExtendedPoint, src serialized, useIdentity bool) erro
 	tmp2.add(tmp2, tmp2)
 	tmp.mul(tmp2, isr)
 	dst.x.mul(tmp, num)
-
 	tmp.mul(tmp2, factor)
 
 	dst.x.decafCondNegate(lowBit(tmp))
 	dst.z.set(bigOne)
 	dst.t.mul(dst.x, dst.y)
 
+	var err error
 	if succ != decafTrue {
-		return errors.New("unable to decode given point")
+		err = errors.New("unable to decode given point")
+		return succ, err
 	}
 
-	return nil
+	return succ, err
 }
 
 func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
