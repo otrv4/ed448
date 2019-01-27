@@ -417,6 +417,7 @@ func (n *bigNumber) squareN(x *bigNumber, y uint) *bigNumber {
 	return n
 }
 
+// n^2 x = 1, QNR; or 0 if x = 0.  Return true if successful
 func (n *bigNumber) isr(x *bigNumber) word {
 	l0 := new(bigNumber)
 	l1 := new(bigNumber)
