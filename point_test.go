@@ -143,7 +143,7 @@ func (s *Ed448Suite) Test_ExtensibleUntwistAndDoubleAndSerialize(c *C) {
 
 	ser := p.untwistAndDoubleAndSerialize()
 
-	c.Assert(ser.equals(exp), Equals, true)
+	c.Assert(ser.decafEq(exp), Equals, decafTrue)
 }
 
 func (s *Ed448Suite) Test_ConditionalNegate(c *C) {
@@ -188,7 +188,7 @@ func (s *Ed448Suite) Test_MontgomerySerialize(c *C) {
 
 	out, _ := mont.serialize(in)
 
-	c.Assert(out.equals(exp), Equals, true)
+	c.Assert(out.decafEq(exp), Equals, decafTrue)
 }
 
 func (s *Ed448Suite) Test_MontgomeryDeserialize(c *C) {
@@ -207,11 +207,11 @@ func (s *Ed448Suite) Test_MontgomeryDeserialize(c *C) {
 	bsZa, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040")
 	za := new(bigNumber).setBytes(bsZa)
 
-	c.Assert(out.z0.equals(z0), Equals, true)
-	c.Assert(out.xd.equals(xd), Equals, true)
-	c.Assert(out.zd.equals(zd), Equals, true)
-	c.Assert(out.xa.equals(xa), Equals, true)
-	c.Assert(out.za.equals(za), Equals, true)
+	c.Assert(out.z0.decafEq(z0), Equals, decafTrue)
+	c.Assert(out.xd.decafEq(xd), Equals, decafTrue)
+	c.Assert(out.zd.decafEq(zd), Equals, decafTrue)
+	c.Assert(out.xa.decafEq(xa), Equals, decafTrue)
+	c.Assert(out.za.decafEq(za), Equals, decafTrue)
 }
 
 func (s *Ed448Suite) Test_MontgomeryStep(c *C) {

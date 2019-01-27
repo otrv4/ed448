@@ -18,7 +18,7 @@ func (s *Ed448Suite) Test_IsZero(c *C) {
 	c.Assert(n.isZero(), Equals, true)
 }
 
-func (s *Ed448Suite) Test_Equals(c *C) {
+func (s *Ed448Suite) Test_DecafEquals1(c *C) {
 	n, _ := deserialize(serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -30,15 +30,15 @@ func (s *Ed448Suite) Test_Equals(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	})
 
-	c.Assert(n.equals(n), Equals, true)
+	c.Assert(n.decafEq(n), Equals, decafTrue)
 
 	x := mustDeserialize(serialized{0x01, 0x01})
 	y := mustDeserialize(serialized{0x01, 0x02})
 
-	c.Assert(x.equals(y), Equals, false)
+	c.Assert(x.decafEq(y), Equals, decafFalse)
 }
 
-func (s *Ed448Suite) Test_DecafEquals(c *C) {
+func (s *Ed448Suite) Test_DecafEquals2(c *C) {
 	x, _ := deserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
 		0x36, 0x3c, 0x0d, 0x9f, 0xcf, 0xaa, 0x3d,
@@ -224,7 +224,7 @@ func (s *Ed448Suite) Test_SquareN(c *C) {
 
 	n := new(bigNumber).squareN(gx, 5)
 
-	c.Assert(n.equals(exp), Equals, true)
+	c.Assert(n.decafEq(exp), Equals, decafTrue)
 
 	exp = gx.copy()
 	for i := 0; i < 6; i++ {
@@ -233,7 +233,7 @@ func (s *Ed448Suite) Test_SquareN(c *C) {
 
 	n = n.squareN(gx, 6)
 
-	c.Assert(n.equals(exp), Equals, true)
+	c.Assert(n.decafEq(exp), Equals, decafTrue)
 }
 
 func (s *Ed448Suite) Test_InverseSquareRoot(c *C) {
@@ -254,7 +254,7 @@ func (s *Ed448Suite) Test_InverseSquareRoot(c *C) {
 		"dee9dc2b699c4abc66f2832a677dfd0bf7e70ee72f01db170839717d1c64f02")
 	exp := new(bigNumber).setBytes(n)
 
-	c.Assert(x.equals(exp), Equals, true)
+	c.Assert(x.decafEq(exp), Equals, decafTrue)
 }
 
 func (s *Ed448Suite) Test_Invert(c *C) {

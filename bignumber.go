@@ -53,7 +53,7 @@ func (n *bigNumber) equals(o *bigNumber) (eq bool) {
 }
 
 // TODO: make this the canonical equals
-// Compare n==x
+// Compare n == x
 // If it is equal, it will return 0. Otherwise the lmask.
 func (n *bigNumber) decafEq(x *bigNumber) word {
 	y := &bigNumber{}

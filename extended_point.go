@@ -440,7 +440,7 @@ func (p *twExtendedPoint) toAffine() *affineCoordinates {
 		&bigNumber{},
 	}
 
-	if p.equals(identity) == decafTrue || p.z.equals(bigZero) {
+	if p.equals(identity) == decafTrue || p.z.decafEq(bigZero) == decafTrue {
 		return out
 	}
 
