@@ -195,7 +195,7 @@ func (s *Ed448Suite) Test_elligator_testVectors(c *C) {
 		}
 		copy(exp[:], elligatorTestVectorsOutput[ix])
 		copy(inp[:], v)
-		decafDecodeNew(q, exp, false)
+		decafDecode(q, exp, false)
 		p := pointFromNonUniformHash(inp)
 		c.Assert(p.Equals(q), Equals, true)
 	}

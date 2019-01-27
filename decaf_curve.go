@@ -182,12 +182,12 @@ func (c *decafCurveT) decafVerify(signature [signatureBytes]byte, msg []byte, k 
 		t: &bigNumber{},
 	}
 
-	ret, err := decafDecode(point, tmpSig, true)
+	ret, err := decafDecodeOld(point, tmpSig, true)
 	if err != nil {
 		return false, err
 	}
 
-	ret1, err := decafDecode(pkPoint, serPubkey, false)
+	ret1, err := decafDecodeOld(pkPoint, serPubkey, false)
 	if err != nil {
 		return false, err
 	}

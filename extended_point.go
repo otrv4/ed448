@@ -189,7 +189,7 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 }
 
 // TODO: should this return a bool and an error?
-func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
+func decafDecodeOld(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	n, succ := deserializeReturnMask(src)
 	zero := n.decafEq(bigZero)
@@ -229,7 +229,7 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 	return succ, err
 }
 
-func decafDecodeNew(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
+func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	s2 := &bigNumber{}
 	num := &bigNumber{}
 	tmp := &bigNumber{}
@@ -750,7 +750,7 @@ func NewPointFromBytes(in ...[]byte) Point {
 	}
 	tmpIn := [fieldBytes]byte{}
 	copy(tmpIn[:], bytes[:])
-	decafDecode(out, tmpIn, false)
+	decafDecodeOld(out, tmpIn, false)
 
 	return out
 }
@@ -817,7 +817,7 @@ func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) (bool, error) {
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
 
-	valid, err := decafDecode(p, ser, useIdentity)
+	valid, err := decafDecodeOld(p, ser, useIdentity)
 	if err != nil {
 		return false, err
 	}
