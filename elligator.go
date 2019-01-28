@@ -72,3 +72,24 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 
 	return p
 }
+
+func pointFromUniformHash(ser [112]byte) *twExtendedPoint {
+	var ser1 [56]byte
+	var ser2 [56]byte
+
+	copy(ser1[:], ser[:56])
+	copy(ser2[:], ser[:56])
+
+	p := pointFromNonUniformHash(ser1)
+	q := pointFromNonUniformHash(ser2)
+
+	r := &twExtendedPoint{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	r.add(p, q)
+	return r
+}

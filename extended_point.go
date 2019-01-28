@@ -78,7 +78,7 @@ func (p *twExtendedPoint) add(q, r *twExtendedPoint) {
 	b.addRaw(q.y, q.x)
 	p.y.mul(d, b)
 	b.mul(r.t, q.t)
-	p.x.mulW(b, 2-2*edwardsD)
+	p.x.mulW(b, 2*effD)
 	b.addRaw(a, p.y)
 	c.sub(p.y, a)
 	a.mul(q.z, r.z)
