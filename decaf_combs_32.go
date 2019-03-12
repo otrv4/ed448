@@ -16,6 +16,7 @@ func selectMask(index word, current word) word {
 	return word(-(((xor | -xor) >> 31) ^ 1))
 }
 
+// This is constant time
 func (table *decafBaseTable) lookup(index word) *twNiels {
 	out := &twNiels{
 		&bigNumber{},

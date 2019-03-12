@@ -12,6 +12,7 @@ type fixedBaseTable struct {
 	adjustments adjustmentsTable
 }
 
+// This is constant time
 func (table *fixedBaseTable) lookup(j, t, idx uint) *twNiels {
 	index := word((j << (t - 1)) + idx)
 	tableSize := len(table.combs)

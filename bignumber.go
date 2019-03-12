@@ -497,6 +497,7 @@ func (n *bigNumber) decafCondNegate(neg word) {
 }
 
 //if swap == 0xffffffff => n = x, x = n
+// This is constant time
 func (n *bigNumber) conditionalSwap(x *bigNumber, swap word) *bigNumber {
 	for i, xv := range x {
 		s := (xv ^ n[i]) & swap

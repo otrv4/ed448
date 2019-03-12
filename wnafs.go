@@ -1,5 +1,6 @@
 package ed448
 
+// This is constant time
 func constTimeLookup(table []*twPNiels, index word) *twPNiels {
 	out := &twPNiels{
 		&twNiels{

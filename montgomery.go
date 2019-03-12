@@ -20,7 +20,7 @@ func (a *montgomery) montgomeryStep() {
 	a.za.square(a.zd)
 	a.xd.square(L0)
 	L0.square(L1)
-	a.zd.mulWSignedCurveConstant(a.xd, 1-edwardsD) /* FIXME PERF MULW */
+	a.zd.mulWSignedCurveConstant(a.xd, 1-edwardsD) /* TODO: PERF MULW */
 	L1.sub(a.xd, L0)
 	a.xd.mul(L0, a.zd)
 	L0.subRaw(a.zd, L1)
