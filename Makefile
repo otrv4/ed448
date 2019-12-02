@@ -46,3 +46,6 @@ bench:
 
 clean:
 	rm -rf $(PROFILING_FOLDER)
+
+tidy:
+	go mod tidy
