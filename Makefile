@@ -3,9 +3,9 @@ GO_VERSION=$(shell go version | grep  -o 'go[[:digit:]]\.[[:digit:]]')
 
 default: test lint
 
-ci: get lint test
+ci: deps lint test
 
-get:
+deps:
 ifeq ($(GO_VERSION), go1.6)
 	echo "$(GO_VERSION) is not a supported Go release. Skipping golint."
 else ifeq ($(GO_VERSION), go1.7)
