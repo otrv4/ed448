@@ -258,7 +258,6 @@ func (s *Ed448Suite) Test_InverseSquareRoot(c *C) {
 }
 
 func (s *Ed448Suite) Test_Invert(c *C) {
-	n := &bigNumber{}
 	x := &bigNumber{
 		0x4516644, 0x1430f14, 0x72318d2, 0xb1c2096,
 		0x32e3855, 0x1c1105f, 0xbf1556f, 0xbb9f535,
@@ -272,7 +271,8 @@ func (s *Ed448Suite) Test_Invert(c *C) {
 		0xdd725b2, 0xc2ae8ae, 0xf4808a9, 0x40ed04c,
 		0x864dc36, 0x6821f90, 0x8099dc5, 0xcf9ca3d,
 	}
-	n = invert(x)
+
+	n := invert(x)
 
 	c.Assert(n, DeepEquals, exp)
 }

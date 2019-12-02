@@ -105,5 +105,5 @@ func (ed *decafCurveT) Verify(signature [signatureBytes]byte, message []byte, pu
 	if err != nil {
 		return false, err
 	}
-	return true, nil
+	return valid, nil
 }

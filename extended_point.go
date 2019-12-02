@@ -445,9 +445,9 @@ func (p *twExtendedPoint) toAffine() *affineCoordinates {
 		return out
 	}
 
-	s, t, r := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	s, t := &bigNumber{}, &bigNumber{}, &bigNumber{}
 
-	r = invert(p.z)
+	r := invert(p.z)
 	s.square(r)
 
 	out.x.mul(p.x, s).strongReduce()

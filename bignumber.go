@@ -718,7 +718,6 @@ func (n *bigNumber) strongReduce() *bigNumber {
 
 	carry += dword(n[15]) + m
 	n[15] = word(carry) & radixMask
-	carry >>= 28
 
 	return n
 }
