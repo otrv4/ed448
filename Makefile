@@ -49,3 +49,7 @@ clean:
 
 tidy:
 	go mod tidy
+
+ci-lint:
+	golangci-lint run
+

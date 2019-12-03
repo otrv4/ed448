@@ -124,7 +124,7 @@ func (s *scalar) invert() bool {
 
 	// TODO: memzero
 	// True is the output is not zero
-	return out.equals(scalarZero) != true
+	return !out.equals(scalarZero)
 }
 
 func (s *scalar) equals(x *scalar) bool {

@@ -445,7 +445,7 @@ func (p *twExtendedPoint) toAffine() *affineCoordinates {
 		return out
 	}
 
-	s, t := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	s, t := &bigNumber{}, &bigNumber{}
 
 	r := invert(p.z)
 	s.square(r)

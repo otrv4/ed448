@@ -496,7 +496,7 @@ func (p *homogeneousProjective) OnCurve() bool {
 }
 
 func rev(in []byte) []byte {
-	r := make([]byte, len(in), len(in))
+	r := make([]byte, len(in))
 
 	for i, ni := range in {
 		r[len(in)-i-1] = ni
