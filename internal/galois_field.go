@@ -1,11 +1,17 @@
 package galoisfield
 
-import "github.com/awnumar/memguard"
+import (
+	"github.com/awnumar/memguard"
+)
 
 const (
 	// WordBits is
-	// TODO: for the moment
+	// TODO: for the moment using a 32bits arch
 	WordBits = 32
+	// WordBytes is
+	WordBytes = 4
+	// NLimbs is
+	NLimbs = 64 / WordBytes
 )
 
 // GaloisField448 is a field with a finite number of elements. The number depends
@@ -20,9 +26,15 @@ type GaloisField448 struct {
 func NewGaloisField448() *GaloisField448 {
 	var gf GaloisField448
 	// TODO: extract to constant. It should be 320 for ed25519
-	gf.Limb = memguard.NewBuffer(512 / WordBits)
+	// equivalent to: gf.Limb = memguard.NewBuffer(512 / WordBits)
+	gf.Limb = memguard.NewBuffer(NLimbs)
 
 	gf.Limb.Freeze() // Make it inmmutable
 
 	return &gf
+}
+
+// Destroy securely wipes and frees the underlying memory of the gf.Limb
+func (gf *GaloisField448) Destroy() {
+	gf.Limb.Destroy()
 }
