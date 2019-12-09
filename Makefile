@@ -53,3 +53,5 @@ tidy:
 ci-lint:
 	golangci-lint run
 
+race:
+	go test -race -short $(go list ./... | grep -v /vendor/)
