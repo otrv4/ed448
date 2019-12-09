@@ -1,0 +1,39 @@
+image: golang:1.12
+
+cache:
+  paths:
+    - /apt-cache
+    - /go/src/github.com
+    - /go/src/golang.org
+    - /go/src/google.golang.org
+    - /go/src/gopkg.in
+
+stages:
+  - test
+  - build
+
+before_script:
+  - mkdir -p /go/src/bugs.otr.im/otrv4/ed448 /go/src/_/builds
+  - cp -r $CI_PROJECT_DIR /go/src/bugs.otr.im/otrv4/ed448
+  - ln -s /go/src/gitlab.com/pantomath-io /go/src/bugs.otr.im/otrv4/ed448
+  - make deps
+
+unit_tests:
+  stage: test
+  script:
+    - make test
+
+race_detector:
+  stage: test
+  script:
+    - make race
+
+lint_code:
+  stage: test
+  script:
+    - make lint
+
+build:
+  stage: build
+  script:
+    - make
