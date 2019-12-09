@@ -776,12 +776,12 @@ func (p *twExtendedPoint) Copy() Point {
 	return Point(p)
 }
 
-// Add gives the sum of two points (q, r) and produces a thrid point (p).
+// Add gives the sum of two points (q, r) and produces a third point (p).
 func (p *twExtendedPoint) Add(q, r Point) {
 	p.add(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
 
-// Sub gives the subtraction of two points (q, r) and produces a thrid point (p).
+// Sub gives the subtraction of two points (q, r) and produces a third point (p).
 func (p *twExtendedPoint) Sub(q, r Point) {
 	p.sub(q.(*twExtendedPoint), r.(*twExtendedPoint))
 }
