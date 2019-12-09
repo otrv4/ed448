@@ -186,7 +186,6 @@ func (c *curveT) computeSecret(private, public []byte) []byte {
 	var pub serialized
 	copy(pub[:], public)
 
-	word(lmask)
 	pk, _ := deserializeReturnMask(pub)
 
 	barrettDeserializeReturnMask(sk[:], private, &curvePrimeOrder)
