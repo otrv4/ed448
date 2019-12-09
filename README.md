@@ -1,7 +1,7 @@
 # ed448 or goldilocks
 
 [![Build Status](https://travis-ci.org/otrv4/ed448.svg?branch=master)](https://travis-ci.org/otrv4/ed448)
-[![Go Report Card](https://goreportcard.com/report/github.com/otrv4/ed448)](https://goreportcard.com/report/github.com/otrv4/ed448)
+[![Go Report Card](https://goreportcard.com/badge/github.com/otrv4/ed448)](https://goreportcard.com/report/github.com/otrv4/ed448)
 
 This is an implementation of the Edwards elliptic curve with a field size of
 448, as described by Mike Hamburg in his
