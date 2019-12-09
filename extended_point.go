@@ -322,13 +322,12 @@ func dsaLikeDecode(p *twExtendedPoint, srcOrg []byte) word {
 	}
 	src := append([]byte{}, srcOrg...)
 
-	succ := decafTrue
 	var cofactorMask uint = zeroMask
 
 	low := ^isZeroMask(word(src[fieldBytes] & zeroMask))
 	src[fieldBytes] &= byte(^(cofactorMask))
 
-	succ = isZeroMask(word(src[fieldBytes]))
+	succ := isZeroMask(word(src[fieldBytes]))
 	succ &= dsaLikeDeserialize(p.y, src[:])
 
 	p.x.square(p.y)

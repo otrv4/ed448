@@ -186,14 +186,12 @@ func (c *curveT) computeSecret(private, public []byte) []byte {
 	var pub serialized
 	copy(pub[:], public)
 
-	msucc := word(lmask)
-	pk, succ := deserializeReturnMask(pub)
+	word(lmask)
+	pk, _ := deserializeReturnMask(pub)
 
-	msucc &= barrettDeserializeReturnMask(sk[:], private, &curvePrimeOrder)
+	barrettDeserializeReturnMask(sk[:], private, &curvePrimeOrder)
 
-	ok := word(0)
-	pk, ok = c.multiplyMontgomery(pk, sk, scalarBits, 1)
-	succ &= ok
+	pk, _ = c.multiplyMontgomery(pk, sk, scalarBits, 1)
 
 	gxy := make([]byte, fieldBytes)
 	serialize(gxy, pk)
