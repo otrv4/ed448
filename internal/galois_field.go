@@ -41,7 +41,8 @@ func (gf *GaloisField448) Destroy() {
 
 // Copy copies one galoisfield to another.
 func (gf *GaloisField448) Copy() *GaloisField448 {
-	n := gf
+	n := NewGaloisField448()
+	*n = *gf
 
 	return n
 }
