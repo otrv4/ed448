@@ -4,16 +4,6 @@ import (
 	"github.com/awnumar/memguard"
 )
 
-const (
-	// WordBits is
-	// TODO: for the moment using a 32bits arch
-	WordBits = 32
-	// WordBytes is
-	WordBytes = 4
-	// NLimbs is
-	NLimbs = 64 / WordBytes
-)
-
 // GaloisField448 is a field with a finite number of elements. The number depends
 // on the word bits: 512/word_bits
 // This should not be confunsed with the Field Element
