@@ -15,6 +15,18 @@ func (s *Ed448InternalSuite) Test_WideMul32(c *C) {
 	c.Assert(n, Equals, uint64(0xff))
 }
 
+func (s *Ed448InternalSuite) Test_WideMul64(c *C) {
+	a := uint64(0x04)
+	b := uint64(0x05)
+	n := widemul64(a, b)
+	c.Assert(n, Equals, uint128{0x00, 0x14})
+
+	d := uint64(0xff)
+	e := uint64(0xff)
+	n = widemul64(d, e)
+	c.Assert(n, Equals, uint128{0x00, 0xfe01})
+}
+
 func (s *Ed448InternalSuite) Test_IsWordZero(c *C) {
 	a := uint32(0x00)
 	ret := isWord32Zero(a)
