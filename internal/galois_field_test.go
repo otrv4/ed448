@@ -13,7 +13,7 @@ type Ed448InternalSuite struct{}
 var _ = Suite(&Ed448InternalSuite{})
 
 func (s *Ed448InternalSuite) Test_NewGaloisField(c *C) {
-	gf := NewGaloisField448()
+	gf := NewGaloisField448(N32Limbs)
 	c.Assert(gf, NotNil)
 
 	size := gf.Limb.Size()
@@ -24,7 +24,7 @@ func (s *Ed448InternalSuite) Test_NewGaloisField(c *C) {
 }
 
 func (s *Ed448InternalSuite) Test_GaloisField_Copy(c *C) {
-	gf := NewGaloisField448()
+	gf := NewGaloisField448(N32Limbs)
 	c.Assert(gf, NotNil)
 
 	n := gf.Copy()

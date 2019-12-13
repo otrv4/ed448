@@ -13,24 +13,25 @@ type GaloisField448 struct {
 
 // NewGaloisField448 will return a newly created, empty field element
 // TODO: use no escape
-func NewGaloisField448() *GaloisField448 {
+func NewGaloisField448(nlimbs int) *GaloisField448 {
 	var gf GaloisField448
 	// TODO: extract to constant. It should be 320 for ed25519
 	// equivalent to: gf.Limb = memguard.NewBuffer(512 / WordBits)
 	// TODO: check this
-	gf.Limb = memguard.NewBuffer(NLimbs * 8)
+	gf.Limb = memguard.NewBuffer(nlimbs * 8)
 
 	gf.Limb.Freeze() // Make it inmmutable
 
 	return &gf
 }
 
-// NewGaloisField448FromBytes will return a newly created, empty field element
+// NewGaloisField448FromBytes will return a newly created field element with the
+// provided byte array
 // TODO: use no escape
 func NewGaloisField448FromBytes(src []byte) *GaloisField448 {
 	var gf GaloisField448
 
-	if len(src) < NLimbs*8 {
+	if len(src) < N32Limbs*8 {
 		panic("Wrong Len")
 	}
 
@@ -53,7 +54,7 @@ func (gf *GaloisField448) Destroy() {
 
 // Copy copies one galoisfield to another.
 func (gf *GaloisField448) Copy() *GaloisField448 {
-	n := NewGaloisField448()
+	n := NewGaloisField448(N32Limbs)
 	*n = *gf
 
 	return n
@@ -61,7 +62,7 @@ func (gf *GaloisField448) Copy() *GaloisField448 {
 
 // AddRaw32 adds one galoisfield to another. For a 32 arch
 func AddRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
-	gf := NewGaloisField448()
+	gf := NewGaloisField448(N32Limbs)
 
 	gf.Limb.Melt()
 	defer gf.Limb.Freeze()

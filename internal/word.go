@@ -2,13 +2,19 @@ package galoisfield
 
 // The characteristics of the word
 const (
-	// WordSizeBits is the size of a word in bits depending on the architecture
-	// TODO: for the moment using a 32bits arch
-	WordSizeBits = 32
-	// WordSizeBytes is the size of a word in bytes depending on the architecture
-	WordSizeBytes = 4
-	// NLimbs is
-	NLimbs = 64 / WordSizeBytes
+	// Word32SizeBits is the size of a word in bits depending on a 32 architecture
+	Word32SizeBits = 32
+	// Word32SizeBits is the size of a word in bits depending on a 64 architecture
+	Word64SizeBits = 64
+	// Word32SizeBytes is the size of a word in bytes depending on a 32 architecture
+	Word32SizeBytes = 4
+	// Word64SizeBytes is the size of a word in bytes depending on a 64 architecture
+	Word64SizeBytes = 8
+	// N32Limbs is
+	N32Limbs = 64 / Word32SizeBytes
+	// N64Limbs is
+	N64Limbs = 64 / Word64SizeBytes
 )
 
-type word uint32
+type word32 uint32
+type word64 uint64
