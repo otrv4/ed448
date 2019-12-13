@@ -3,7 +3,9 @@ GO_VERSION=$(shell go version | grep  -o 'go[[:digit:]]\.[[:digit:]]')
 
 default: test lint
 
-ci: deps lint test
+ci: deps lint test-main
+
+internal: deps lint test-internal
 
 deps:
 ifeq ($(GO_VERSION), go1.6)
@@ -31,8 +33,14 @@ endif
 vet:
 	go vet ./...
 
-test:
+test-all:
 	go test -cover -v ./...
+
+test-internal:
+	go test -cover -v -run=^ ./internal
+
+test-main:
+	go test -cover -v -run=^ ./
 
 test-v:
 	go test -check.vv -cover ./...

@@ -1,15 +1,27 @@
 language: go
 
-go:
-  - tip
-  - "1.12.1"
-  - "1.11.6"
-  - "1.10.8"
-  - 1.9.7
-
-script: make ci
-
 matrix:
+  include:
+    - go: "1.12.1"
+      env: T=internal
+    - go: "1.12.1"
+      env: T=normal
+    - go: "1.11.6"
+      env: T=normal
+    - go: "1.10.8"
+      env: T=normal
+    - go: tip
+      env: T=normal
   allow_failures:
     - go: tip
   fast_finish: true
+
+script:
+  - |
+      if [ "$T" = "normal" ]; then
+           make ci
+      fi
+  - |
+      if [ "$T" = "internal" ]; then
+           make internal
+      fi
