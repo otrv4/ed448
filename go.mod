@@ -7,5 +7,7 @@ require (
 	github.com/awnumar/memguard v0.21.0
 	github.com/kr/pretty v0.1.0 // indirect
 	golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
+	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
+	golang.org/x/tools v0.0.0-20191213032237-7093a17b0467 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 )

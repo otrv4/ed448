@@ -3,11 +3,11 @@ GO_VERSION=$(shell go version | grep  -o 'go[[:digit:]]\.[[:digit:]]')
 
 default: test lint
 
-ci: deps lint test-main
+ci: deps-main lint test-main
 
-internal: deps lint test-internal
+internal: deps-internal lint test-internal
 
-deps:
+deps-main:
 ifeq ($(GO_VERSION), go1.6)
 	echo "$(GO_VERSION) is not a supported Go release. Skipping golint."
 else ifeq ($(GO_VERSION), go1.7)
@@ -17,7 +17,19 @@ else ifeq ($(GO_VERSION), go1.8)
 else
 	go get -u golang.org/x/lint/golint
 endif
-	go get -t -v ./...
+	go get -t -v ./
+
+deps-internal:
+ifeq ($(GO_VERSION), go1.6)
+	echo "$(GO_VERSION) is not a supported Go release. Skipping golint."
+else ifeq ($(GO_VERSION), go1.7)
+	echo "$(GO_VERSION) is not a supported Go release. Skipping golint."
+else ifeq ($(GO_VERSION), go1.8)
+	echo "$(GO_VERSION) is not a supported Go release. Skipping golint."
+else
+	go get -u golang.org/x/lint/golint
+endif
+	go get -t -v ./internal
 
 lint:
 ifeq ($(GO_VERSION), go1.6)
