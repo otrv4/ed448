@@ -18,7 +18,7 @@ func (s *Ed448InternalSuite) Test_NewGaloisField(c *C) {
 
 	size := gf.Limb.Size()
 	// For an arch of 32 for the moment
-	c.Assert(size, Equals, 16)
+	c.Assert(size, Equals, 128)
 
 	gf.Destroy()
 }
@@ -34,4 +34,22 @@ func (s *Ed448InternalSuite) Test_GaloisField_Copy(c *C) {
 
 	gf.Destroy()
 	n.Destroy()
+}
+
+func (s *Ed448InternalSuite) Test_GaloisField_AddRaw(c *C) {
+	tmp1 := [128]byte{0x57}
+	tmp2 := [128]byte{0x83}
+	tmp3 := [128]byte{0xda}
+
+	x := NewGaloisField448FromBytes(tmp1[:])
+	y := NewGaloisField448FromBytes(tmp2[:])
+	exp := NewGaloisField448FromBytes(tmp3[:])
+
+	v := AddRaw32(x, y)
+
+	c.Assert(v.limbs(), DeepEquals, exp.limbs())
+
+	x.Destroy()
+	y.Destroy()
+	exp.Destroy()
 }
