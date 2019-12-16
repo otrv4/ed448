@@ -61,7 +61,12 @@ func (gf *GaloisField448) Copy() *GaloisField448 {
 }
 
 // AddRaw32 adds one galoisfield to another. For a 32 arch
+// TODO: how should be error?
 func AddRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
+	if x.Limb.Size() != 128 || x.Limb.Size() != 128 {
+		return nil
+	}
+
 	gf := NewGaloisField448(N32Limbs)
 
 	gf.Limb.Melt()
@@ -87,6 +92,33 @@ func AddRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 	n[13] = t[13] + z[13]
 	n[14] = t[14] + z[14]
 	n[15] = t[15] + z[15]
+
+	return gf
+}
+
+// AddRaw64 adds one galoisfield to another. For a 32 arch
+func AddRaw64(x *GaloisField448, y *GaloisField448) *GaloisField448 {
+	if x.Limb.Size() != 64 || x.Limb.Size() != 64 {
+		return nil
+	}
+
+	gf := NewGaloisField448(N32Limbs)
+
+	gf.Limb.Melt()
+	defer gf.Limb.Freeze()
+
+	n := gf.limbs()
+	t := x.limbs()
+	z := y.limbs()
+
+	n[0] = t[0] + z[0]
+	n[1] = t[1] + z[1]
+	n[2] = t[2] + z[2]
+	n[3] = t[3] + z[3]
+	n[4] = t[4] + z[4]
+	n[5] = t[5] + z[5]
+	n[6] = t[6] + z[6]
+	n[7] = t[7] + z[7]
 
 	return gf
 }

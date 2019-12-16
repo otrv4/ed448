@@ -12,13 +12,24 @@ type Ed448InternalSuite struct{}
 
 var _ = Suite(&Ed448InternalSuite{})
 
-func (s *Ed448InternalSuite) Test_NewGaloisField(c *C) {
+func (s *Ed448InternalSuite) Test_NewGaloisField32(c *C) {
 	gf := NewGaloisField448(N32Limbs)
 	c.Assert(gf, NotNil)
 
 	size := gf.Limb.Size()
 	// For an arch of 32 for the moment
 	c.Assert(size, Equals, 128)
+
+	gf.Destroy()
+}
+
+func (s *Ed448InternalSuite) Test_NewGaloisField64(c *C) {
+	gf := NewGaloisField448(N64Limbs)
+	c.Assert(gf, NotNil)
+
+	size := gf.Limb.Size()
+	// For an arch of 64 for the moment
+	c.Assert(size, Equals, 64)
 
 	gf.Destroy()
 }
