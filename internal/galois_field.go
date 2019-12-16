@@ -31,8 +31,8 @@ func NewGaloisField448(nlimbs int) *GaloisField448 {
 func NewGaloisField448FromBytes(src []byte) *GaloisField448 {
 	var gf GaloisField448
 
-	if len(src) < N32Limbs*8 {
-		panic("Wrong Len")
+	if len(src) > N32Limbs*8 || len(src) < N64Limbs*8 {
+		panic("Wrong Len for buffer initialization")
 	}
 
 	gf.Limb = memguard.NewBufferFromBytes(src)
@@ -43,8 +43,13 @@ func NewGaloisField448FromBytes(src []byte) *GaloisField448 {
 }
 
 // limbs will return a uint32 slice for the limb used.
-func (gf *GaloisField448) limbs() []uint32 {
+func (gf *GaloisField448) limbs32() []uint32 {
 	return gf.Limb.Uint32()
+}
+
+// limbs will return a uint64 slice for the limb used.
+func (gf *GaloisField448) limbs64() []uint64 {
+	return gf.Limb.Uint64()
 }
 
 // Destroy securely wipes and frees the underlying memory of the gf.Limb
@@ -72,9 +77,9 @@ func AddRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 	gf.Limb.Melt()
 	defer gf.Limb.Freeze()
 
-	n := gf.limbs()
-	t := x.limbs()
-	z := y.limbs()
+	n := gf.limbs32()
+	t := x.limbs32()
+	z := y.limbs32()
 
 	n[0] = t[0] + z[0]
 	n[1] = t[1] + z[1]
@@ -102,14 +107,14 @@ func AddRaw64(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 		return nil
 	}
 
-	gf := NewGaloisField448(N32Limbs)
+	gf := NewGaloisField448(N64Limbs)
 
 	gf.Limb.Melt()
 	defer gf.Limb.Freeze()
 
-	n := gf.limbs()
-	t := x.limbs()
-	z := y.limbs()
+	n := gf.limbs64()
+	t := x.limbs64()
+	z := y.limbs64()
 
 	n[0] = t[0] + z[0]
 	n[1] = t[1] + z[1]
@@ -119,6 +124,42 @@ func AddRaw64(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 	n[5] = t[5] + z[5]
 	n[6] = t[6] + z[6]
 	n[7] = t[7] + z[7]
+
+	return gf
+}
+
+// SubRaw32 subtracts one galoisfield to another. For a 32 arch
+// TODO: how should be error?
+func SubRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
+	if x.Limb.Size() != 128 || x.Limb.Size() != 128 {
+		return nil
+	}
+
+	gf := NewGaloisField448(N32Limbs)
+
+	gf.Limb.Melt()
+	defer gf.Limb.Freeze()
+
+	n := gf.limbs32()
+	t := x.limbs32()
+	z := y.limbs32()
+
+	n[0] = t[0] - z[0]
+	n[1] = t[1] - z[1]
+	n[2] = t[2] - z[2]
+	n[3] = t[3] - z[3]
+	n[4] = t[4] - z[4]
+	n[5] = t[5] - z[5]
+	n[6] = t[6] - z[6]
+	n[7] = t[7] - z[7]
+	n[8] = t[8] - z[8]
+	n[9] = t[9] - z[9]
+	n[10] = t[10] - z[10]
+	n[11] = t[11] - z[11]
+	n[12] = t[12] - z[12]
+	n[13] = t[13] - z[13]
+	n[14] = t[14] - z[14]
+	n[15] = t[15] - z[15]
 
 	return gf
 }

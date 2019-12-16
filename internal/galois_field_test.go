@@ -47,7 +47,7 @@ func (s *Ed448InternalSuite) Test_GaloisField_Copy(c *C) {
 	n.Destroy()
 }
 
-func (s *Ed448InternalSuite) Test_GaloisField_AddRaw(c *C) {
+func (s *Ed448InternalSuite) Test_GaloisField_AddRaw32(c *C) {
 	tmp1 := [128]byte{0x57}
 	tmp2 := [128]byte{0x83}
 	tmp3 := [128]byte{0xda}
@@ -58,7 +58,27 @@ func (s *Ed448InternalSuite) Test_GaloisField_AddRaw(c *C) {
 
 	v := AddRaw32(x, y)
 
-	c.Assert(v.limbs(), DeepEquals, exp.limbs())
+	c.Assert(v.limbs32(), DeepEquals, exp.limbs32())
+	c.Assert(v.Limb.Size(), Equals, 128)
+
+	x.Destroy()
+	y.Destroy()
+	exp.Destroy()
+}
+
+func (s *Ed448InternalSuite) Test_GaloisField_AddRaw64(c *C) {
+	tmp1 := [64]byte{0x01}
+	tmp2 := [64]byte{0x02}
+	tmp3 := [64]byte{0x03}
+
+	x := NewGaloisField448FromBytes(tmp1[:])
+	y := NewGaloisField448FromBytes(tmp2[:])
+	exp := NewGaloisField448FromBytes(tmp3[:])
+
+	v := AddRaw64(x, y)
+
+	c.Assert(v.limbs64(), DeepEquals, exp.limbs64())
+	c.Assert(v.Limb.Size(), Equals, 64)
 
 	x.Destroy()
 	y.Destroy()
