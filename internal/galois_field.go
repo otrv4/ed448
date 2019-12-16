@@ -68,7 +68,7 @@ func (gf *GaloisField448) Copy() *GaloisField448 {
 // AddRaw32 adds one galoisfield to another. For a 32 arch
 // TODO: how should be error?
 func AddRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
-	if x.Limb.Size() != 128 || x.Limb.Size() != 128 {
+	if x.Limb.Size() != 128 || y.Limb.Size() != 128 {
 		return nil
 	}
 
@@ -103,7 +103,7 @@ func AddRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 
 // AddRaw64 adds one galoisfield to another. For a 32 arch
 func AddRaw64(x *GaloisField448, y *GaloisField448) *GaloisField448 {
-	if x.Limb.Size() != 64 || x.Limb.Size() != 64 {
+	if x.Limb.Size() != 64 || y.Limb.Size() != 64 {
 		return nil
 	}
 
@@ -131,7 +131,7 @@ func AddRaw64(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 // SubRaw32 subtracts one galoisfield to another. For a 32 arch
 // TODO: how should be error?
 func SubRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
-	if x.Limb.Size() != 128 || x.Limb.Size() != 128 {
+	if x.Limb.Size() != 128 || y.Limb.Size() != 128 {
 		return nil
 	}
 
@@ -164,7 +164,34 @@ func SubRaw32(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 	return gf
 }
 
-//static INLINE_UNUSED void gf_sub_RAW (gf out, const gf a, const gf b);
+// SubRaw64 subtracts one galoisfield to another. For a 32 arch
+// TODO: how should be error?
+func SubRaw64(x *GaloisField448, y *GaloisField448) *GaloisField448 {
+	if x.Limb.Size() != 64 || y.Limb.Size() != 64 {
+		return nil
+	}
+
+	gf := NewGaloisField448(N64Limbs)
+
+	gf.Limb.Melt()
+	defer gf.Limb.Freeze()
+
+	n := gf.limbs64()
+	t := x.limbs64()
+	z := y.limbs64()
+
+	n[0] = t[0] - z[0]
+	n[1] = t[1] - z[1]
+	n[2] = t[2] - z[2]
+	n[3] = t[3] - z[3]
+	n[4] = t[4] - z[4]
+	n[5] = t[5] - z[5]
+	n[6] = t[6] - z[6]
+	n[7] = t[7] - z[7]
+
+	return gf
+}
+
 //static INLINE_UNUSED void gf_bias (gf inout, int amount);
 //static INLINE_UNUSED void gf_weak_reduce (gf inout);
 //
