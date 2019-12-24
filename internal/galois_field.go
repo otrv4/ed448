@@ -192,6 +192,44 @@ func SubRaw64(x *GaloisField448, y *GaloisField448) *GaloisField448 {
 	return gf
 }
 
+// Bias32 is
+func Bias32(x *GaloisField448, amt int) *GaloisField448 {
+	if x.Limb.Size() != 128 {
+		return nil
+	}
+
+	x.Limb.Melt()
+	defer x.Limb.Freeze()
+
+	n := x.limbs32()
+
+	co1 := uint32(((1 << 28) - 1) * amt)
+	co2 := co1 - uint32(amt)
+
+	n[0] += co1
+	n[1] += co1
+	n[2] += co1
+	n[3] += co1
+	n[4] += co1
+	n[5] += co1
+	n[6] += co1
+	n[7] += co1
+	n[8] += co2
+	n[9] += co1
+	n[10] += co1
+	n[11] += co1
+	n[12] += co1
+	n[13] += co1
+	n[14] += co1
+	n[15] += co1
+
+	gf := x.Copy()
+
+	//x.Destroy()
+
+	return gf
+}
+
 //static INLINE_UNUSED void gf_bias (gf inout, int amount);
 //static INLINE_UNUSED void gf_weak_reduce (gf inout);
 //
