@@ -1,4 +1,4 @@
-# ed448 or goldilocks
+# ed448-goldilocks
 
 [![Build Status](https://travis-ci.org/otrv4/ed448.svg?branch=master)](https://travis-ci.org/otrv4/ed448)
 [![Go Report Card](https://goreportcard.com/badge/github.com/otrv4/ed448)](https://goreportcard.com/report/github.com/otrv4/ed448)
