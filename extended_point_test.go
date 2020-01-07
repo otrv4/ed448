@@ -704,7 +704,7 @@ func (s *Ed448Suite) Test_DecafDecode(c *C) {
 	c.Assert(err, ErrorMatches, "unable to decode given point")
 }
 
-func (s *Ed448Suite) Test_DsaLikeEncode(c *C) {
+func (s *Ed448Suite) Test_EdDSALikeEncode(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{
 			0x07278dc5, 0x0e614a9f, 0x004c5124, 0x02e454ad,
@@ -733,7 +733,7 @@ func (s *Ed448Suite) Test_DsaLikeEncode(c *C) {
 	}
 
 	var out [57]byte
-	p.dsaLikeEncode(out[:])
+	p.edDSALikeEncode(out[:])
 
 	exp := [57]byte{
 		0xa5, 0xd9, 0xce, 0xa4, 0x06, 0x89, 0xa4, 0x13,
@@ -750,10 +750,10 @@ func (s *Ed448Suite) Test_DsaLikeEncode(c *C) {
 
 	var invalid [56]byte
 
-	c.Assert(func() { p.dsaLikeEncode(invalid[:]) }, Panics, "Attempted to encode with a destination that is not 57 bytes")
+	c.Assert(func() { p.edDSALikeEncode(invalid[:]) }, Panics, "Attempted to encode with a destination that is not 57 bytes")
 }
 
-func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
+func (s *Ed448Suite) Test_EdDSALikeDecode(c *C) {
 	ser := [57]byte{
 		0xa5, 0xd9, 0xce, 0xa4, 0x06, 0x89, 0xa4, 0x13,
 		0x94, 0xf0, 0x69, 0x32, 0xfe, 0xe0, 0xdb, 0x11,
@@ -800,17 +800,17 @@ func (s *Ed448Suite) Test_DsaLikeDecode(c *C) {
 	}
 	exp = pointScalarMul(exp, scalarOneFourth.(*scalar))
 
-	succ := dsaLikeDecode(p, ser[:])
+	succ := edDSALikeDecode(p, ser[:])
 
 	c.Assert(p, DeepEquals, exp)
 	c.Assert(succ, DeepEquals, decafTrue)
 
 	invalid := make([]byte, 56)
 
-	c.Assert(func() { dsaLikeDecode(p, invalid) }, Panics, "Attempted to decode with a source that is not 57 bytes")
+	c.Assert(func() { edDSALikeDecode(p, invalid) }, Panics, "Attempted to decode with a source that is not 57 bytes")
 }
 
-func (s *Ed448Suite) Test_DsaLikeDecodeAndEncode(c *C) {
+func (s *Ed448Suite) Test_EdDSALikeDecodeAndEncode(c *C) {
 	basePoint := &twExtendedPoint{
 		&bigNumber{
 			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
@@ -839,7 +839,7 @@ func (s *Ed448Suite) Test_DsaLikeDecodeAndEncode(c *C) {
 	}
 
 	var enc [57]byte
-	basePoint.dsaLikeEncode(enc[:])
+	basePoint.edDSALikeEncode(enc[:])
 	dec := &twExtendedPoint{
 		&bigNumber{},
 		&bigNumber{},
@@ -847,7 +847,7 @@ func (s *Ed448Suite) Test_DsaLikeDecodeAndEncode(c *C) {
 		&bigNumber{},
 	}
 
-	valid := dsaLikeDecode(dec, enc[:])
+	valid := edDSALikeDecode(dec, enc[:])
 	valid &= dec.equals(basePoint)
 
 	c.Assert(valid, DeepEquals, decafTrue)

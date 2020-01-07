@@ -15,8 +15,8 @@ type Point interface {
 	Double() Point
 	Encode() []byte
 	Decode(src []byte, identity bool) (bool, error)
-	DSAEncode() []byte
-	DSADecode(src []byte) bool
+	EdDSAEncode() []byte
+	EdDSADecode(src []byte) bool
 }
 
 // Extended Homogenous Projective coordinates: (X : Y : T : Z), which
@@ -276,7 +276,7 @@ func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, 
 	return succ, err
 }
 
-func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
+func (p *twExtendedPoint) edDSALikeEncode(dst []byte) {
 	if len(dst) != dsaFieldBytes {
 		panic("Attempted to encode with a destination that is not 57 bytes")
 	}
@@ -316,7 +316,7 @@ func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	t.set(bigZero)
 }
 
-func dsaLikeDecode(p *twExtendedPoint, srcOrg []byte) word {
+func edDSALikeDecode(p *twExtendedPoint, srcOrg []byte) word {
 	if len(srcOrg) != dsaFieldBytes {
 		panic("Attempted to decode with a source that is not 57 bytes")
 	}
@@ -842,20 +842,20 @@ func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) (bool, error) {
 	return valid == decafTrue, nil
 }
 
-// DSAEncode returns the encoding of a point (p) as a sequence of bytes.
+// EdDSAEncode returns the encoding of a point (p) as a sequence of bytes.
 // This uses the eddsa techinique. See ``Edwards-Curve Digital Signature
 // Algorithm (EdDSA)``, S. Josefsson and I. Liusvaara, Internet Research Task
 // Force (IRTF).
 // Multiplies the point to the cofactor first.
-func (p *twExtendedPoint) DSAEncode() []byte {
+func (p *twExtendedPoint) EdDSAEncode() []byte {
 	out := make([]byte, dsaFieldBytes)
-	p.dsaLikeEncode(out)
+	p.edDSALikeEncode(out)
 	return out
 }
 
-// DSADecode gives the decoding of a point (p) as a sequence of bytes (src).
-func (p *twExtendedPoint) DSADecode(src []byte) bool {
-	ok := dsaLikeDecode(p, src)
+// EdDSADecode gives the decoding of a point (p) as a sequence of bytes (src).
+func (p *twExtendedPoint) EdDSADecode(src []byte) bool {
+	ok := edDSALikeDecode(p, src)
 
 	return ok == decafTrue
 }

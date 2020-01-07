@@ -42,10 +42,10 @@ func DSASign(sym [57]byte, pub Point, msg []byte) [114]byte {
 	nonceScalar2 := NewScalar()
 	nonceScalar2.Halve(nonceScalar)
 	nonceScalar2.Halve(nonceScalar2)
-	noncePoint := PrecomputedScalarMul(nonceScalar2).DSAEncode()
+	noncePoint := PrecomputedScalarMul(nonceScalar2).EdDSAEncode()
 
 	challenge := make([]byte, 114)
-	hashWithDom(challenge, append(append(noncePoint, pub.DSAEncode()...), msg...))
+	hashWithDom(challenge, append(append(noncePoint, pub.EdDSAEncode()...), msg...))
 
 	challengeScalar := NewScalar(challenge)
 	challengeScalar.Mul(challengeScalar, sec)
@@ -67,11 +67,11 @@ func DSAVerify(sig [114]byte, pub Point, msg []byte) bool {
 	sig1 := append([]byte{}, sig[:57]...)
 	sig2 := append([]byte{}, sig[57:]...)
 	rPoint := NewPoint([16]uint32{}, [16]uint32{}, [16]uint32{}, [16]uint32{})
-	rPoint.DSADecode(sig1)
+	rPoint.EdDSADecode(sig1)
 	rPoint = PointScalarMul(rPoint, scalarFour)
 
 	challenge := make([]byte, 114)
-	hashWithDom(challenge, append(append(sig1, pub.DSAEncode()...), msg...))
+	hashWithDom(challenge, append(append(sig1, pub.EdDSAEncode()...), msg...))
 	challengeScalar := NewScalar(challenge)
 	challengeScalar.Sub(scalarZero, challengeScalar)
 
