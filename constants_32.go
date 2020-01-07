@@ -23,6 +23,7 @@ const (
 	fieldBytes     = fieldBits / 8 // 56
 	scalarSerBytes = 56
 	dsaFieldBytes  = 57
+	x448FieldBytes = 56
 
 	// The size of the Goldilocks scalars, in bits.
 	scalarBits = fieldBits - 2 // 446

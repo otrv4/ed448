@@ -305,9 +305,9 @@ func (p *twExtendedPoint) dsaLikeEncode(dst []byte) {
 	t.mul(x, z)
 	x.mul(y, z)
 
-	dst[fieldBytes] = byte(allZeros)
+	dst[dsaFieldBytes-1] = byte(allZeros)
 	dsaLikeSerialize(dst[:], x)
-	dst[fieldBytes] |= byte(zeroMask & lowBit(t))
+	dst[dsaFieldBytes-1] |= byte(zeroMask & lowBit(t))
 
 	// wipe out
 	x.set(bigZero)
@@ -376,6 +376,25 @@ func dsaLikeDecode(p *twExtendedPoint, srcOrg []byte) word {
 	p.t = res.t
 
 	return succ
+}
+
+func (p *twExtendedPoint) x448LikeEncode(dst []byte) {
+	if len(dst) != x448FieldBytes {
+		panic("Attempted to encode with a destination that is not 56 bytes")
+	}
+
+	q := p.copy()
+	q.t = invert(p.t) // 1/x
+	q.z.mul(q.t, q.y) // y/x
+	q.y.square(q.z)   // (y/x)^2
+
+	dsaLikeSerialize(dst[:], q.y)
+
+	// wipe out
+	q.x.set(bigZero)
+	q.y.set(bigZero)
+	q.z.set(bigZero)
+	q.t.set(bigZero)
 }
 
 func (p *twExtendedPoint) addNielsToExtended(np *twNiels, beforeDouble bool) {
@@ -772,8 +791,8 @@ func (p *twExtendedPoint) EqualsMask(q Point) uint32 {
 
 // Copy returns a copy of a given point (p).
 func (p *twExtendedPoint) Copy() Point {
-	p.copy()
-	return Point(p)
+	q := p.copy()
+	return Point(q)
 }
 
 // Add gives the sum of two points (q, r) and produces a third point (p).
