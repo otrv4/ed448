@@ -395,7 +395,11 @@ func (p *twExtendedPoint) x448LikeEncode(dst []byte) {
 	q.t.set(bigZero)
 }
 
-func fromEdDSATox448(ed []byte) []byte {
+func fromEdDSATox448(ed []byte) [x448FieldBytes]byte {
+	if len(ed) != dsaFieldBytes {
+		panic("Attempted to convert an array that is not 57 bytes")
+	}
+
 	y, n, d := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	mask := uint(0xfe << 7)
 
@@ -410,10 +414,10 @@ func fromEdDSATox448(ed []byte) []byte {
 	d.sub(bigOne, d)                       // 1 - dy^2
 	n.mul(y, d)                            // y^2 * (1-dy^2) / (q-y^2)
 
-	var dst []byte
+	var dst [x448FieldBytes]byte
 	dsaLikeSerialize(dst[:], n)
 
-	return nil
+	return dst
 }
 
 func (p *twExtendedPoint) addNielsToExtended(np *twNiels, beforeDouble bool) {

@@ -770,8 +770,8 @@ func mustDeserialize(in serialized) *bigNumber {
 }
 
 func dsaLikeSerialize(dst []byte, n *bigNumber) {
-	n.strongReduce()
 	x := n.copy()
+	x.strongReduce()
 
 	j, fill := uint(0), uint(0)
 	buffer := dword(0)
