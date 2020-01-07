@@ -230,10 +230,8 @@ func decafDecodeOld(dst *twExtendedPoint, src serialized, useIdentity bool) (wor
 }
 
 func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
-	s2 := &bigNumber{}
-	num := &bigNumber{}
-	tmp := &bigNumber{}
-	tmp2 := &bigNumber{}
+	s2, num, tmp, tmp2 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+
 	isr := dst.x
 	den := dst.t
 	ynum := dst.z
@@ -328,7 +326,7 @@ func edDSALikeDecode(p *twExtendedPoint, srcOrg []byte) word {
 	src[fieldBytes] &= byte(^(cofactorMask))
 
 	succ := isZeroMask(word(src[fieldBytes]))
-	succ &= dsaLikeDeserialize(p.y, src[:])
+	succ &= dsaLikeDeserialize(p.y, src[:], uint(0))
 
 	p.x.square(p.y)
 	p.z.sub(bigOne, p.x)                       // num = 1- (y^2)

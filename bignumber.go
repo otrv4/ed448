@@ -790,7 +790,7 @@ func dsaLikeSerialize(dst []byte, n *bigNumber) {
 }
 
 // TODO: make in type serialized?
-func dsaLikeDeserialize(n *bigNumber, in []byte) word {
+func dsaLikeDeserialize(n *bigNumber, in []byte, mask uint) word {
 	j, fill := uint(0), uint(0)
 	buffer := dword(0x00)
 	scarry := sdword(0x00)
@@ -798,29 +798,26 @@ func dsaLikeDeserialize(n *bigNumber, in []byte) word {
 	// TODO: unroll my power!!
 	for i := uint(0); i < nLimbs; i++ {
 		for fill < radix && j < fieldBytes {
-			buffer |= dword(in[j]) << fill
+			sj := uint(in[j])
+			if j == fieldBytes-1 {
+				sj &= ^mask
+			}
+			buffer |= dword(sj) << fill
 			fill += 8
 			j++
 		}
 
 		if !(i < nLimbs-1) {
-
 			n[i] = word(buffer)
+		} else {
+			n[i] = word(buffer & ((dword(1 << radix)) - 1))
 		}
-		n[i] = word(buffer & ((dword(1 << radix)) - 1))
-
 		fill -= radix
 		buffer >>= radix
 		scarry = sdword((word(scarry) + n[i] - modulus[i]) >> 8 * 4)
 	}
 
-	// TODO: check me, and add case when hibit is one
-	var high word = 0x01
-	succ := -(high)
-	succ &= isZeroMask(word(buffer))
-	succ &= ^(isZeroMask(word(scarry)))
-
-	return succ
+	return isZeroMask(word(buffer)) & ^(isZeroMask(word(scarry)))
 }
 
 func (n *bigNumber) String() string {

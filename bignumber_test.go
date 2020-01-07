@@ -599,7 +599,7 @@ func (s *Ed448Suite) Test_DsaLikeDeserialize(c *C) {
 	}
 
 	dst := &bigNumber{}
-	ok := dsaLikeDeserialize(dst, ser)
+	ok := dsaLikeDeserialize(dst, ser, uint(0))
 
 	c.Assert(dst, DeepEquals, exp)
 	c.Assert(ok, Equals, decafTrue)
