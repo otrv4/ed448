@@ -384,7 +384,7 @@ func (p *twExtendedPoint) x448LikeEncode(dst []byte) {
 	}
 
 	q := p.copy()
-	q.t = invert(p.t) // 1/x
+	q.t = invert(p.x) // 1/x
 	q.z.mul(q.t, q.y) // y/x
 	q.y.square(q.z)   // (y/x)^2
 
