@@ -395,6 +395,27 @@ func (p *twExtendedPoint) x448LikeEncode(dst []byte) {
 	q.t.set(bigZero)
 }
 
+func fromEdDSATox448(ed []byte) []byte {
+	y, n, d := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	mask := uint(0xfe << 7)
+
+	dsaLikeDeserialize(y, ed[:], mask)
+
+	// u = y^2 * (1-dy^2) / (1-y^2)
+	n.square(y)                            // y^2
+	d.sub(bigOne, n)                       // (1-y^2)
+	d = invert(d)                          // 1 / (1-y^2)
+	y.mul(n, d)                            // y^2 / (1-y^2)
+	d.mulWSignedCurveConstant(n, edwardsD) // dy^2
+	d.sub(bigOne, d)                       // 1 - dy^2
+	n.mul(y, d)                            // y^2 * (1-dy^2) / (q-y^2)
+
+	var dst []byte
+	dsaLikeSerialize(dst[:], n)
+
+	return nil
+}
+
 func (p *twExtendedPoint) addNielsToExtended(np *twNiels, beforeDouble bool) {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.sub(p.y, p.x)
