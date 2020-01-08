@@ -43,3 +43,31 @@ func fromEdDSATox448(ed []byte) [x448FieldBytes]byte {
 
 	return dst
 }
+
+func x448ScalarMul(s []byte) []byte {
+	if len(s) != x448FieldBytes {
+		panic("Wrong scalar length: should be 56 bytes")
+	}
+
+	scalar2 := append([]byte{}, s...)
+	// Scalar conditioning
+	scalar2[0] &= -(byte(Cofactor))
+
+	theScalar := &scalar{}
+
+	scalar2[x448FieldBytes-1] &= ^(-1 << ((x448FieldBytes + 7) % 8))
+	scalar2[x448FieldBytes-1] |= 1 << ((x448FieldBytes + 7) % 8)
+
+	theScalar.decode(scalar2)
+
+	for i := uint(1); i < 2; i <<= 1 {
+		theScalar.halve(theScalar)
+	}
+
+	p := precomputedScalarMul(theScalar)
+
+	out := make([]byte, x448FieldBytes)
+	p.edDSALikeEncode(out)
+
+	return out
+}
