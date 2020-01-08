@@ -98,7 +98,7 @@ func x448ScalarMul(base []byte, s []byte) [x448FieldBytes]byte {
 			sb = -byte(byteOne)
 		}
 
-		kT = word((sb >> (t % 8)) & 1)
+		kT = word((sb >> byte(t%8)) & 1)
 		kT = -kT // set to all 0s or all 1s
 
 		swap ^= kT
