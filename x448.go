@@ -87,14 +87,14 @@ func x448ScalarMul(base []byte, s []byte) [x448FieldBytes]byte {
 	x3 := x1.copy()
 	z3 := bigOne.copy()
 
-	for t := int(x448FieldBytes - 1); t >= 0; t-- {
+	for t := int(x448FieldBits - 1); t >= 0; t-- {
 		sb := byte(s[t/8])
 		var kT word
 
 		// Scalar conditioning
 		if t/8 == 0 {
 			sb &= -byte(Cofactor)
-		} else if t == (x448FieldBytes - 1) {
+		} else if t == (x448FieldBits - 1) {
 			sb = -byte(byteOne)
 		}
 
