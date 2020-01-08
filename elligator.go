@@ -10,7 +10,7 @@ package ed448
 // Furthermore, calling it twice with independent seeds and adding the results
 // is indifferentiable from a random oracle.
 func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
-	r, a, b, c, n, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	r0, r, a, b, c, n, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
 	p := &twExtendedPoint{
 		x: new(bigNumber),
@@ -19,8 +19,8 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 		t: new(bigNumber),
 	}
 
-	// probable nonresidue
-	r0, _ := deserialize(ser)
+	mask := uint(0xfe << 7)
+	dsaLikeDeserialize(r0, ser[:], mask)
 	r0.strongReduce()
 	a.square(r0) //r^2
 	r.sub(bigZero, a)
@@ -40,7 +40,6 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	// e = +-sqrt(1/ND) or +-r0 * sqrt(qnr/ND)
 	a.mul(c, n)
 	square := b.isr(a)
-
 	c = constantTimeSelect(bigOne, r0, square) // r? = isSquare ? 1 : r0
 	e.mul(b, c)
 
@@ -67,8 +66,9 @@ func pointFromNonUniformHash(ser [56]byte) *twExtendedPoint {
 	p.y.mul(e, a) // (1+s^2)(1-s^2)
 	p.z.mul(a, b) // (1-s^2)t
 
-	// TODO: do this
-	// assert(API_NS(point_valid)(p));
+	if !p.isOnCurve() {
+		return nil
+	}
 
 	return p
 }
