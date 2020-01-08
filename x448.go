@@ -44,7 +44,7 @@ func fromEdDSATox448(ed []byte) [x448FieldBytes]byte {
 	return dst
 }
 
-func x448ScalarMul(s []byte) []byte {
+func x448ScalarMul(s []byte) [x448FieldBytes]byte {
 	if len(s) != x448FieldBytes {
 		panic("Wrong scalar length: should be 56 bytes")
 	}
@@ -66,8 +66,8 @@ func x448ScalarMul(s []byte) []byte {
 
 	p := precomputedScalarMul(theScalar)
 
-	out := make([]byte, x448FieldBytes)
-	p.edDSALikeEncode(out)
+	var out [x448FieldBytes]byte
+	p.x448LikeEncode(out[:])
 
 	return out
 }
