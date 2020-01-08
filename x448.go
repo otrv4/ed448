@@ -72,7 +72,7 @@ func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
 	return out
 }
 
-func x448ScalarMul(base []byte, s []byte) [x448FieldBytes]byte {
+func x448ScalarMul(base []byte, s []byte) ([x448FieldBytes]byte, bool) {
 	if len(s) != x448FieldBytes || len(base) != x448FieldBytes {
 		panic("Wrong scalar or base length: should be 56 bytes")
 	}
@@ -136,8 +136,5 @@ func x448ScalarMul(base []byte, s []byte) [x448FieldBytes]byte {
 	var out [x448FieldBytes]byte
 	dsaLikeSerialize(out[:], x1)
 
-	//nz = -(x1.equals(bigZero))
-
-	//return goldilocks_succeed_if(mask_to_bool(nz));
-	return out
+	return out, !(x1.equals(bigZero))
 }

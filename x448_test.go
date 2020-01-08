@@ -122,7 +122,7 @@ func (s *Ed448Suite) Test_X448ScalarMul(c *C) {
 		0x8d, 0xd8, 0xc9, 0xfa, 0x56, 0xd5, 0x6c, 0x3b,
 	}
 
-	out := x448ScalarMul(base[:], sc[:])
+	out, ok := x448ScalarMul(base[:], sc[:])
 
 	exp := [56]byte{
 		0x9f, 0x66, 0x48, 0xd0, 0x23, 0x82, 0xbb, 0x99,
@@ -135,4 +135,5 @@ func (s *Ed448Suite) Test_X448ScalarMul(c *C) {
 	}
 
 	c.Assert(out, DeepEquals, exp)
+	c.Assert(ok, Equals, true)
 }
