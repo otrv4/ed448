@@ -188,6 +188,38 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
+func (p *twExtendedPoint) deisogenizeNew(s, invElSum, invElM1 *bigNumber, toggleS, toggleAltX word) *bigNumber {
+	t1 := &bigNumber{}
+
+	t2 := s.copy()
+	t3 := invElSum.copy()
+	t4 := invElM1.copy()
+
+	t1.add(p.x, p.t)
+	t2.sub(p.x, p.t)
+	t3.mul(t1, t2) // t3 = num
+	t2.square(p.x)
+	t1.mul(t2, t3)
+	t2.mulWSignedCurveConstant(t1, 1-(edwardsD-1)) // -x^2 * (a-d) * num
+	t1.isr(t2)                                     // t1 = isr
+	t2.mul(t1, t3)                                 // t2 = ratio
+	t4.mul(t2, factor)
+	negX := lowBit(t4) ^ toggleAltX
+	t2.decafCondNegate(negX)
+	t3.mul(t2, p.z)
+	t3.sub(t3, p.t)
+	t2.mul(t3, p.x)
+	t4.mulWSignedCurveConstant(t2, 1-(edwardsD-1))
+	s.mul(t4, t1)
+	lobs := lowBit(s)
+	s.decafCondNegate(lobs)
+	t := p.x.copy()
+	t.decafCondNegate(^lobs ^ negX ^ toggleS)
+	t.add(t, p.t)
+
+	return s
+}
+
 // TODO: should this return a bool and an error?
 func decafDecodeOld(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
