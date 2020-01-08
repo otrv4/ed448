@@ -41,6 +41,11 @@ func fromEdDSATox448(ed []byte) [x448FieldBytes]byte {
 	var dst [x448FieldBytes]byte
 	dsaLikeSerialize(dst[:], n)
 
+	// wipe out
+	y.set(bigZero)
+	n.set(bigZero)
+	d.set(bigZero)
+
 	return dst
 }
 
@@ -68,6 +73,12 @@ func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
 
 	var out [x448FieldBytes]byte
 	p.x448LikeEncode(out[:])
+
+	// wipe out
+	p.y.set(bigZero)
+	p.x.set(bigZero)
+	p.z.set(bigZero)
+	p.t.set(bigZero)
 
 	return out
 }
@@ -136,5 +147,16 @@ func x448ScalarMul(base []byte, s []byte) ([x448FieldBytes]byte, bool) {
 	var out [x448FieldBytes]byte
 	dsaLikeSerialize(out[:], x1)
 
-	return out, !(x1.equals(bigZero))
+	ok := !(x1.equals(bigZero))
+
+	// wipe out
+	x1.set(bigZero)
+	x2.set(bigZero)
+	z2.set(bigZero)
+	x3.set(bigZero)
+	z3.set(bigZero)
+	t1.set(bigZero)
+	t2.set(bigZero)
+
+	return out, ok
 }
