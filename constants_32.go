@@ -66,6 +66,7 @@ var (
 	// Cofactor is the ratio between the order of the group (p) and the one
 	// from the subgroup (q).
 	Cofactor = byte(4)
+	byteOne  = byte(1)
 
 	bigZero = &bigNumber{0x00}
 	bigOne  = &bigNumber{0x01}
