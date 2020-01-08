@@ -44,7 +44,7 @@ func fromEdDSATox448(ed []byte) [x448FieldBytes]byte {
 	return dst
 }
 
-func x448ScalarMul(s []byte) [x448FieldBytes]byte {
+func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
 	if len(s) != x448FieldBytes {
 		panic("Wrong scalar length: should be 56 bytes")
 	}
