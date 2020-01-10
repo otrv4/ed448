@@ -403,6 +403,59 @@ func (s *Ed448Suite) Test_DecafConstTimeSel(c *C) {
 	c.Assert(n, DeepEquals, n)
 }
 
+func (s *Ed448Suite) Test_NewConstTimeSel(c *C) {
+	n := &bigNumber{
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0ffffffe,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+	}
+
+	x := &bigNumber{}
+	x.sub(bigZero, n)
+
+	n.newConstTimeSel(n, x, word(64), word(0), word(0))
+
+	c.Assert(n, DeepEquals, n)
+}
+
+func (s *Ed448Suite) Test_NewCondNegate(c *C) {
+	n := &bigNumber{
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0ffffffe,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+	}
+
+	n.newCondNegate(word(0))
+
+	c.Assert(n, DeepEquals, n)
+}
+
 func (s *Ed448Suite) Test_StrongReduce(c *C) {
 	n, _ := deserialize(serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,

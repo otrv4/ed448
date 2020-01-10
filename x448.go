@@ -1,5 +1,7 @@
 package ed448
 
+// y^2/x^2
+// needed: 4*v*(u^2 - 1)/(u^4 - 2*u^2 + 4*v^2 + 1)
 func (p *twExtendedPoint) x448LikeEncode(dst []byte) {
 	if len(dst) != x448FieldBytes {
 		panic("Attempted to encode with a destination that is not 56 bytes")

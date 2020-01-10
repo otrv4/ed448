@@ -551,6 +551,50 @@ func (s *Ed448Suite) Test_PointDoubleInternal(c *C) {
 	c.Assert(q, DeepEquals, exp)
 }
 
+func (s *Ed448Suite) Test_Deisogenize(c *C) {
+	inv1, inv2 := &bigNumber{}, &bigNumber{}
+
+	p := &twExtendedPoint{
+		&bigNumber{
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		},
+		&bigNumber{
+			0x00000000, 0x01000000, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		},
+		&bigNumber{
+			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		},
+		&bigNumber{
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+			0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		},
+	}
+
+	toggleS, toggleAltX := word(0), word(0)
+
+	sc := p.deisogenizeNew(inv1, inv2, toggleS, toggleAltX)
+
+	exp := &bigNumber{
+		0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		0x0ffffffe, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff, 0x0fffffff, 0x0fffffff,
+	}
+
+	c.Assert(sc, DeepEquals, exp)
+}
+
 func (s *Ed448Suite) Test_DecafEncode(c *C) {
 	p := &twExtendedPoint{
 		&bigNumber{

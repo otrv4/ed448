@@ -496,6 +496,12 @@ func (n *bigNumber) decafCondNegate(neg word) {
 	n.decafConstTimeSel(n, new(bigNumber).sub(bigZero, n), neg)
 }
 
+func (n *bigNumber) newCondNegate(neg word) {
+	x := &bigNumber{}
+	x.sub(bigZero, n)
+	n.newConstTimeSel(n, x, word(64), neg, word(0))
+}
+
 //if swap == 0xffffffff => n = x, x = n
 // This is constant time
 func (n *bigNumber) conditionalSwap(x *bigNumber, swap word) *bigNumber {
@@ -530,6 +536,42 @@ func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg word) {
 	n[13] = (x[13] & (^neg)) | (y[13] & (neg))
 	n[14] = (x[14] & (^neg)) | (y[14] & (neg))
 	n[15] = (x[15] & (^neg)) | (y[15] & (neg))
+}
+
+func (n *bigNumber) newConstTimeSel(x, y *bigNumber, elementBytes, mask, aligmentBytes word) {
+	var k, brMask word
+
+	aligmentBytes |= elementBytes
+
+	brMask = mask
+
+	for k = 0; k < elementBytes-32; k += 32 {
+		if (aligmentBytes % 32) != word(0) {
+			// unaligned
+			n[k] = (brMask & x[k]) | (^brMask & y[k])
+		} else {
+			// aligned
+			n[k] = (brMask & x[k]) | (^brMask & y[k])
+		}
+	}
+
+	if elementBytes%32 >= word(4) {
+		for ; k <= elementBytes-4; k += 4 {
+			if (aligmentBytes % 4) != word(0) {
+				// unaligned
+				n[k] = (mask & x[k]) | (^mask & y[k])
+			} else {
+				// aligned
+				n[k] = (mask & x[k]) | (^mask & y[k])
+			}
+		}
+	}
+
+	if (elementBytes % 4) != word(0) {
+		for ; k < elementBytes; k++ {
+			n[k] = (mask & x[k]) | (^mask & y[k])
+		}
+	}
 }
 
 func constantTimeGreaterOrEqualP(n *bigNumber) word {
