@@ -163,8 +163,8 @@ func highBit(x *bigNumber) word {
 }
 
 func lowBit(x *bigNumber) word {
-	x.strongReduce()
-	return -(x[0] & 1)
+	y := x.copy()
+	return -(y[0] & 1)
 }
 
 func (n *bigNumber) bias(b word) *bigNumber {

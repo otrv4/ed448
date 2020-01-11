@@ -215,8 +215,7 @@ func (p *twExtendedPoint) deisogenizeNew(invElSum, invElM1 *bigNumber, toggleS, 
 	t4.mulWSignedCurveConstant(t2, 1-(edwardsD-1))
 	s.mul(t4, t1)
 
-	a := s.copy()
-	lobs := lowBit(a)
+	lobs := lowBit(s)
 	s.newCondNegate(lobs)
 
 	t := p.x.copy()
