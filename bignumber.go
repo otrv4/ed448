@@ -539,17 +539,15 @@ func (n *bigNumber) decafConstTimeSel(x, y *bigNumber, neg word) {
 }
 
 func (n *bigNumber) newConstTimeSel(x, y *bigNumber, elementBytes, mask, aligmentBytes word) {
-	var k, brMask word
+	var k word
 
 	aligmentBytes |= elementBytes
 
-	brMask = mask
-
-	for k = 0; k < elementBytes-32; k += 32 {
-		n[k] = (brMask & x[k]) | (^brMask & y[k])
+	for k = 0; k < elementBytes-wordBits; k += wordBits {
+		n[k] = (mask & x[k]) | (^mask & y[k])
 	}
 
-	if elementBytes%32 >= word(4) {
+	if elementBytes%wordBits >= word(4) {
 		for ; k <= elementBytes-4; k += 4 {
 			n[k] = (mask & x[k]) | (^mask & y[k])
 		}
