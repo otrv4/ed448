@@ -219,7 +219,7 @@ func (p *twExtendedPoint) deisogenizeNew(invElSum, invElM1 *bigNumber, toggleS, 
 	s.decafCondNegate(lobs)
 
 	t := p.x.copy()
-	t.decafCondNegate(^lobs ^ negX ^ toggleS)
+	t.decafCondNegate((^lobs) ^ negX ^ toggleS)
 	t.add(t, p.t)
 
 	return s

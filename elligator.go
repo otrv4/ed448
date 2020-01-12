@@ -93,3 +93,37 @@ func pointFromUniformHash(ser [112]byte) *twExtendedPoint {
 	r.add(p, q)
 	return r
 }
+
+func invertElligatorNonUniform(p *twExtendedPoint, hint word) []byte {
+	sgnS := word(-(hint & 1))
+	sgnAltX := word(-((hint >> 1) & 1))
+	sgnR0 := word(-((hint >> 2) & 1))
+
+	a, b := &bigNumber{}, &bigNumber{}
+
+	c := p.deisogenizeNew(a, b, sgnS, sgnAltX)
+
+	isIndentity := p.t.decafEq(bigZero)
+	b.decafConstTimeSel(b, bigOne, isIndentity&sgnAltX)
+	c.decafConstTimeSel(c, bigOne, isIndentity&sgnS&(^sgnAltX))
+	a.mulWSignedCurveConstant(b, edwardsD-1)
+	b.add(a, b)
+	a.sub(a, c)
+	b.add(b, c)
+	a.conditionalSwap(b, sgnS)
+	c.sub(bigZero, b)
+	b.mul(c, a)
+	succ := c.isr(b)
+	succ |= b.decafEq(bigZero)
+	b.mul(c, a)
+	b.decafCondNegate(sgnR0 ^ lowBit(b))
+	// Eliminate duplicate values for identity
+	succ &= ^(b.decafEq(bigZero)&sgnR0 | sgnS)
+
+	var dst [56]byte
+	dsaLikeSerialize(dst[:], b)
+
+	// TODO: check: recovered_hash[SER_BYTES-1] ^= (hint>>3)<<0;
+	// return goldilocks_succeed_if(mask_to_bool(succ));
+	return dst[:]
+}
