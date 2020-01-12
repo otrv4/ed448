@@ -192,12 +192,11 @@ func (p *twExtendedPoint) deisogenizeNew(invElSum, invElM1 *bigNumber, toggleS, 
 	t1, s := &bigNumber{}, &bigNumber{}
 
 	t2 := s.copy()
-	t3 := invElSum.copy()
-	t4 := invElM1.copy()
+	t3 := invElSum
+	t4 := invElM1
 
 	t1.add(p.x, p.t)
 	t2.sub(p.x, p.t)
-
 	t3.mul(t1, t2) // t3 = num
 	t2.square(p.x)
 	t1.mul(t2, t3)
@@ -218,9 +217,9 @@ func (p *twExtendedPoint) deisogenizeNew(invElSum, invElM1 *bigNumber, toggleS, 
 	lobs := lowBit(s)
 	s.decafCondNegate(lobs)
 
-	t := p.x.copy()
-	t.decafCondNegate((^lobs) ^ negX ^ toggleS)
-	t.add(t, p.t)
+	invElM1 = p.x.copy()
+	invElM1.decafCondNegate((^lobs) ^ negX ^ toggleS)
+	invElM1.add(invElM1, p.t)
 
 	return s
 }

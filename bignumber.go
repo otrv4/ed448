@@ -164,6 +164,7 @@ func highBit(x *bigNumber) word {
 
 func lowBit(x *bigNumber) word {
 	y := x.copy()
+	y.strongReduce()
 	return -(y[0] & 1)
 }
 

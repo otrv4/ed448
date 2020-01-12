@@ -94,7 +94,7 @@ func pointFromUniformHash(ser [112]byte) *twExtendedPoint {
 	return r
 }
 
-func invertElligatorNonUniform(p *twExtendedPoint, hint word) []byte {
+func invertElligatorNonUniform(p *twExtendedPoint, hint word) [56]byte {
 	sgnS := word(-(hint & 1))
 	sgnAltX := word(-((hint >> 1) & 1))
 	sgnR0 := word(-((hint >> 2) & 1))
@@ -125,5 +125,5 @@ func invertElligatorNonUniform(p *twExtendedPoint, hint word) []byte {
 
 	// TODO: check: recovered_hash[SER_BYTES-1] ^= (hint>>3)<<0;
 	// return goldilocks_succeed_if(mask_to_bool(succ));
-	return dst[:]
+	return dst
 }
