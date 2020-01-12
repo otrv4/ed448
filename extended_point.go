@@ -216,7 +216,7 @@ func (p *twExtendedPoint) deisogenizeNew(invElSum, invElM1 *bigNumber, toggleS, 
 	s.mul(t4, t1)
 
 	lobs := lowBit(s)
-	s.newCondNegate(lobs)
+	s.decafCondNegate(lobs)
 
 	t := p.x.copy()
 	t.decafCondNegate(^lobs ^ negX ^ toggleS)
