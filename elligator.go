@@ -127,3 +127,19 @@ func invertElligatorNonUniform(p *twExtendedPoint, hint word) [56]byte {
 	// return goldilocks_succeed_if(mask_to_bool(succ));
 	return dst
 }
+
+func invertElligatorUniform(src [112]byte, p *twExtendedPoint, hint word) [112]byte {
+	p2 := &twExtendedPoint{}
+	var partialHash, partialHash2 [56]byte
+
+	copy(partialHash[:], src[56:])
+	p2 = pointFromNonUniformHash(partialHash)
+	p2.sub(p, p2)
+	partialHash2 = invertElligatorNonUniform(p2, hint)
+
+	var dst [112]byte
+	copy(dst[56:], partialHash[:])
+	copy(dst[:56], partialHash2[:])
+
+	return dst
+}
