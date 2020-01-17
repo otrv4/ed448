@@ -19,4 +19,12 @@ func (s *Ed448Suite) Test_AddMontgomeryPoint(c *C) {
 	x, y := curve448.Add(curve448.Params().Gu, curve448.Params().Gv, curve448.Params().Gu, curve448.Params().Gv)
 
 	c.Assert(curve448.IsOnCurve(x, y), Equals, false)
+
+	x1, y1 := new(big.Int).SetInt64(0), new(big.Int).SetInt64(0)
+	baseX := curve448.Params().Gu
+	baseY := curve448.Params().Gv
+
+	x3, y3 := curve448.Add(baseX, baseY, x1, y1)
+	c.Assert(x3, DeepEquals, baseX)
+	c.Assert(y3, DeepEquals, baseY)
 }
