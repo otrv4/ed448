@@ -34,8 +34,6 @@ type EdwardsCurveParams struct {
 type GoldilocksCurve interface {
 	// Params returns the parameters for the curve.
 	Params() *CurveParams
-	// Params returns the edwards parameters for the curve.
-	EdwardsParams() *EdwardsCurveParams
 	// IsOnCurve reports whether the given (x,y) lies on the curve.
 	IsOnCurve(x, y *big.Int) bool
 	// Add returns the sum of (x1,y1) and (x2,y2)
@@ -54,6 +52,56 @@ func (curve *CurveParams) Params() *CurveParams {
 	return curve
 }
 
+// EdwardsParams returns the parameters for the curve.
+func (curve *EdwardsCurveParams) EdwardsParams() *EdwardsCurveParams {
+	return curve
+}
+
+// IsOnCurve is verifies if a given point in montgomery is valid
+// v^2 = u^3 + A*u^2 + u
+func (curve *CurveParams) IsOnCurve(x, y *big.Int) bool {
+	t0 := new(big.Int)
+	t1 := new(big.Int)
+	t2 := new(big.Int)
+
+	t0.Mul(x, x)
+	t0.Mul(t0, curve.A)
+
+	t2.Mul(x, x)
+	t2.Mul(t2, x)
+
+	t0.Add(t0, t2)
+	t0.Add(t0, x)
+	t0.Mod(t0, curve.P)
+
+	t1.Mul(y, y)
+	t1.Mod(t1, curve.P)
+
+	return t0.Cmp(t1) == 0
+}
+
+// Add is add
+func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
+	return nil, nil
+}
+
+// Double doubles
+func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
+	return nil, nil
+}
+
+// ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
+func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.Int) {
+
+	return nil, nil
+}
+
+// ScalarBaseMult returns k*G, where G is the base point of the group
+// and k is an integer in big-endian form.
+func (curve *CurveParams) ScalarBaseMult(k []byte) (*big.Int, *big.Int) {
+	return nil, nil
+}
+
 var initonce sync.Once
 var curve448 *CurveParams
 var ed448 *EdwardsCurveParams
@@ -70,7 +118,7 @@ func initCurve448() {
 	curve448.N, _ = new(big.Int).SetString("181709681073901722637330951972001133588410340171829515070372549795146003961539585716195755291692375963310293709091662304773755859649779", 10)
 	curve448.A, _ = new(big.Int).SetString("156326", 10)
 	curve448.Gu, _ = new(big.Int).SetString("5", 10)
-	curve448.Gv, _ = new(big.Int).SetString("3617de4a96262c6f5d9e98bf9292dc29f8f41dbd289a147ce9da3113b5f0b8c00a60b1ce1d7e819d7a431d7c90ea0e5f", 10)
+	curve448.Gv, _ = new(big.Int).SetString("355293926785568175264127502063783334808976399387714271831880898435169088786967410002932673765864550910142774147268105838985595290606362", 10)
 	curve448.BitSize = 448
 }
 
@@ -83,4 +131,10 @@ func initEd448() {
 	ed448.Gx, _ = new(big.Int).SetString("224580040295924300187604334099896036246789641632564134246125461686950415467406032909029192869357953282578032075146446173674602635247710", 10)
 	ed448.Gy, _ = new(big.Int).SetString("298819210078481492676017930443930673437544040154080242095928241372331506189835876003536878655418784733982303233503462500531545062832660", 10)
 	ed448.BitSize = 448
+}
+
+// Curve448 returns a Curve which implements curve448
+func Curve448() GoldilocksCurve {
+	initonce.Do(initAll)
+	return curve448
 }
