@@ -94,7 +94,7 @@ func pointFromUniformHash(ser [112]byte) *twExtendedPoint {
 	return r
 }
 
-func invertElligatorNonUniform(p *twExtendedPoint, hint word) [56]byte {
+func invertElligatorNonUniform(p *twExtendedPoint, hint word) ([56]byte, bool) {
 	sgnS := word(-(hint & 1))
 	sgnAltX := word(-((hint >> 1) & 1))
 	sgnR0 := word(-((hint >> 2) & 1))
@@ -122,25 +122,33 @@ func invertElligatorNonUniform(p *twExtendedPoint, hint word) [56]byte {
 	succ &= ^(a.decafEq(bigZero)&sgnR0 | sgnS)
 
 	var dst [56]byte
-	dsaLikeSerialize(dst[:], a)
+
+	if succ == word(0x00) {
+		dsaLikeSerialize(dst[:], a)
+		return dst, true
+	}
 
 	// TODO: check: recovered_hash[SER_BYTES-1] ^= (hint>>3)<<0;
 	// return goldilocks_succeed_if(mask_to_bool(succ));
-	return dst
+	return dst, false
 }
 
-func invertElligatorUniform(src [112]byte, p *twExtendedPoint, hint word) [112]byte {
+func invertElligatorUniform(src [112]byte, p *twExtendedPoint, hint word) ([112]byte, bool) {
 	p2 := &twExtendedPoint{}
 	var partialHash, partialHash2 [56]byte
+	var ok bool
+	var dst [112]byte
 
 	copy(partialHash[:], src[56:])
 	p2 = pointFromNonUniformHash(partialHash)
 	p2.sub(p, p2)
-	partialHash2 = invertElligatorNonUniform(p2, hint)
+	partialHash2, ok = invertElligatorNonUniform(p2, hint)
+	if !ok {
+		return dst, false
+	}
 
-	var dst [112]byte
 	copy(dst[56:], partialHash[:])
 	copy(dst[:56], partialHash2[:])
 
-	return dst
+	return dst, true
 }

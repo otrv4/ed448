@@ -292,8 +292,9 @@ func (s *Ed448Suite) Test_InvertElligatorNonUniform(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	}
 
-	ser := invertElligatorNonUniform(p, word(0x01))
+	ser, ok := invertElligatorNonUniform(p, word(0x01))
 	c.Assert(ser, DeepEquals, exp)
+	c.Assert(ok, Equals, true)
 
 	q := &twExtendedPoint{
 		&bigNumber{
@@ -333,6 +334,7 @@ func (s *Ed448Suite) Test_InvertElligatorNonUniform(c *C) {
 		0x32, 0xf7, 0x52, 0x4a, 0x7e, 0x79, 0xa9, 0xd9,
 	}
 
-	ser2 := invertElligatorNonUniform(q, word(0x07))
+	ser2, ok2 := invertElligatorNonUniform(q, word(0x07))
 	c.Assert(ser2, DeepEquals, exp2)
+	c.Assert(ok2, Equals, true)
 }
