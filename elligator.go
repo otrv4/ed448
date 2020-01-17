@@ -104,24 +104,25 @@ func invertElligatorNonUniform(p *twExtendedPoint, hint word) [56]byte {
 	c := p.deisogenizeNew(a, b, sgnS, sgnAltX)
 
 	isIndentity := p.t.decafEq(bigZero)
-	b.decafConstTimeSel(b, bigOne, isIndentity&sgnAltX)
-	c.decafConstTimeSel(c, bigOne, isIndentity&sgnS&(^sgnAltX))
-	a.mulWSignedCurveConstant(b, edwardsD-1)
-	b.add(a, b)
-	a.sub(a, c)
-	b.add(b, c)
-	a.conditionalSwap(b, sgnS)
-	c.sub(bigZero, b)
-	b.mul(c, a)
-	succ := c.isr(b)
-	succ |= b.decafEq(bigZero)
-	b.mul(c, a)
-	b.decafCondNegate(sgnR0 ^ lowBit(b))
+	a.decafConstTimeSel(a, bigOne, isIndentity&sgnAltX)
+	b.decafConstTimeSel(b, bigOne, isIndentity&sgnS&(^sgnAltX))
+
+	c.mulWSignedCurveConstant(a, edwardsD-1)
+	a.add(c, a)
+	c.sub(c, b)
+	a.add(a, b)
+	c.conditionalSwap(a, sgnS)
+	b.sub(bigZero, a)
+	a.mul(b, c)
+	succ := b.isr(a)
+	succ |= a.decafEq(bigZero)
+	a.mul(b, c)
+	a.decafCondNegate(sgnR0 ^ lowBit(a))
 	// Eliminate duplicate values for identity
-	succ &= ^(b.decafEq(bigZero)&sgnR0 | sgnS)
+	succ &= ^(a.decafEq(bigZero)&sgnR0 | sgnS)
 
 	var dst [56]byte
-	dsaLikeSerialize(dst[:], b)
+	dsaLikeSerialize(dst[:], a)
 
 	// TODO: check: recovered_hash[SER_BYTES-1] ^= (hint>>3)<<0;
 	// return goldilocks_succeed_if(mask_to_bool(succ));
