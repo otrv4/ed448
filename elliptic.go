@@ -57,7 +57,7 @@ func (curve *EdwardsCurveParams) EdwardsParams() *EdwardsCurveParams {
 	return curve
 }
 
-// IsOnCurve is verifies if a given point in montgomery is valid
+// IsOnCurve verifies if a given point in montgomery is valid
 // v^2 = u^3 + A*u^2 + u
 func (curve *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	t0 := new(big.Int)
@@ -80,9 +80,34 @@ func (curve *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	return t0.Cmp(t1) == 0
 }
 
-// Add is add
+// Add adds two points in montgomery
+// x3 = ((y2-y1)^2/(x2-x1)^2)-A-x1-x2
+// y3 = (2*x1+x2+a)*(y2-y1)/(x2-x1)-b*(y2-y1)3/(x2-x1)3-y1
+// See: https://www.hyperelliptic.org/EFD/g1p/auto-montgom.html
+// TODO: can be improved for jacobian
 func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
-	return nil, nil
+	t0 := new(big.Int)
+	t1 := new(big.Int)
+	t2 := new(big.Int)
+	x := new(big.Int)
+	y := new(big.Int)
+
+	//var t0, t1, ll GF.Elt
+	t0.Sub(y2, y1)
+	t1.Sub(x2, x1)
+	t1.ModInverse(t1, curve.P)
+	t2.Mul(t0, t1)
+
+	t0.Mul(t2, t2)
+	t0.Sub(t0, curve.A)
+	t0.Sub(t0, x1)
+	x.Sub(t0, x2)
+
+	t0.Sub(x1, x)
+	t0.Mul(t0, t2)
+	y.Sub(t0, t1)
+
+	return x, y
 }
 
 // Double doubles
