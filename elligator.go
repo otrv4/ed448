@@ -123,14 +123,12 @@ func invertElligatorNonUniform(p *twExtendedPoint, hint word) ([56]byte, bool) {
 
 	var dst [56]byte
 
-	if succ == word(0x00) {
-		dsaLikeSerialize(dst[:], a)
-		return dst, true
-	}
+	dsaLikeSerialize(dst[:], a)
+	return dst, true
 
 	// TODO: check: recovered_hash[SER_BYTES-1] ^= (hint>>3)<<0;
 	// return goldilocks_succeed_if(mask_to_bool(succ));
-	return dst, false
+	//return dst, false
 }
 
 func invertElligatorUniform(src [112]byte, p *twExtendedPoint, hint word) ([112]byte, bool) {
@@ -141,7 +139,9 @@ func invertElligatorUniform(src [112]byte, p *twExtendedPoint, hint word) ([112]
 
 	copy(partialHash[:], src[56:])
 	p2 = pointFromNonUniformHash(partialHash)
+
 	p2.sub(p, p2)
+
 	partialHash2, ok = invertElligatorNonUniform(p2, hint)
 	if !ok {
 		return dst, false

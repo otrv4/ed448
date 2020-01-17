@@ -113,6 +113,29 @@ func (p *twExtendedPoint) sub(q *twExtendedPoint, r *twExtendedPoint) {
 	p.t.mul(b, c)
 }
 
+func (p *twExtendedPoint) newSub(q *twExtendedPoint, r *twExtendedPoint) {
+	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	b.sub(q.y, q.x)
+	d.sub(r.y, r.x)
+	c.addRaw(r.y, r.x)
+	a.mul(c, b)
+	b.addRaw(q.y, q.x)
+	p.y.mul(d, b)
+	b.mul(r.t, q.t)
+	p.x.newMulw(b, word(0x13154))
+	b.addRaw(a, p.y)
+	c.sub(p.y, a)
+	a.mul(q.z, r.z)
+	a.addRaw(a, a)
+	a.weakReduce()
+	p.y.sub(a, p.x)
+	a.addRaw(a, p.x)
+	p.z.mul(a, p.y)
+	p.x.mul(p.y, c)
+	p.y.mul(a, b)
+	p.t.mul(b, c)
+}
+
 func (p *twExtendedPoint) negate(q *twExtendedPoint) {
 	p.x.sub(bigZero, q.x)
 	p.y = q.y.copy()
