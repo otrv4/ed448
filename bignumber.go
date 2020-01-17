@@ -376,6 +376,35 @@ func (n *bigNumber) mulW(x *bigNumber, w dword) *bigNumber {
 	return n
 }
 
+func wideMul(a, b word) dword {
+	return dword(a) * dword(b)
+}
+
+func (n *bigNumber) newMulWUnsigned(x *bigNumber, w word) *bigNumber {
+	var accum0, accum8 dword
+	mask := word(1<<28) - 1
+
+	for i := 0; i < 8; i++ {
+		accum0 += wideMul(w, x[i])
+		accum8 += wideMul(w, x[i+8])
+
+		n[i] = word(accum0) & mask
+		accum0 >>= 28
+		n[i+8] = word(accum8) & mask
+		accum8 >>= 28
+	}
+
+	accum0 += accum8 + dword(n[8])
+	n[8] = word(accum0) & mask
+	n[9] += word(accum0 >> 28)
+
+	accum8 += dword(n[0])
+	n[0] = word(accum8) & mask
+	n[1] += word(accum8 >> 28)
+
+	return n
+}
+
 //n = x * y
 func (n *bigNumber) mulCopy(x *bigNumber, y *bigNumber) *bigNumber {
 	//it does not work in place, that why the temporary bigNumber is necessary
@@ -390,11 +419,20 @@ func (n *bigNumber) mul(x *bigNumber, y *bigNumber) *bigNumber {
 
 //TODO Security this is not constant time
 func (n *bigNumber) mulWSignedCurveConstant(x *bigNumber, c sdword) *bigNumber {
-	if c >= 0 {
+	if c > 0 {
 		return n.mulW(x, dword(c))
 	}
 
 	r := n.mulW(x, dword(-c))
+	return r.sub(bigZero, r)
+}
+
+func (n *bigNumber) newMulw(x *bigNumber, w word) *bigNumber {
+	if w > 0 {
+		return n.newMulWUnsigned(x, w)
+	}
+
+	r := n.newMulWUnsigned(x, -w)
 	return r.sub(bigZero, r)
 }
 
