@@ -200,26 +200,27 @@ func (p *twExtendedPoint) deisogenizeNew(invElSum, invElM1 *bigNumber, toggleS, 
 	t3.mul(t1, t2) // t3 = num
 	t2.square(p.x)
 	t1.mul(t2, t3)
-	t2.mulWSignedCurveConstant(t1, 1-(edwardsD-1)) // -x^2 * (a-d) * num
-	t1.isr(t2)                                     // t1 = isr
-	t2.mul(t1, t3)                                 // t2 = ratio
-
+	t2.newMulw(t1, word(0x98a9)) // -x^2 * (a-d) * num
+	t1.isr(t2)                   // t1 = isr
+	t2.mul(t1, t3)               // t2 = ratio
 	t4.mul(t2, factor)
 	negX := lowBit(t4) ^ toggleAltX
 	t2.decafCondNegate(negX)
-
 	t3.mul(t2, p.z)
 	t3.sub(t3, p.t)
 	t2.mul(t3, p.x)
-	t4.mulWSignedCurveConstant(t2, 1-(edwardsD-1))
+	t4.newMulw(t2, word(0x98a9))
 	s.mul(t4, t1)
 
 	lobs := lowBit(s)
 	s.decafCondNegate(lobs)
 
-	invElM1 = p.x.copy()
-	invElM1.decafCondNegate((^lobs) ^ negX ^ toggleS)
-	invElM1.add(invElM1, p.t)
+	tmp := &bigNumber{}
+	tmp = p.x.copy()
+	tmp.decafCondNegate((^lobs) ^ negX ^ toggleS)
+	tmp.add(tmp, p.t)
+
+	*invElM1 = *tmp
 
 	return s
 }
