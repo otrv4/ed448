@@ -92,7 +92,6 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 	x := new(big.Int)
 	y := new(big.Int)
 
-	//var t0, t1, ll GF.Elt
 	t0.Sub(y2, y1)
 	t1.Sub(x2, x1)
 	t1.ModInverse(t1, curve.P)
@@ -106,6 +105,9 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 	t0.Sub(x1, x)
 	t0.Mul(t0, t2)
 	y.Sub(t0, t1)
+
+	x.Mod(x, curve.P)
+	y.Mod(y, curve.P)
 
 	return x, y
 }
