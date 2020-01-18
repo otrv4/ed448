@@ -44,7 +44,6 @@ type GoldilocksCurve interface {
 	// ScalarBaseMultEdwards returns k*G, where G is the base point of the group
 	// and k is an integer in little-endian form.
 	ScalarBaseMult(k []byte) []byte
-	MapToCurve(u *big.Int) (*big.Int, *big.Int)
 }
 
 // A GoldilocksEdCurve represents Goldilocks edwards448.
