@@ -38,6 +38,7 @@ func (s *Ed448Suite) Test_DoubleMontgomeryPoint(c *C) {
 	c.Assert(y.Sign(), Equals, 0)
 }
 
+// With RFC7748 test vectors
 func (s *Ed448Suite) Test_ScalarMultMontgomeryPoint(c *C) {
 	curve448 := Curve448()
 	x1 := new(big.Int)
@@ -50,6 +51,14 @@ func (s *Ed448Suite) Test_ScalarMultMontgomeryPoint(c *C) {
 	exp, _ = new(big.Int).SetString("ce3e4ff95a60dc6697da1db1d85e6afbdf79b50a2412d7546d5f239fe14fbaadeb445fc66a01b0779d98223961111e21766282f73dd96b6f", 16)
 
 	dst := curve448.ScalarMult(x1, y1, sc.Bytes())
+
+	c.Assert(dst, DeepEquals, exp.Bytes())
+
+	x1, _ = new(big.Int).SetString("0fbcc2f993cd56d3305b0b7d9e55d4c1a8fb5dbb52f8e9a1e9b6201b165d015894e56c4d3570bee52fe205e28a78b91cdfbde71ce8d157db", 16)
+	sc, _ = new(big.Int).SetString("203d494428b8399352665ddca42f9de8fef600908e0d461cb021f8c538345dd77c3e4806e25f46d3315c44e0a5b4371282dd2c8d5be3095f", 16)
+	exp, _ = new(big.Int).SetString("884a02576239ff7a2f2f63b2db6a9ff37047ac13568e1e30fe63c4a7ad1b3ee3a5700df34321d62077e63633c575c1c954514e99da7c179d", 16)
+
+	dst = curve448.ScalarMult(x1, y1, sc.Bytes())
 
 	c.Assert(dst, DeepEquals, exp.Bytes())
 }
