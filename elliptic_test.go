@@ -111,9 +111,12 @@ func (s *Ed448Suite) Test_ScalarBaseMultMontgomeryPoint(c *C) {
 
 func (s *Ed448Suite) Test_MapToCurve(c *C) {
 	curve448 := Curve448()
-	u := new(big.Int).SetInt64(5)
+	u := new(big.Int).SetInt64(0)
+	x, y := new(big.Int), new(big.Int)
 
-	x, y := curve448.MapToCurve(u)
-
-	c.Assert(curve448.IsOnCurve(x, y), Equals, true)
+	for i := 0; i < 52; i++ {
+		x, y = curve448.MapToCurve(u)
+		c.Assert(curve448.IsOnCurve(x, y), Equals, true)
+		u.Add(u, new(big.Int).SetInt64(1))
+	}
 }
