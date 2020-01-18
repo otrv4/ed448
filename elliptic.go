@@ -39,12 +39,11 @@ type GoldilocksCurve interface {
 	Add(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
 	// Double returns 2*(x,y)
 	Double(x1, y1 *big.Int) (x, y *big.Int)
-	// ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
+	// ScalarMultEdwards returns k*(Bx,By) where k is a number in little-endian form.
 	ScalarMult(x1, y1 *big.Int, k []byte) []byte
-	// ScalarBaseMult returns k*G, where G is the base point of the group
+	// ScalarBaseMultEdwards returns k*G, where G is the base point of the group
 	// and k is an integer in little-endian form.
 	ScalarBaseMult(k []byte) []byte
-	ToWeierstrassCurve() (*big.Int, *big.Int)
 }
 
 // A GoldilocksEdCurve represents Goldilocks edwards448.
@@ -52,26 +51,21 @@ type GoldilocksCurve interface {
 type GoldilocksEdCurve interface {
 	// Params returns the parameters for the curve.
 	EdwardsParams() *EdwardsCurveParams
-	// IsOnCurveEdwards reports whether the given (x,y) lies on the curve.
-	IsOnCurveEdwards(x, y *big.Int) bool
-	// AddEdwards returns the sum of (x1,y1) and (x2,y2)
-	AddEdwards(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
-	// DoubleEdwards returns 2*(x,y)
-	DoubleEdwards(x1, y1 *big.Int) (x, y *big.Int)
-	// ScalarMultEdwards returns k*(Bx,By) where k is a number in little-endian form.
-	ScalarMultEdwards(x1, y1 *big.Int, k []byte) []byte
+	// IsOnCurveEdwards reports whether the given p lies on the curve.
+	IsOnCurveEdwards(p Point) bool
+	// AddEdwards returns the sum of p and q
+	AddEdwards(p, q Point) Point
+	// DoubleEdwards returns 2*p
+	DoubleEdwards(p Point) Point
+	// ScalarMultEdwards returns k*(p) where k is an scalar.
+	ScalarMultEdwards(p Point, k Scalar) Point
 	// ScalarBaseMultEdwards returns k*G, where G is the base point of the group
-	// and k is an integer in little-endian form.
-	ScalarBaseMultEdwards(k []byte) []byte
+	// and k is an scalar
+	ScalarBaseMultEdwards(k Scalar) Point
 }
 
 // Params returns the parameters for the curve.
 func (curve *CurveParams) Params() *CurveParams {
-	return curve
-}
-
-// EdwardsParams returns the parameters for the curve.
-func (curve *EdwardsCurveParams) EdwardsParams() *EdwardsCurveParams {
 	return curve
 }
 
@@ -281,6 +275,43 @@ func (curve *CurveParams) MapToCurve(u *big.Int) (*big.Int, *big.Int) {
 
 	// TODO: mod
 	return x, y
+}
+
+// EdwardsParams returns the parameters for the curve.
+func (curve *EdwardsCurveParams) EdwardsParams() *EdwardsCurveParams {
+	return curve
+}
+
+// IsOnCurveEdwards reports whether the given point (p) lies on the curve.
+func (curve *EdwardsCurveParams) IsOnCurveEdwards(p Point) bool {
+	return p.(*twExtendedPoint).isOnCurve()
+}
+
+// AddEdwards gives the sum of two points (p, q) and produces a third point (p).
+func (curve *EdwardsCurveParams) AddEdwards(p, q Point) Point {
+	r := &twExtendedPoint{}
+	r.add(p.(*twExtendedPoint), q.(*twExtendedPoint))
+
+	return r
+}
+
+// DoubleEdwards gives the doubling of a point (p).
+func (curve *EdwardsCurveParams) DoubleEdwards(p Point) Point {
+	p.(*twExtendedPoint).double()
+
+	return p
+}
+
+// ScalarMultEdwards returns the multiplication of a given point (p) by a given
+// scalar (a): p * k.
+func ScalarMultEdwards(p Point, k Scalar) Point {
+	return pointScalarMul(p.(*twExtendedPoint), k.(*scalar))
+}
+
+// ScalarBaseMultEdwards returns the multiplication of a given scalar (k) by the
+// precomputed base point of the curve: basePoint * k.
+func ScalarBaseMultEdwards(k Scalar) Point {
+	return precomputedScalarMul(k.(*scalar))
 }
 
 var initonce sync.Once
