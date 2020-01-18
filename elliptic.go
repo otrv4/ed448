@@ -29,8 +29,7 @@ type EdwardsCurveParams struct {
 	Name    string   // the canonical name of the curve
 }
 
-// A GoldilocksCurve represents Goldilocks curve or edwards448.
-// See https://www.hyperelliptic.org/EFD/g1p/auto-shortw.html
+// A GoldilocksCurve represents the curve448.
 type GoldilocksCurve interface {
 	// Params returns the parameters for the curve.
 	Params() *CurveParams
@@ -45,6 +44,25 @@ type GoldilocksCurve interface {
 	// ScalarBaseMult returns k*G, where G is the base point of the group
 	// and k is an integer in little-endian form.
 	ScalarBaseMult(k []byte) []byte
+	ToWeierstrassCurve() (*big.Int, *big.Int)
+}
+
+// A GoldilocksEdCurve represents Goldilocks edwards448.
+// This uses the decaf technique
+type GoldilocksEdCurve interface {
+	// Params returns the parameters for the curve.
+	EdwardsParams() *EdwardsCurveParams
+	// IsOnCurveEdwards reports whether the given (x,y) lies on the curve.
+	IsOnCurveEdwards(x, y *big.Int) bool
+	// AddEdwards returns the sum of (x1,y1) and (x2,y2)
+	AddEdwards(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
+	// DoubleEdwards returns 2*(x,y)
+	DoubleEdwards(x1, y1 *big.Int) (x, y *big.Int)
+	// ScalarMultEdwards returns k*(Bx,By) where k is a number in little-endian form.
+	ScalarMultEdwards(x1, y1 *big.Int, k []byte) []byte
+	// ScalarBaseMultEdwards returns k*G, where G is the base point of the group
+	// and k is an integer in little-endian form.
+	ScalarBaseMultEdwards(k []byte) []byte
 }
 
 // Params returns the parameters for the curve.
@@ -154,6 +172,8 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 	t0.Mul(t0, t2)
 	y.Sub(t0, y1)
 
+	x.Mod(x, curve.P)
+	y.Mod(y, curve.P)
 	return x, y
 }
 
@@ -178,6 +198,88 @@ func (curve *CurveParams) ScalarBaseMult(k []byte) []byte {
 	dst = x448BasePointScalarMul(k)
 
 	return dst[:]
+}
+
+// ToWeierstrassCurve is bla
+func (curve *CurveParams) ToWeierstrassCurve() (*big.Int, *big.Int) {
+	invB := new(big.Int)
+	a := new(big.Int)
+	b := new(big.Int)
+
+	invB.ModInverse(new(big.Int).SetInt64(1), curve.P)
+	a.Mul(invB, curve.A)
+	b.Mul(invB, invB)
+
+	return a, b
+}
+
+func isZero(a *big.Int) bool {
+	return a.Sign() == 0
+}
+
+func isEqual(x, y *big.Int) bool {
+	return isZero(new(big.Int).Sub(x, y))
+}
+
+func cMov(x, y *big.Int, b bool) *big.Int {
+	z := new(big.Int)
+
+	if b {
+		z.Set(y)
+	} else {
+		z.Set(x)
+	}
+
+	return z
+}
+
+func isSquare(curve *CurveParams, x *big.Int) bool {
+	pMinus1div2 := big.NewInt(1)
+	pMinus1div2.Sub(curve.P, pMinus1div2)
+	pMinus1div2.Rsh(pMinus1div2, 1)
+
+	return isEqual(new(big.Int).Exp(x, pMinus1div2, curve.P), new(big.Int).SetInt64(1))
+}
+
+func sqrt(curve *CurveParams, x *big.Int) *big.Int {
+	e := big.NewInt(1)
+	e.Add(curve.P, e)
+	e.Rsh(e, 2)
+
+	return new(big.Int).Exp(x, e, curve.P)
+}
+
+func sgn0LE(x *big.Int) int {
+	return 1 - 2*int(x.Bit(0))
+}
+
+func (curve *CurveParams) MapToCurve(u *big.Int) (*big.Int, *big.Int) {
+	t1, x1, x2, gx1, gx2, y2, x, y := new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int)
+	var e1, e2, e3 bool
+
+	t1.Mul(u, u)
+	t1.Mul(new(big.Int).SetInt64(-1), t1)
+	e1 = isEqual(t1, new(big.Int).SetInt64(-1))
+	t1 = cMov(t1, new(big.Int).SetInt64(0), e1)
+	x1.Add(t1, new(big.Int).SetInt64(1))
+	x1.ModInverse(x1, curve.P)
+	x1.Mul(new(big.Int).Neg(curve.A), x1)
+	gx1.Add(x1, curve.A)
+	gx1.Mul(gx1, x1)
+	gx1.Add(gx1, new(big.Int).SetInt64(1))
+	gx1.Mul(gx1, x1)
+
+	x2.Sub(new(big.Int).Neg(x1), curve.A)
+	gx2.Mul(t1, gx1)
+	e2 = isSquare(curve, gx1)
+	x = cMov(x2, x1, e2)
+	y2 = cMov(gx2, gx1, e2)
+	y = sqrt(curve, y2)
+	e3 = sgn0LE(u) == sgn0LE(y)
+	y = cMov(new(big.Int).Neg(y), y, e3)
+
+	// TODO: mod
+	return x, y
 }
 
 var initonce sync.Once
