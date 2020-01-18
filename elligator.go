@@ -103,9 +103,9 @@ func invertElligatorNonUniform(p *twExtendedPoint, hint word) ([56]byte, bool) {
 
 	c := p.deisogenizeNew(a, b, sgnS, sgnAltX)
 
-	isIndentity := p.t.decafEq(bigZero)
-	a.decafConstTimeSel(a, bigOne, isIndentity&sgnAltX)
-	b.decafConstTimeSel(b, bigOne, isIndentity&sgnS&(^sgnAltX))
+	isIdentity := p.t.decafEq(bigZero)
+	a.decafConstTimeSel(a, bigOne, isIdentity&sgnAltX)
+	b.decafConstTimeSel(b, bigOne, isIdentity&sgnS&(^sgnAltX))
 
 	c.mulWSignedCurveConstant(a, edwardsD-1)
 	a.add(c, a)

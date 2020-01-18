@@ -85,8 +85,8 @@ func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
 	return out
 }
 
-func x448ScalarMul(base []byte, s []byte) ([x448FieldBytes]byte, bool) {
-	if len(s) != x448FieldBytes || len(base) != x448FieldBytes {
+func x448ScalarMul(point []byte, s []byte) ([x448FieldBytes]byte, bool) {
+	if len(s) != x448FieldBytes || len(point) != x448FieldBytes {
 		panic("Wrong scalar or base length: should be 56 bytes")
 	}
 
@@ -94,7 +94,7 @@ func x448ScalarMul(base []byte, s []byte) ([x448FieldBytes]byte, bool) {
 
 	swap := word(0)
 
-	dsaLikeDeserialize(x1, base, uint(0))
+	dsaLikeDeserialize(x1, point, uint(0))
 	x2 := bigOne.copy()
 	z2 := bigZero.copy()
 	x3 := x1.copy()
