@@ -51,6 +51,16 @@ func (s *Ed448Suite) Test_DoubleMontgomeryPoint(c *C) {
 
 	c.Assert(x.Sign(), Equals, 0)
 	c.Assert(y.Sign(), Equals, 0)
+
+	x2, y2 := new(big.Int), new(big.Int)
+	x2, _ = new(big.Int).SetString("4", 10)
+	y2, _ = new(big.Int).SetString("726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439", 10)
+
+	x3, y3 := curve448.Add(x2, y2, x2, y2)
+	x4, y4 := curve448.Double(x2, y2)
+
+	c.Assert(x3, DeepEquals, x4)
+	c.Assert(y3, DeepEquals, y4)
 }
 
 // With RFC7748 test vectors
