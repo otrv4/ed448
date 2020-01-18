@@ -41,7 +41,7 @@ type GoldilocksCurve interface {
 	// Double returns 2*(x,y)
 	Double(x1, y1 *big.Int) (x, y *big.Int)
 	// ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
-	ScalarMult(x1, y1 *big.Int, k []byte) (x, y *big.Int)
+	ScalarMult(x1, y1 *big.Int, k []byte) []byte
 	// ScalarBaseMult returns k*G, where G is the base point of the group
 	// and k is an integer in big-endian form.
 	ScalarBaseMult(k []byte) (x, y *big.Int)
@@ -157,10 +157,17 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 	return x, y
 }
 
-// ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
-func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.Int) {
+// ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
+func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) []byte {
+	var dst [x448FieldBytes]byte
 
-	return nil, nil
+	u := x1.Bytes()
+	dst, ok := x448ScalarMul(u, k)
+	if !ok {
+		return nil
+	}
+
+	return dst[:]
 }
 
 // ScalarBaseMult returns k*G, where G is the base point of the group
