@@ -262,29 +262,32 @@ func (curve *CurveParams) ToWeierstrassCurve() (*big.Int, *big.Int) {
 func (curve *CurveParams) MapToCurve(u *big.Int) (*big.Int, *big.Int) {
 	t1, x1, x2, gx1, gx2, y2, x, y := new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int)
 	var e1, e2, e3 bool
+	z := new(big.Int).SetInt64(-1)
 
-	t1.Mul(u, u)
-	t1.Mul(new(big.Int).SetInt64(-1), t1)
-	e1 = isEqual(t1, new(big.Int).SetInt64(-1))
-	t1 = cMov(t1, new(big.Int).SetInt64(0), e1)
-	x1.Add(t1, new(big.Int).SetInt64(1))
-	x1.ModInverse(x1, curve.P)
-	x1.Mul(new(big.Int).Neg(curve.A), x1)
-	gx1.Add(x1, curve.A)
-	gx1.Mul(gx1, x1)
-	gx1.Add(gx1, new(big.Int).SetInt64(1))
-	gx1.Mul(gx1, x1)
+	t1.Mul(u, u)                                // t1 = u^2
+	t1.Mul(z, t1)                               // Z * u^2
+	e1 = isEqual(t1, new(big.Int).SetInt64(-1)) // Z * u^2 == -1
+	t1 = cMov(t1, new(big.Int).SetInt64(0), e1) // if t1 == -1, set t1 = 0
+	x1.Add(t1, new(big.Int).SetInt64(1))        // x1 = t1 + 1
+	x1 = inv(curve, x1)                         // x1 = inv0(x1)
+	x1.Mul(new(big.Int).Neg(curve.A), x1)       // x1 = -A / (1 + Z * u^2)
+	gx1.Add(x1, curve.A)                        // gx1 = x1 + A
+	gx1.Mul(gx1, x1)                            // gx1 = gx1 * x1
+	gx1.Add(gx1, new(big.Int).SetInt64(1))      // gx1 = gx1 + B
+	gx1.Mul(gx1, x1)                            // gx1 = x1^3 + A * x1^2 + B * x1
 
-	x2.Sub(new(big.Int).Neg(x1), curve.A)
-	gx2.Mul(t1, gx1)
-	e2 = isSquare(curve, gx1)
-	x = cMov(x2, x1, e2)
-	y2 = cMov(gx2, gx1, e2)
-	y = sqrt(curve, y2)
-	e3 = sgn0LE(u) == sgn0LE(y)
-	y = cMov(new(big.Int).Neg(y), y, e3)
+	x2.Sub(new(big.Int).Neg(x1), curve.A) //x2 = -x1 - A
+	gx2.Mul(t1, gx1)                      // gx2 = t1 * gx1
+	e2 = isSquare(curve, gx1)             // e2 = is_square(gx1)
+	x = cMov(x2, x1, e2)                  // If is_square(gx1), x = x1, else x = x2
+	y2 = cMov(gx2, gx1, e2)               // If is_square(gx1), y2 = gx1, else y2 = gx2
+	y = sqrt(curve, y2)                   // y = sqrt(y2)
+	e3 = sgn0LE(u) == sgn0LE(y)           // Fix sign of y: e3 = sgn0(u) == sgn0(y)
+	y = cMov(new(big.Int).Neg(y), y, e3)  // y = CMOV(-y, y, e3)
 
-	// TODO: mod
+	x.Mod(x, curve.P)
+	y.Mod(y, curve.P)
+
 	return x, y
 }
 
