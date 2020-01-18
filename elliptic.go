@@ -125,6 +125,10 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 // y3 = (2*x1+x1+a)*(3*x12+2*a*x1+1)/(2*b*y1)-b*(3*x12+2*a*x1+1)3/(2*b*y1)3-y1
 // See: https://www.hyperelliptic.org/EFD/g1p/auto-montgom.html
 func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
+	if y1.Sign() == 0 {
+		return x1, y1
+	}
+
 	t0 := new(big.Int)
 	t1 := new(big.Int)
 	t2 := new(big.Int)
