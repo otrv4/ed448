@@ -44,6 +44,7 @@ type GoldilocksCurve interface {
 	// ScalarBaseMultEdwards returns k*G, where G is the base point of the group
 	// and k is an integer in little-endian form.
 	ScalarBaseMult(k []byte) []byte
+	MapToCurve(u *big.Int) (*big.Int, *big.Int)
 }
 
 // A GoldilocksEdCurve represents Goldilocks edwards448.
@@ -258,7 +259,8 @@ func (curve *CurveParams) ToWeierstrassCurve() (*big.Int, *big.Int) {
 	return a, b
 }
 
-// MapToCurve calculates a point on the elliptic curve from an element of the finite field F. This implements Elligator2
+// MapToCurve calculates a point on the elliptic curve from an element of the finite field F. This implements Elligator2,
+// according to https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-05, section 6.7.1.1.
 func (curve *CurveParams) MapToCurve(u *big.Int) (*big.Int, *big.Int) {
 	t1, x1, x2, gx1, gx2, y2, x, y := new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int), new(big.Int)
 	var e1, e2, e3 bool
