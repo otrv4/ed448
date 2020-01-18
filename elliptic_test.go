@@ -27,6 +27,21 @@ func (s *Ed448Suite) Test_AddMontgomeryPoint(c *C) {
 	x3, y3 := curve448.Add(baseX, baseY, x1, y1)
 	c.Assert(x3, DeepEquals, baseX)
 	c.Assert(y3, DeepEquals, baseY)
+
+	x2, y2 := new(big.Int).SetInt64(0), new(big.Int).SetInt64(1)
+	x4, y4 := curve448.Add(baseX, baseY, x2, y2)
+	c.Assert(x4, DeepEquals, baseX)
+	c.Assert(y4, DeepEquals, baseY)
+
+	x5, y5 := new(big.Int), new(big.Int)
+
+	x5, _ = new(big.Int).SetString("4", 10)
+	y5, _ = new(big.Int).SetString("726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439", 10)
+
+	x6, y6 := curve448.Add(baseX, baseY, x5, y5)
+	x7, y7 := curve448.Add(x5, y5, baseX, baseY)
+	c.Assert(x6, DeepEquals, x7)
+	c.Assert(y6, DeepEquals, y7)
 }
 
 func (s *Ed448Suite) Test_DoubleMontgomeryPoint(c *C) {

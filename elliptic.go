@@ -92,6 +92,13 @@ func (curve *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	return t0.Cmp(t1) == 0
 }
 
+func inv(curve *CurveParams, x *big.Int) *big.Int {
+	pMinus2 := big.NewInt(2)
+	pMinus2.Sub(curve.P, pMinus2)
+
+	return x.Exp(x, pMinus2, curve.P)
+}
+
 // Add adds two points in montgomery
 // x3 = ((y2-y1)^2/(x2-x1)^2)-A-x1-x2
 // y3 = (2*x1+x2+a)*(y2-y1)/(x2-x1)-b*(y2-y1)3/(x2-x1)3-y1
@@ -114,17 +121,18 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 
 	t0.Sub(y2, y1)
 	t1.Sub(x2, x1)
-	t1.ModInverse(t1, curve.P)
+	t1 = inv(curve, t1)
 	t2.Mul(t0, t1)
 
 	t0.Mul(t2, t2)
+	t0.Mul(t0, new(big.Int).SetInt64(1))
 	t0.Sub(t0, curve.A)
 	t0.Sub(t0, x1)
 	x.Sub(t0, x2)
 
 	t0.Sub(x1, x)
 	t0.Mul(t0, t2)
-	y.Sub(t0, t1)
+	y.Sub(t0, y1)
 
 	x.Mod(x, curve.P)
 	y.Mod(y, curve.P)
