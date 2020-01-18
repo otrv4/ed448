@@ -125,7 +125,32 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 // y3 = (2*x1+x1+a)*(3*x12+2*a*x1+1)/(2*b*y1)-b*(3*x12+2*a*x1+1)3/(2*b*y1)3-y1
 // See: https://www.hyperelliptic.org/EFD/g1p/auto-montgom.html
 func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
-	return nil, nil
+	t0 := new(big.Int)
+	t1 := new(big.Int)
+	t2 := new(big.Int)
+	x := new(big.Int)
+	y := new(big.Int)
+
+	t0.Mul(new(big.Int).SetInt64(3), x1)
+	t1.Mul(new(big.Int).SetInt64(2), curve.A)
+	t0.Add(t0, t1)
+	t0.Mul(t0, x1)
+	t1.Add(t0, new(big.Int).SetInt64(1))
+
+	t0.Mul(new(big.Int).SetInt64(2), y1)
+	t0.ModInverse(t0, curve.P)
+	t2.Mul(t1, t0)
+
+	t0.Mul(t2, t2)
+	t0.Sub(t0, curve.A)
+	t0.Sub(t0, x1)
+	x.Sub(t0, x1)
+
+	t0.Sub(x1, x)
+	t0.Mul(t0, t2)
+	y.Sub(t0, y1)
+
+	return x, y
 }
 
 // ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
