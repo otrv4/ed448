@@ -50,18 +50,18 @@ type GoldilocksCurve interface {
 // This uses the decaf technique
 type GoldilocksEdCurve interface {
 	// Params returns the parameters for the curve.
-	EdwardsParams() *EdwardsCurveParams
+	Params() *EdwardsCurveParams
 	// IsOnCurveEdwards reports whether the given p lies on the curve.
-	IsOnCurveEdwards(p Point) bool
+	IsOnCurve(p Point) bool
 	// AddEdwards returns the sum of p and q
-	AddEdwards(p, q Point) Point
+	Add(p, q Point) Point
 	// DoubleEdwards returns 2*p
-	DoubleEdwards(p Point) Point
+	Double(p Point) Point
 	// ScalarMultEdwards returns k*(p) where k is an scalar.
-	ScalarMultEdwards(p Point, k Scalar) Point
+	ScalarMult(p Point, k Scalar) Point
 	// ScalarBaseMultEdwards returns k*G, where G is the base point of the group
 	// and k is an scalar
-	ScalarBaseMultEdwards(k Scalar) Point
+	ScalarBaseMult(k Scalar) Point
 }
 
 // Params returns the parameters for the curve.
@@ -143,7 +143,6 @@ func sgn0LE(x *big.Int) int {
 // x3 = ((y2-y1)^2/(x2-x1)^2)-A-x1-x2
 // y3 = (2*x1+x2+a)*(y2-y1)/(x2-x1)-b*(y2-y1)3/(x2-x1)3-y1
 // See: https://www.hyperelliptic.org/EFD/g1p/auto-montgom.html
-// TODO: can be improved with jacobian
 func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 	t0 := new(big.Int)
 	t1 := new(big.Int)
@@ -292,40 +291,40 @@ func (curve *CurveParams) MapToCurve(u *big.Int) (*big.Int, *big.Int) {
 	return x, y
 }
 
-// EdwardsParams returns the parameters for the curve.
-func (curve *EdwardsCurveParams) EdwardsParams() *EdwardsCurveParams {
+// Params returns the parameters for the curve.
+func (curve *EdwardsCurveParams) Params() *EdwardsCurveParams {
 	return curve
 }
 
-// IsOnCurveEdwards reports whether the given point (p) lies on the curve.
-func (curve *EdwardsCurveParams) IsOnCurveEdwards(p Point) bool {
+// IsOnCurve reports whether the given point (p) lies on the curve.
+func (curve *EdwardsCurveParams) IsOnCurve(p Point) bool {
 	return p.(*twExtendedPoint).isOnCurve()
 }
 
-// AddEdwards gives the sum of two points (p, q) and produces a third point (p).
-func (curve *EdwardsCurveParams) AddEdwards(p, q Point) Point {
+// Add gives the sum of two points (p, q) and produces a third point (p).
+func (curve *EdwardsCurveParams) Add(p, q Point) Point {
 	r := &twExtendedPoint{}
 	r.add(p.(*twExtendedPoint), q.(*twExtendedPoint))
 
 	return r
 }
 
-// DoubleEdwards gives the doubling of a point (p).
-func (curve *EdwardsCurveParams) DoubleEdwards(p Point) Point {
+// Double gives the doubling of a point (p).
+func (curve *EdwardsCurveParams) Double(p Point) Point {
 	p.(*twExtendedPoint).double()
 
 	return p
 }
 
-// ScalarMultEdwards returns the multiplication of a given point (p) by a given
+// ScalarMult returns the multiplication of a given point (p) by a given
 // scalar (a): p * k.
-func ScalarMultEdwards(p Point, k Scalar) Point {
+func ScalarMult(p Point, k Scalar) Point {
 	return pointScalarMul(p.(*twExtendedPoint), k.(*scalar))
 }
 
-// ScalarBaseMultEdwards returns the multiplication of a given scalar (k) by the
+// ScalarBaseMult returns the multiplication of a given scalar (k) by the
 // precomputed base point of the curve: basePoint * k.
-func ScalarBaseMultEdwards(k Scalar) Point {
+func ScalarBaseMult(k Scalar) Point {
 	return precomputedScalarMul(k.(*scalar))
 }
 
@@ -362,6 +361,12 @@ func initEd448() {
 
 // Curve448 returns a Curve which implements curve448
 func Curve448() GoldilocksCurve {
+	initonce.Do(initAll)
+	return curve448
+}
+
+// Ed448 returns a Curve which implements ed448
+func Ed448() GoldilocksCurve {
 	initonce.Do(initAll)
 	return curve448
 }
