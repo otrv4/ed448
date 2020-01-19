@@ -86,7 +86,7 @@ func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
 }
 
 func x448ScalarMul(point []byte, s []byte) ([x448FieldBytes]byte, bool) {
-	if len(s) != x448FieldBytes || len(point) != x448FieldBytes {
+	if len(s) != x448FieldBytes {
 		panic("Wrong scalar or base length: should be 56 bytes")
 	}
 

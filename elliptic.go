@@ -364,9 +364,3 @@ func Curve448() GoldilocksCurve {
 	initonce.Do(initAll)
 	return curve448
 }
-
-// Ed448 returns a Curve which implements ed448
-func Ed448() GoldilocksCurve {
-	initonce.Do(initAll)
-	return ed448
-}
