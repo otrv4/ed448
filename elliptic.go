@@ -225,8 +225,11 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) []byte {
 	var dst [x448FieldBytes]byte
 
-	u := x1.Bytes()
-	dst, ok := x448ScalarMul(u, k)
+	uB := x1.Bytes()
+	var u [56]byte
+	copy(u[:], uB)
+
+	dst, ok := x448ScalarMul(u[:], k)
 	if !ok {
 		return nil
 	}
