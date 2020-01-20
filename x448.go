@@ -52,10 +52,6 @@ func fromEdDSATox448(ed []byte) [x448FieldBytes]byte {
 }
 
 func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
-	if len(s) != x448FieldBytes {
-		panic("Wrong scalar length: should be 56 bytes")
-	}
-
 	scalar2 := append([]byte{}, s...)
 	// Scalar conditioning
 	scalar2[0] &= -(byte(Cofactor))
