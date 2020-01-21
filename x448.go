@@ -58,8 +58,8 @@ func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
 
 	theScalar := &scalar{}
 
-	scalar2[x448FieldBytes-1] &= ^(-1 << ((x448FieldBytes + 7) % 8))
-	scalar2[x448FieldBytes-1] |= 1 << ((x448FieldBytes + 7) % 8)
+	//scalar2[x448FieldBytes-1] &= ^(-1 << ((x448FieldBytes + 7) % 8))
+	//scalar2[x448FieldBytes-1] |= 1 << ((x448FieldBytes + 7) % 8)
 
 	theScalar.decode(scalar2)
 
