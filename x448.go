@@ -58,8 +58,8 @@ func x448BasePointScalarMul(s []byte) [x448FieldBytes]byte {
 
 	theScalar := &scalar{}
 
-	//scalar2[x448FieldBytes-1] &= ^(-1 << ((x448FieldBytes + 7) % 8))
-	//scalar2[x448FieldBytes-1] |= 1 << ((x448FieldBytes + 7) % 8)
+	scalar2[x448FieldBytes-1] &= ^(-1 << ((x448FieldBytes + 7) % 8))
+	scalar2[x448FieldBytes-1] |= 1 << ((x448FieldBytes + 7) % 8)
 
 	theScalar.decode(scalar2)
 
@@ -97,11 +97,11 @@ func x448ScalarMul(point []byte, s []byte) ([x448FieldBytes]byte, bool) {
 		var kT word
 
 		// Scalar conditioning
-		//if t/8 == 0 {
-		//	sb &= -byte(Cofactor)
-		//} else if t == (x448FieldBits - 1) {
-		//	sb = -byte(byteOne)
-		//}
+		if t/8 == 0 {
+			sb &= -byte(Cofactor)
+		} else if t == (x448FieldBits - 1) {
+			sb = -byte(byteOne)
+		}
 
 		kT = word((sb >> byte(t%8)) & 1)
 		kT = -kT // set to all 0s or all 1s
