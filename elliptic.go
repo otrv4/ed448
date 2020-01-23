@@ -1,6 +1,7 @@
 package ed448
 
 import (
+	"crypto/subtle"
 	"math/big"
 	"sync"
 )
@@ -221,17 +222,48 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 	return x, y
 }
 
+// Basepoint is the generator for curve448 in montgomery form
+var Basepoint []byte
+
+var basePoint = [32]byte{5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
+func init() { Basepoint = basePoint[:] }
+
+func checkBasepoint() {
+	if subtle.ConstantTimeCompare(Basepoint, []byte{
+		0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}) != 1 {
+		panic("curve448: global Basepoint value was modified")
+	}
+}
+
 // ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
 func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) []byte {
 	var dst [x448FieldBytes]byte
+	var ok bool
+	s := [x448FieldBytes]byte{}
+	uB := [x448FieldBytes]byte{}
 
-	uB := x1.Bytes()
-	s := [56]byte{}
+	b := x1.Bytes()
 	copy(s[:], k)
+	copy(uB[:], b)
 
-	dst, ok := x448ScalarMul(uB, s[:])
-	if !ok {
-		return nil
+	if &uB[0] == &Basepoint[0] {
+		checkBasepoint()
+		dst = x448BasePointScalarMul(s[:])
+	} else {
+		var zero [x448FieldBytes]byte
+
+		dst, ok = x448ScalarMul(uB[:], s[:])
+		if !ok {
+			return nil
+		}
+		if subtle.ConstantTimeCompare(dst[:], zero[:]) == 1 {
+			return nil // low order point
+		}
 	}
 
 	return dst[:]
@@ -241,8 +273,10 @@ func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) []byte {
 // and k is an integer in big-endian form.
 func (curve *CurveParams) ScalarBaseMult(k []byte) []byte {
 	var dst [x448FieldBytes]byte
+	s := [x448FieldBytes]byte{}
 
-	dst = x448BasePointScalarMul(k)
+	copy(s[:], k)
+	dst = x448BasePointScalarMul(s[:])
 
 	return dst[:]
 }
