@@ -1,6 +1,7 @@
 package ed448
 
 import (
+	"crypto/elliptic"
 	"crypto/subtle"
 	"math/big"
 	"sync"
@@ -10,12 +11,7 @@ import (
 // a generic, non-constant time implementation of Curve.
 // These are the Montgomery params.
 type CurveParams struct {
-	P       *big.Int // the order of the underlying finite field
-	N       *big.Int // the prime order of the base point
-	A       *big.Int // the coeficient
-	Gu, Gv  *big.Int // (u,v) of the base point
-	BitSize int      // the size of the underlying field
-	Name    string   // the canonical name of the curve
+	ep *elliptic.CurveParams
 }
 
 // EdwardsCurveParams contains the parameters of an elliptic curve and also provides
@@ -32,19 +28,7 @@ type EdwardsCurveParams struct {
 
 // A GoldilocksCurve represents the curve448.
 type GoldilocksCurve interface {
-	// Params returns the parameters for the curve.
-	Params() *CurveParams
-	// IsOnCurve reports whether the given (x,y) lies on the curve.
-	IsOnCurve(x, y *big.Int) bool
-	// Add returns the sum of (x1,y1) and (x2,y2)
-	Add(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
-	// Double returns 2*(x,y)
-	Double(x1, y1 *big.Int) (x, y *big.Int)
-	// ScalarMultEdwards returns k*(Bx,By) where k is a number in little-endian form.
-	ScalarMult(x1, y1 *big.Int, k []byte) []byte
-	// ScalarBaseMultEdwards returns k*G, where G is the base point of the group
-	// and k is an integer in little-endian form.
-	ScalarBaseMult(k []byte) []byte
+	elliptic.Curve
 }
 
 // A GoldilocksEdCurve represents Goldilocks edwards448.
@@ -66,8 +50,8 @@ type GoldilocksEdCurve interface {
 }
 
 // Params returns the parameters for the curve.
-func (curve *CurveParams) Params() *CurveParams {
-	return curve
+func (curve *CurveParams) Params() *elliptic.CurveParams {
+	return curve.ep
 }
 
 // IsOnCurve verifies if a given point in montgomery is valid
@@ -78,26 +62,26 @@ func (curve *CurveParams) IsOnCurve(x, y *big.Int) bool {
 	t2 := new(big.Int)
 
 	t0.Mul(x, x)
-	t0.Mul(t0, curve.A)
+	t0.Mul(t0, curve.ep.B)
 
 	t2.Mul(x, x)
 	t2.Mul(t2, x)
 
 	t0.Add(t0, t2)
 	t0.Add(t0, x)
-	t0.Mod(t0, curve.P)
+	t0.Mod(t0, curve.ep.P)
 
 	t1.Mul(y, y)
-	t1.Mod(t1, curve.P)
+	t1.Mod(t1, curve.ep.P)
 
 	return t0.Cmp(t1) == 0
 }
 
 func inv(curve *CurveParams, x *big.Int) *big.Int {
 	pMinus2 := big.NewInt(2)
-	pMinus2.Sub(curve.P, pMinus2)
+	pMinus2.Sub(curve.ep.P, pMinus2)
 
-	return x.Exp(x, pMinus2, curve.P)
+	return x.Exp(x, pMinus2, curve.ep.P)
 }
 
 func isZero(a *big.Int) bool {
@@ -122,18 +106,18 @@ func cMov(x, y *big.Int, b bool) *big.Int {
 
 func isSquare(curve *CurveParams, x *big.Int) bool {
 	pMinus1div2 := big.NewInt(1)
-	pMinus1div2.Sub(curve.P, pMinus1div2)
+	pMinus1div2.Sub(curve.ep.P, pMinus1div2)
 	pMinus1div2.Rsh(pMinus1div2, 1)
 
-	return isEqual(new(big.Int).Exp(x, pMinus1div2, curve.P), new(big.Int).SetInt64(1))
+	return isEqual(new(big.Int).Exp(x, pMinus1div2, curve.ep.P), new(big.Int).SetInt64(1))
 }
 
 func sqrt(curve *CurveParams, x *big.Int) *big.Int {
 	e := big.NewInt(1)
-	e.Add(curve.P, e)
+	e.Add(curve.ep.P, e)
 	e.Rsh(e, 2)
 
-	return new(big.Int).Exp(x, e, curve.P)
+	return new(big.Int).Exp(x, e, curve.ep.P)
 }
 
 func sgn0LE(x *big.Int) int {
@@ -166,7 +150,7 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 
 	t0.Mul(t2, t2)
 	t0.Mul(t0, new(big.Int).SetInt64(1))
-	t0.Sub(t0, curve.A)
+	t0.Sub(t0, curve.ep.B)
 	t0.Sub(t0, x1)
 	x.Sub(t0, x2)
 
@@ -174,8 +158,8 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 	t0.Mul(t0, t2)
 	y.Sub(t0, y1)
 
-	x.Mod(x, curve.P)
-	y.Mod(y, curve.P)
+	x.Mod(x, curve.ep.P)
+	y.Mod(y, curve.ep.P)
 
 	return x, y
 }
@@ -196,7 +180,7 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 	y := new(big.Int)
 
 	t0.Mul(new(big.Int).SetInt64(3), x1)
-	t1.Mul(new(big.Int).SetInt64(2), curve.A)
+	t1.Mul(new(big.Int).SetInt64(2), curve.ep.B)
 	t0.Add(t0, t1)
 	t0.Mul(t0, x1)
 	t1.Add(t0, new(big.Int).SetInt64(1))
@@ -208,7 +192,7 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 
 	t0.Mul(t2, t2)
 	t0.Mul(t0, new(big.Int).SetInt64(1))
-	t0.Sub(t0, curve.A)
+	t0.Sub(t0, curve.ep.B)
 	t0.Sub(t0, x1)
 	x.Sub(t0, x1)
 
@@ -216,8 +200,8 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 	t0.Mul(t0, t2)
 	y.Sub(t0, y1)
 
-	x.Mod(x, curve.P)
-	y.Mod(y, curve.P)
+	x.Mod(x, curve.ep.P)
+	y.Mod(y, curve.ep.P)
 
 	return x, y
 }
@@ -241,7 +225,7 @@ func checkBasepoint() {
 }
 
 // ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
-func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) []byte {
+func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.Int) {
 	var dst [x448FieldBytes]byte
 	var ok bool
 	s := [x448FieldBytes]byte{}
@@ -259,26 +243,32 @@ func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) []byte {
 
 		dst, ok = x448ScalarMul(uB[:], s[:])
 		if !ok {
-			return nil
+			return nil, nil
 		}
 		if subtle.ConstantTimeCompare(dst[:], zero[:]) == 1 {
-			return nil // low order point
+			return nil, nil // low order point
 		}
 	}
 
-	return dst[:]
+	u := new(big.Int).SetBytes(dst[:])
+	v := new(big.Int)
+
+	return u, v
 }
 
 // ScalarBaseMult returns k*G, where G is the base point of the group
 // and k is an integer in big-endian form.
-func (curve *CurveParams) ScalarBaseMult(k []byte) []byte {
+func (curve *CurveParams) ScalarBaseMult(k []byte) (*big.Int, *big.Int) {
 	var dst [x448FieldBytes]byte
 	s := [x448FieldBytes]byte{}
 
 	copy(s[:], k)
 	dst = x448BasePointScalarMul(s[:])
 
-	return dst[:]
+	u := new(big.Int).SetBytes(dst[:])
+	v := new(big.Int)
+
+	return u, v
 }
 
 // ToWeierstrassCurve converts from Montgomery form to Weierstrass
@@ -287,8 +277,8 @@ func (curve *CurveParams) ToWeierstrassCurve() (*big.Int, *big.Int) {
 	a := new(big.Int)
 	b := new(big.Int)
 
-	invB.ModInverse(new(big.Int).SetInt64(1), curve.P)
-	a.Mul(invB, curve.A)
+	invB.ModInverse(new(big.Int).SetInt64(1), curve.ep.P)
+	a.Mul(invB, curve.ep.B)
 	b.Mul(invB, invB)
 
 	return a, b
@@ -307,23 +297,23 @@ func (curve *CurveParams) MapToCurve(u *big.Int) (*big.Int, *big.Int) {
 	t1 = cMov(t1, new(big.Int).SetInt64(0), e1) // if t1 == -1, set t1 = 0
 	x1.Add(t1, new(big.Int).SetInt64(1))        // x1 = t1 + 1
 	x1 = inv(curve, x1)                         // x1 = inv0(x1)
-	x1.Mul(new(big.Int).Neg(curve.A), x1)       // x1 = -A / (1 + Z * u^2)
-	gx1.Add(x1, curve.A)                        // gx1 = x1 + A
+	x1.Mul(new(big.Int).Neg(curve.ep.B), x1)    // x1 = -A / (1 + Z * u^2)
+	gx1.Add(x1, curve.ep.B)                     // gx1 = x1 + A
 	gx1.Mul(gx1, x1)                            // gx1 = gx1 * x1
 	gx1.Add(gx1, new(big.Int).SetInt64(1))      // gx1 = gx1 + B
 	gx1.Mul(gx1, x1)                            // gx1 = x1^3 + A * x1^2 + B * x1
 
-	x2.Sub(new(big.Int).Neg(x1), curve.A) //x2 = -x1 - A
-	gx2.Mul(t1, gx1)                      // gx2 = t1 * gx1
-	e2 = isSquare(curve, gx1)             // e2 = is_square(gx1)
-	x = cMov(x2, x1, e2)                  // If is_square(gx1), x = x1, else x = x2
-	y2 = cMov(gx2, gx1, e2)               // If is_square(gx1), y2 = gx1, else y2 = gx2
-	y = sqrt(curve, y2)                   // y = sqrt(y2)
-	e3 = sgn0LE(u) == sgn0LE(y)           // Fix sign of y: e3 = sgn0(u) == sgn0(y)
-	y = cMov(new(big.Int).Neg(y), y, e3)  // y = CMOV(-y, y, e3)
+	x2.Sub(new(big.Int).Neg(x1), curve.ep.B) //x2 = -x1 - A
+	gx2.Mul(t1, gx1)                         // gx2 = t1 * gx1
+	e2 = isSquare(curve, gx1)                // e2 = is_square(gx1)
+	x = cMov(x2, x1, e2)                     // If is_square(gx1), x = x1, else x = x2
+	y2 = cMov(gx2, gx1, e2)                  // If is_square(gx1), y2 = gx1, else y2 = gx2
+	y = sqrt(curve, y2)                      // y = sqrt(y2)
+	e3 = sgn0LE(u) == sgn0LE(y)              // Fix sign of y: e3 = sgn0(u) == sgn0(y)
+	y = cMov(new(big.Int).Neg(y), y, e3)     // y = CMOV(-y, y, e3)
 
-	x.Mod(x, curve.P)
-	y.Mod(y, curve.P)
+	x.Mod(x, curve.ep.P)
+	y.Mod(y, curve.ep.P)
 
 	return x, y
 }
@@ -376,13 +366,19 @@ func initAll() {
 
 func initCurve448() {
 	// See https://safecurves.cr.yp.to/field.html and https://tools.ietf.org/html/rfc7748#section-4.2
-	curve448 = &CurveParams{Name: "curve-448"}
-	curve448.P, _ = new(big.Int).SetString("726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439", 10)
-	curve448.N, _ = new(big.Int).SetString("181709681073901722637330951972001133588410340171829515070372549795146003961539585716195755291692375963310293709091662304773755859649779", 10)
-	curve448.A, _ = new(big.Int).SetString("156326", 10)
-	curve448.Gu, _ = new(big.Int).SetString("5", 10)
-	curve448.Gv, _ = new(big.Int).SetString("355293926785568175264127502063783334808976399387714271831880898435169088786967410002932673765864550910142774147268105838985595290606362", 10)
-	curve448.BitSize = 448
+	P, _ := new(big.Int).SetString("726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439", 10)
+	N, _ := new(big.Int).SetString("181709681073901722637330951972001133588410340171829515070372549795146003961539585716195755291692375963310293709091662304773755859649779", 10)
+	A, _ := new(big.Int).SetString("156326", 10)
+	Gu, _ := new(big.Int).SetString("5", 10)
+	Gv, _ := new(big.Int).SetString("355293926785568175264127502063783334808976399387714271831880898435169088786967410002932673765864550910142774147268105838985595290606362", 10)
+	curve448 = &CurveParams{&elliptic.CurveParams{Name: "curve-448",
+		P:       P,
+		N:       N,
+		B:       A,
+		Gx:      Gu,
+		Gy:      Gv,
+		BitSize: 448,
+	}}
 }
 
 func initEd448() {
