@@ -570,12 +570,12 @@ func initEd448() {
 
 // Curve448 returns a Curve which implements curve448
 func Curve448() GoldilocksCurve {
-	initonce.Do(initCurve448)
+	initonce.Do(initAll)
 	return curve448
 }
 
 // CurveP25519 returns a Curve which implements curve448
 func CurveP25519() Curve25519 {
-	initonce.Do(initCurve25519)
+	initonce.Do(initAll)
 	return curve25519
 }
