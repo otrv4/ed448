@@ -519,6 +519,7 @@ var ed448 *EdwardsCurveParams
 
 func initAll() {
 	initCurve448()
+	initCurve25519()
 	initEd448()
 }
 
