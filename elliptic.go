@@ -547,7 +547,7 @@ func initCurve25519() {
 	A, _ := new(big.Int).SetString("486662", 10)
 	Gu, _ := new(big.Int).SetString("9", 10)
 	Gv, _ := new(big.Int).SetString("14781619447589544791020593568409986887264606134616475288964881837755586237401", 10)
-	curve448 = &CurveParams{&elliptic.CurveParams{Name: "curve-25519",
+	curve25519 = &Curve25519Params{&elliptic.CurveParams{Name: "curve-25519",
 		P:       P,
 		N:       N,
 		B:       A,
