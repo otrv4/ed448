@@ -518,8 +518,8 @@ var curve25519 *Curve25519Params
 var ed448 *EdwardsCurveParams
 
 func initAll() {
-	initCurve448()
 	initCurve25519()
+	initCurve448()
 	initEd448()
 }
 
@@ -570,12 +570,12 @@ func initEd448() {
 
 // Curve448 returns a Curve which implements curve448
 func Curve448() GoldilocksCurve {
-	initonce.Do(initAll)
+	initonce.Do(initCurve448)
 	return curve448
 }
 
 // CurveP25519 returns a Curve which implements curve448
 func CurveP25519() Curve25519 {
-	initonce.Do(initAll)
+	initonce.Do(initCurve25519)
 	return curve25519
 }
