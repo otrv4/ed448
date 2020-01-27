@@ -170,3 +170,8 @@ func (s *Ed448Suite) Test_Curve25519Params(c *C) {
 	c.Assert(curve25519.Params().P, DeepEquals, Gv)
 
 }
+
+func (s *Ed448Suite) Test_IsValidMontgomery25519Point(c *C) {
+	curve25519 := CurveP25519()
+	c.Assert(curve25519.IsOnCurve(curve25519.Params().Gx, curve25519.Params().Gy), Equals, true)
+}
