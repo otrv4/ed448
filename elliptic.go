@@ -429,14 +429,14 @@ func (curve *Curve25519Params) ScalarBaseMult(k []byte) (*big.Int, *big.Int) {
 }
 
 // ToWeierstrassCurve converts from Montgomery form to Weierstrass
-func (curve *CurveParams) ToWeierstrassCurve() (*big.Int, *big.Int) {
+func (curve *CurveParams) ToWeierstrassCurve(u, v *big.Int) (*big.Int, *big.Int) {
 	invB := new(big.Int)
 	a := new(big.Int)
 	b := new(big.Int)
 
 	invB.ModInverse(new(big.Int).SetInt64(1), curve.ep.P)
-	a.Mul(invB, curve.ep.B)
-	b.Mul(invB, invB)
+	a.Mul(u, invB)
+	a.Mul(v, invB)
 
 	return a, b
 }
