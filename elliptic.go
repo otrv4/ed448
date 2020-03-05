@@ -441,6 +441,18 @@ func ToWeierstrassCurve(curve GoldilocksCurve, u, v *big.Int) (*big.Int, *big.In
 	return a, b
 }
 
+// ToMontgomeryCurve converts from Weierstrass to Montgomery
+func ToMontgomeryCurve(curve GoldilocksCurve, x, y *big.Int) (*big.Int, *big.Int) {
+	u := new(big.Int)
+	v := new(big.Int)
+
+	b := new(big.Int).SetInt64(1)
+	u.Mul(u, b)
+	v.Mul(v, b)
+
+	return u, v
+}
+
 // MapToCurve calculates a point on the elliptic curve from an element of the finite field F. This implements Elligator2,
 // according to https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-05, section 6.7.1.1.
 func (curve *CurveParams) MapToCurve(u *big.Int) (*big.Int, *big.Int) {
