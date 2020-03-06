@@ -255,11 +255,17 @@ func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int) {
 		return x1, y1
 	}
 
+	x := new(big.Int)
+	y := new(big.Int)
+
+	if y1.Sign() == 0 {
+		y.SetInt64(1)
+		return x, y
+	}
+
 	t0 := new(big.Int)
 	t1 := new(big.Int)
 	t2 := new(big.Int)
-	x := new(big.Int)
-	y := new(big.Int)
 
 	t0.Mul(new(big.Int).SetInt64(3), x1)
 	t1.Mul(new(big.Int).SetInt64(2), curve.ep.B)
