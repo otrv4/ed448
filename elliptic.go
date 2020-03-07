@@ -387,7 +387,7 @@ func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.
 }
 
 // NewScalarMult implementing double and add method
-func (curve *CurveParams) NewScalarMult(Bx, By *big.Int, k []byte) (*big.Int, *big.Int) {
+func NewScalarMult(curve GoldilocksCurve, Bx, By *big.Int, k []byte) (*big.Int, *big.Int) {
 	x, y := new(big.Int), new(big.Int)
 
 	for _, byte := range k {
