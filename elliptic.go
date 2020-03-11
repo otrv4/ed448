@@ -185,6 +185,17 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 		return x1, y1
 	}
 
+	if x1.Cmp(x2) == 0 {
+		tmp := new(big.Int)
+		tmp.Sub(new(big.Int).SetInt64(0), y1)
+		tmp.Mod(tmp, curve.ep.P)
+
+		if y2.CmpAbs(tmp) == 0 {
+			y.SetInt64(1)
+			return x, y
+		}
+	}
+
 	t0.Sub(y2, y1)
 	t1.Sub(x2, x1)
 	t1 = inv(curve, t1)
