@@ -187,10 +187,9 @@ func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int) {
 
 	if x1.Cmp(x2) == 0 {
 		tmp := new(big.Int)
-		tmp.Sub(new(big.Int).SetInt64(0), y1)
-		tmp.Mod(tmp, curve.ep.P)
+		tmp.Neg(y1).Mod(tmp, curve.ep.P)
 
-		if y2.CmpAbs(tmp) == 0 {
+		if y2.Cmp(tmp) == 0 {
 			y.SetInt64(1)
 			return x, y
 		}
