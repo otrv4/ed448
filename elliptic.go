@@ -364,8 +364,9 @@ func checkBasepoint() {
 	}
 }
 
-// ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
-func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.Int) {
+// LadderScalarMult returns k*(Bx,By) where k is a number in little-endian form.
+// This uses the montgomery ladder
+func LadderScalarMult(curve GoldilocksCurve, x1, y1 *big.Int, k []byte) (*big.Int, *big.Int) {
 	var dst [x448FieldBytes]byte
 	var ok bool
 	s := [x448FieldBytes]byte{}
@@ -396,15 +397,16 @@ func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.
 	return u, v
 }
 
-// NewScalarMult implementing double and add method
-func NewScalarMult(curve GoldilocksCurve, Bx, By *big.Int, k []byte) (*big.Int, *big.Int) {
+// ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
+// This uses the double and add method
+func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.Int) {
 	x, y := new(big.Int), new(big.Int)
 
 	for _, byte := range k {
 		for bitNum := 0; bitNum < 8; bitNum++ {
 			x, y = curve.Double(x, y)
 			if byte&0x80 == 0x80 {
-				x, y = curve.Add(Bx, By, x, y)
+				x, y = curve.Add(x1, y1, x, y)
 			}
 			byte <<= 1
 		}

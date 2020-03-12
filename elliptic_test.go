@@ -129,7 +129,7 @@ func (s *Ed448Suite) Test_ScalarMultDoubleAndAdd(c *C) {
 	expX, _ = new(big.Int).SetString("202153740723611312197845507678411660974244296583955638161232971272192732225435060449944711905797274457545133479527608333145847731966299", 10)
 	expY, _ = new(big.Int).SetString("608729637406846025943737458918089555834435648073468703454221404283312533595985092348819448481226213984423813097591564490475313441415967", 10)
 
-	x2, y2 := NewScalarMult(curve448, x1, y1, sc.Bytes())
+	x2, y2 := curve448.ScalarMult(x1, y1, sc.Bytes())
 
 	c.Assert(x2, DeepEquals, expX)
 	c.Assert(y2, DeepEquals, expY)
@@ -142,7 +142,7 @@ func (s *Ed448Suite) Test_ScalarMultDoubleAndAdd(c *C) {
 	expX, _ = new(big.Int).SetString("194883264699157211378948890318315607750282590143444800641798305076683669615143598784608144151424077384322793523414446065607279057090040", 10)
 	expY, _ = new(big.Int).SetString("330832701313571564112586130166073415672337809353116341040436629551529804299536605944003724879925210570782576473500393484348406130386509", 10)
 
-	x4, y4 := NewScalarMult(curve448, x3, y3, sc.Bytes())
+	x4, y4 := curve448.ScalarMult(x3, y3, sc.Bytes())
 
 	c.Assert(x4, DeepEquals, expX)
 	c.Assert(y4, DeepEquals, expY)
@@ -155,7 +155,7 @@ func (s *Ed448Suite) Test_ScalarMultDoubleAndAdd(c *C) {
 	expX, _ = new(big.Int).SetString("57288601386672893407874879257662617319706821826107369944743051940501128048648387784449665015295226632601314952547741509893923162403136", 10)
 	expY, _ = new(big.Int).SetString("489868081629990339309772086826537501394285364015056133577630249083776727623092492539092473930151322368883152536487886009666038872268558", 10)
 
-	x6, y6 := NewScalarMult(curve448, x5, y5, sc.Bytes())
+	x6, y6 := curve448.ScalarMult(x5, y5, sc.Bytes())
 
 	c.Assert(x6, DeepEquals, expX)
 	c.Assert(y6, DeepEquals, expY)
@@ -168,7 +168,7 @@ func (s *Ed448Suite) Test_ScalarMultDoubleAndAdd(c *C) {
 	expX, _ = new(big.Int).SetString("0", 10)
 	expY, _ = new(big.Int).SetString("1", 10)
 
-	x8, y8 := NewScalarMult(curve448, x7, y7, sc.Bytes())
+	x8, y8 := curve448.ScalarMult(x7, y7, sc.Bytes())
 
 	c.Assert(x8, DeepEquals, expX)
 	c.Assert(y8, DeepEquals, expY)
@@ -181,7 +181,7 @@ func (s *Ed448Suite) Test_ScalarMultDoubleAndAdd(c *C) {
 	expX, _ = new(big.Int).SetString("0", 10)
 	expY, _ = new(big.Int).SetString("1", 10)
 
-	x10, y10 := NewScalarMult(curve448, x9, y9, sc.Bytes())
+	x10, y10 := curve448.ScalarMult(x9, y9, sc.Bytes())
 
 	c.Assert(x10, DeepEquals, expX)
 	c.Assert(y10, DeepEquals, expY)
@@ -199,7 +199,7 @@ func (s *Ed448Suite) Test_ScalarMultMontgomeryPoint(c *C) {
 	y1 := new(big.Int).SetInt64(0)
 	exp, _ = new(big.Int).SetString("ce3e4ff95a60dc6697da1db1d85e6afbdf79b50a2412d7546d5f239fe14fbaadeb445fc66a01b0779d98223961111e21766282f73dd96b6f", 16)
 
-	dst, _ := curve448.ScalarMult(x1, y1, sc.Bytes())
+	dst, _ := LadderScalarMult(curve448, x1, y1, sc.Bytes())
 
 	c.Assert(dst.Bytes(), DeepEquals, exp.Bytes())
 
@@ -207,7 +207,7 @@ func (s *Ed448Suite) Test_ScalarMultMontgomeryPoint(c *C) {
 	sc, _ = new(big.Int).SetString("203d494428b8399352665ddca42f9de8fef600908e0d461cb021f8c538345dd77c3e4806e25f46d3315c44e0a5b4371282dd2c8d5be3095f", 16)
 	exp, _ = new(big.Int).SetString("884a02576239ff7a2f2f63b2db6a9ff37047ac13568e1e30fe63c4a7ad1b3ee3a5700df34321d62077e63633c575c1c954514e99da7c179d", 16)
 
-	dst, _ = curve448.ScalarMult(x1, y1, sc.Bytes())
+	dst, _ = LadderScalarMult(curve448, x1, y1, sc.Bytes())
 
 	c.Assert(dst.Bytes(), DeepEquals, exp.Bytes())
 
@@ -224,7 +224,7 @@ func (s *Ed448Suite) Test_ScalarMultMontgomeryPoint(c *C) {
 			0x06, 0xda, 0x13, 0xc1, 0x1e, 0xc8, 0xe8, 0xc7,
 			0x44, 0x37, 0x66, 0x3e, 0x31, 0x13, 0x95, 0x08,
 		})
-	dst, _ = curve448.ScalarMult(x1, y1, sc.Bytes())
+	dst, _ = LadderScalarMult(curve448, x1, y1, sc.Bytes())
 
 	c.Assert(dst.Bytes(), DeepEquals, exp.Bytes())
 }
