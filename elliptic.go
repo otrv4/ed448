@@ -436,9 +436,9 @@ func (curve *Curve25519Params) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, 
 	return u, v
 }
 
-// ScalarBaseMult returns k*G, where G is the base point of the group
+// LadderScalarBaseMult returns k*G, where G is the base point of the group
 // and k is an integer in big-endian form.
-func (curve *CurveParams) ScalarBaseMult(k []byte) (*big.Int, *big.Int) {
+func LadderScalarBaseMult(curve GoldilocksCurve, k []byte) (*big.Int, *big.Int) {
 	var dst [x448FieldBytes]byte
 	s := [x448FieldBytes]byte{}
 
@@ -449,6 +449,12 @@ func (curve *CurveParams) ScalarBaseMult(k []byte) (*big.Int, *big.Int) {
 	v := new(big.Int)
 
 	return u, v
+}
+
+// ScalarBaseMult returns k*G, where G is the base point of the group
+// and k is an integer in big-endian form.
+func (curve *CurveParams) ScalarBaseMult(k []byte) (*big.Int, *big.Int) {
+	return curve.ScalarMult(curve.Params().Gx, curve.Params().Gy, k)
 }
 
 // ScalarBaseMult returns k*(Bx,By) where k is a number in little-endian form.
