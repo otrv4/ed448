@@ -400,21 +400,22 @@ func LadderScalarMult(curve GoldilocksCurve, x1, y1 *big.Int, k []byte) (*big.In
 // ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
 // This uses the double and add method
 func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.Int) {
+	x2, y2, _ := ToWeierstrassCurve(curve.Params().P, x1, y1)
 	x, y := new(big.Int), new(big.Int)
 
 	for _, byte := range k {
 		for bitNum := 0; bitNum < 8; bitNum++ {
 			x, y = curve.Double(x, y)
 			if byte&0x80 == 0x80 {
-				x, y = curve.Add(x1, y1, x, y)
+				x, y = curve.Add(x2, y2, x, y)
 			}
 			byte <<= 1
 		}
 	}
 
-	x2, y2 := ToMontgomeryCurve(x, y)
+	x3, y3 := ToMontgomeryCurve(x, y)
 
-	return x2, y2
+	return x3, y3
 }
 
 // ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
