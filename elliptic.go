@@ -412,7 +412,9 @@ func (curve *CurveParams) ScalarMult(x1, y1 *big.Int, k []byte) (*big.Int, *big.
 		}
 	}
 
-	return x, y
+	x2, y2 := ToMontgomeryCurve(x, y)
+
+	return x2, y2
 }
 
 // ScalarMult returns k*(Bx,By) where k is a number in little-endian form.
@@ -478,13 +480,13 @@ func ToWeierstrassCurve(p, u, v *big.Int) (*big.Int, *big.Int, *big.Int) {
 }
 
 // ToMontgomeryCurve converts from Weierstrass to Montgomery
-func ToMontgomeryCurve(curve GoldilocksCurve, x, y *big.Int) (*big.Int, *big.Int) {
+func ToMontgomeryCurve(x, y *big.Int) (*big.Int, *big.Int) {
 	u := new(big.Int)
 	v := new(big.Int)
 
 	b := new(big.Int).SetInt64(1)
-	u.Mul(u, b)
-	v.Mul(v, b)
+	u.Mul(x, b)
+	v.Mul(y, b)
 
 	return u, v
 }
