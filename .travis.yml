@@ -4,6 +4,10 @@ matrix:
   include:
     - go: "1.12.1"
       env: T=internal
+    - go: "1.14"
+      env: T=normal
+    - go: "1.13.8"
+      env: T=normal
     - go: "1.12.1"
       env: T=normal
     - go: "1.11.6"
