@@ -17,3 +17,5 @@ risk.
 
 This code is still under constant development so you might want to wait for a
 future release in order to use it.
+
+This code is a proof of concept of various experiments. Do not use in production.
