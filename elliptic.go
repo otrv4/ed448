@@ -256,6 +256,48 @@ func (curve *Curve25519Params) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int)
 	return x, y
 }
 
+// Add adds two points in montgomery with only the x
+// Just for demostration purposes
+func AddOnlyX(x1, x2 *big.Int) (*big.Int, *big.Int) {
+	pp, _ := new(big.Int).SetString("57896044618658097711785492504343953926634992332820282019728792003956564819949", 10)
+
+	two := new(big.Int).SetInt64(2)
+
+	z1 := new(big.Int).SetInt64(1)
+	z2 := new(big.Int).SetInt64(1)
+
+	a := new(big.Int)
+	b := new(big.Int)
+	c := new(big.Int)
+	d := new(big.Int)
+	da := new(big.Int)
+	cb := new(big.Int)
+
+	tmp0 := new(big.Int)
+	tmp1 := new(big.Int)
+	tmp2 := new(big.Int)
+
+	x := new(big.Int)
+	y := new(big.Int)
+
+	a.Add(x1, z1)
+	b.Sub(x1, z1)
+
+	c.Add(x2, z2)
+	d.Sub(x2, z2)
+
+	da.Mul(d, a)
+	cb.Mul(c, b)
+
+	tmp0.Add(da, cb)
+	tmp1.Sub(da, cb)
+
+	tmp2.Exp(tmp0, two, pp)
+	x = tmp2
+
+	return x, y
+}
+
 // Double doubles two points in montgomery
 // x3 = b*(3*x12+2*a*x1+1)2/(2*b*y1)2-a-x1-x1
 // y3 = (2*x1+x1+a)*(3*x12+2*a*x1+1)/(2*b*y1)-b*(3*x12+2*a*x1+1)3/(2*b*y1)3-y1
