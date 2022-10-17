@@ -13,7 +13,7 @@ paper ["Ed448-Goldilocks, a new elliptic curve"](http://csrc.nist.gov/groups/ST/
 
 ## Funding
 
-The work made hare was supported by the NlNet Foundation.
+The work made hare was partially supported by the NlNet Foundation.
 Find information [here](https://nlnet.nl/project/OTR4/).
 
 ## Disclaimer
