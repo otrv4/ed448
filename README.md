@@ -11,6 +11,11 @@ paper ["Ed448-Goldilocks, a new elliptic curve"](http://csrc.nist.gov/groups/ST/
 
 [![GoDoc](https://godoc.org/github.com/otrv4/ed448?status.svg)](https://godoc.org/github.com/otrv4/ed448)
 
+## Funding
+
+The work made hare was supported by the NlNet Foundation.
+Find information [here](https://nlnet.nl/project/OTR4/).
+
 ## Disclaimer
 This code is provided as is and does not have any warranty. Use it at your own
 risk.
