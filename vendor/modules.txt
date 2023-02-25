@@ -10,18 +10,20 @@ github.com/awnumar/memguard/core
 github.com/kr/pretty
 # github.com/kr/text v0.1.0
 github.com/kr/text
-# golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
+# golang.org/x/crypto v0.1.0
 golang.org/x/crypto/blake2b
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ed25519
-golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/subtle
+golang.org/x/crypto/internal/alias
+golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/nacl/secretbox
-golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/sha3
-# golang.org/x/sys v0.0.0-20191127021746-63cb32ae39b2
+# golang.org/x/sys v0.1.0
 golang.org/x/sys/cpu
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
+# gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 gopkg.in/check.v1
